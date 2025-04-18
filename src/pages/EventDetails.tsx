@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Info, Clock, MapPin, AlertTriangle, ChevronLeft } from "lucide-react"
@@ -69,6 +70,17 @@ const EventDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <div className="container mx-auto px-4 relative">
+        <Button 
+          variant="outline"
+          className="absolute -top-14 left-4 z-10 text-primary border-primary/30 hover:bg-primary/10"
+          onClick={handleGoBack}
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Voltar
+        </Button>
+      </div>
+      
       <Header />
       
       <div className="relative h-[400px] w-full overflow-hidden">
