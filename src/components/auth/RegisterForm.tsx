@@ -1,9 +1,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { CalendarIcon, User, Mail, Lock, CreditCard } from "lucide-react"
+import { User, Mail, Lock, CreditCard } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -16,13 +14,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { toast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/AuthContext"
 
 const validateCPF = (cpf: string): boolean => {
   const cleanCPF = cpf.replace(/\D/g, "")
@@ -77,6 +70,8 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
+  const { register } = useAuth();
+  
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -111,15 +106,31 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     onChange(formatted)
   }
 
-  function onSubmit(data: RegisterFormValues) {
+  async function onSubmit(data: RegisterFormValues) {
     console.log("Register data:", data)
-    setTimeout(() => {
+    
+    const success = await register({
+      fullName: data.fullName,
+      email: data.email,
+      password: data.password,
+      cpf: data.cpf,
+      birthDate: data.birthDate
+    });
+    
+    if (success) {
       toast({
         title: "Cadastro realizado com sucesso!",
         description: "Redirecionando para o checkout...",
       })
-      onSuccess()
-    }, 1000)
+      
+      // Check if we have a redirect URL saved
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
+      if (redirectUrl) {
+        localStorage.removeItem('redirectAfterLogin');
+      }
+      
+      onSuccess();
+    }
   }
 
   return (

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/AuthContext"
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -28,6 +29,8 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
+  const { login } = useAuth();
+  
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -36,16 +39,25 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     },
   })
 
-  function onSubmit(data: LoginFormValues) {
+  async function onSubmit(data: LoginFormValues) {
     console.log("Login data:", data)
-    // Simulate login success
-    setTimeout(() => {
+    
+    const success = await login(data.email, data.password);
+    
+    if (success) {
       toast({
         title: "Login realizado com sucesso!",
         description: "Redirecionando para o checkout...",
       })
-      onSuccess()
-    }, 1000)
+      
+      // Check if we have a redirect URL saved
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
+      if (redirectUrl) {
+        localStorage.removeItem('redirectAfterLogin');
+      }
+      
+      onSuccess();
+    }
   }
 
   return (

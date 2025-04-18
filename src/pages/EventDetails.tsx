@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Info, Clock, MapPin, AlertTriangle, ChevronLeft } from "lucide-react"
@@ -6,10 +7,9 @@ import TicketSelector from "@/components/TicketSelector"
 import EventMap from "@/components/EventMap"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { EventDetails } from "@/types/event"
 import { AuthDialog } from "@/components/auth/AuthDialog"
+import { useAuth } from "@/contexts/AuthContext"
 
 const eventDetails: EventDetails = {
   id: 1,
@@ -62,6 +62,7 @@ const EventDetailsPage = () => {
   const { id } = useParams()
   const [selectedTickets, setSelectedTickets] = useState<Record<number, number>>({})
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false)
+  const { isAuthenticated } = useAuth();
   
   const hasSelectedTickets = Object.values(selectedTickets).some(quantity => quantity > 0)
 
@@ -70,17 +71,24 @@ const EventDetailsPage = () => {
   }
   
   const handleFinalizePurchase = () => {
-    // Abrir o diálogo de autenticação quando o usuário clicar em "Finalizar pedido"
-    setIsAuthDialogOpen(true)
+    if (!isAuthenticated) {
+      // Store current path to redirect back after login
+      localStorage.setItem('redirectAfterLogin', `/evento/${id}`);
+      // Show auth dialog if user is not authenticated
+      setIsAuthDialogOpen(true);
+    } else {
+      // User is already authenticated, proceed to checkout
+      // This would redirect to checkout in a real application
+      alert("Redirecionando para o checkout...");
+    }
   }
   
   const handleAuthSuccess = () => {
-    // Fechar o diálogo e redirecionar para a próxima etapa do checkout
-    setIsAuthDialogOpen(false)
-    // Aqui você implementaria a navegação para a próxima etapa
-    console.log("Autenticação bem-sucedida, redirecionando para checkout...")
-    // Por enquanto apenas um alerta para simular
-    alert("Login realizado com sucesso! Redirecionando para o checkout...")
+    // Close the dialog
+    setIsAuthDialogOpen(false);
+    // In a real app, this would redirect to checkout
+    console.log("Autenticação bem-sucedida, redirecionando para checkout...");
+    alert("Login realizado com sucesso! Redirecionando para o checkout...");
   }
 
   return (
