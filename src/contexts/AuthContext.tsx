@@ -52,31 +52,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, []);
 
+  // Helper function to get registered users from localStorage
+  const getRegisteredUsers = (): Record<string, { user: User, password: string }> => {
+    const users = localStorage.getItem('registeredUsers');
+    return users ? JSON.parse(users) : {};
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // This is a mock authentication process
-      // In a real application, this would be an API call
-      
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // For demo purposes, accept any credentials
-      // In a real app, validate against backend
-      const mockUser = {
-        id: `user-${Date.now()}`,
-        fullName: email.split('@')[0], // Extract name from email for demo
-        email,
-      };
+      // Check if user exists in localStorage
+      const registeredUsers = getRegisteredUsers();
+      const userRecord = registeredUsers[email];
       
-      // Generate mock JWT token (in a real app this would come from the server)
+      if (!userRecord || userRecord.password !== password) {
+        toast({
+          title: "Erro ao fazer login",
+          description: "Email ou senha incorretos.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // User exists and password matches
       const mockToken = `mock-jwt-token-${Date.now()}`;
       
       // Store auth data
       localStorage.setItem('authToken', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      localStorage.setItem('user', JSON.stringify(userRecord.user));
       
-      setUser(mockUser);
+      setUser(userRecord.user);
       
       return true;
     } catch (error) {
@@ -98,22 +106,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // In a real app, this would send the user data to your backend
-      const mockUser = {
+      // Check if email is already registered
+      const registeredUsers = getRegisteredUsers();
+      
+      if (registeredUsers[userData.email]) {
+        toast({
+          title: "Erro ao criar conta",
+          description: "Este email já está cadastrado.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // Create new user
+      const newUser = {
         id: `user-${Date.now()}`,
         fullName: userData.fullName,
         email: userData.email,
         cpf: userData.cpf,
       };
       
-      // Generate mock JWT token
+      // Store user in "database" (localStorage)
+      registeredUsers[userData.email] = {
+        user: newUser,
+        password: userData.password
+      };
+      
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      
+      // Auto-login after registration
       const mockToken = `mock-jwt-token-${Date.now()}`;
       
-      // Store auth data
       localStorage.setItem('authToken', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      localStorage.setItem('user', JSON.stringify(newUser));
       
-      setUser(mockUser);
+      setUser(newUser);
       
       return true;
     } catch (error) {

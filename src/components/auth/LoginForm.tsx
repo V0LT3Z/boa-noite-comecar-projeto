@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
+import { useState } from "react"
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -30,6 +31,7 @@ interface LoginFormProps {
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
   const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -41,22 +43,27 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   async function onSubmit(data: LoginFormValues) {
     console.log("Login data:", data)
+    setIsSubmitting(true);
     
-    const success = await login(data.email, data.password);
-    
-    if (success) {
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Redirecionando para o checkout...",
-      })
+    try {
+      const success = await login(data.email, data.password);
       
-      // Check if we have a redirect URL saved
-      const redirectUrl = localStorage.getItem('redirectAfterLogin');
-      if (redirectUrl) {
-        localStorage.removeItem('redirectAfterLogin');
+      if (success) {
+        toast({
+          title: "Login realizado com sucesso!",
+          description: "Redirecionando...",
+        });
+        
+        // Check if we have a redirect URL saved
+        const redirectUrl = localStorage.getItem('redirectAfterLogin');
+        if (redirectUrl) {
+          localStorage.removeItem('redirectAfterLogin');
+        }
+        
+        onSuccess();
       }
-      
-      onSuccess();
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -100,9 +107,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         <Button 
           type="submit" 
           className="w-full bg-gradient-primary text-white hover:opacity-90"
-          disabled={form.formState.isSubmitting}
+          disabled={isSubmitting}
         >
-          {form.formState.isSubmitting ? "Entrando..." : "Entrar"}
+          {isSubmitting ? "Entrando..." : "Entrar"}
         </Button>
       </form>
     </Form>
