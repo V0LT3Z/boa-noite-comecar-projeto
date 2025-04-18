@@ -111,72 +111,66 @@ const EventDetailsPage = () => {
       </div>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <section>
-              <h2 className="text-2xl font-semibold text-primary mb-4">Sobre o evento</h2>
-              <p className="text-gray-600 leading-relaxed">{eventDetails.description}</p>
-            </section>
+        <section className="mb-8">
+          <h2 className="text-2xl font-semibold text-primary mb-4">Ingressos</h2>
+          <div className="space-y-4">
+            {eventDetails.tickets.map((ticket) => (
+              <TicketSelector
+                key={ticket.id}
+                ticket={ticket}
+                quantity={selectedTickets[ticket.id] || 0}
+                onQuantityChange={(quantity) => 
+                  setSelectedTickets(prev => ({...prev, [ticket.id]: quantity}))
+                }
+              />
+            ))}
+          </div>
+          
+          <div className="mt-6 space-y-4">
+            <Button 
+              className="w-full bg-gradient-primary text-white hover:opacity-90"
+              size="lg"
+              disabled={!hasSelectedTickets}
+            >
+              Finalizar pedido
+            </Button>
+            
+            <p className="text-xs text-gray-500 text-center">
+              Ao finalizar o pedido você concorda com os termos de uso e política de privacidade
+            </p>
+          </div>
+        </section>
 
-            <section>
-              <h2 className="text-2xl font-semibold text-primary mb-4">Avisos importantes</h2>
-              <div className="space-y-4">
-                <Alert>
+        <div className="grid grid-cols-1 gap-8">
+          <section>
+            <h2 className="text-2xl font-semibold text-primary mb-4">Sobre o evento</h2>
+            <p className="text-gray-600 leading-relaxed">{eventDetails.description}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-primary mb-4">Avisos importantes</h2>
+            <div className="space-y-4">
+              <Alert>
+                <AlertTriangle className="h-5 w-5" />
+                <AlertDescription>
+                  Idade mínima: {eventDetails.minimumAge} anos
+                </AlertDescription>
+              </Alert>
+              {eventDetails.warnings.map((warning, index) => (
+                <Alert key={index}>
                   <AlertTriangle className="h-5 w-5" />
-                  <AlertDescription>
-                    Idade mínima: {eventDetails.minimumAge} anos
-                  </AlertDescription>
+                  <AlertDescription>{warning}</AlertDescription>
                 </Alert>
-                {eventDetails.warnings.map((warning, index) => (
-                  <Alert key={index}>
-                    <AlertTriangle className="h-5 w-5" />
-                    <AlertDescription>{warning}</AlertDescription>
-                  </Alert>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold text-primary mb-4">Localização</h2>
-              <div className="h-[300px] rounded-lg overflow-hidden">
-                <EventMap coordinates={eventDetails.coordinates} />
-              </div>
-            </section>
-          </div>
-
-          <div className="lg:col-span-1">
-            <div className="sticky top-4 space-y-6 bg-gray-50 p-6 rounded-lg">
-              <h2 className="text-xl font-semibold text-primary">Ingressos</h2>
-              <div className="space-y-4">
-                {eventDetails.tickets.map((ticket) => (
-                  <TicketSelector
-                    key={ticket.id}
-                    ticket={ticket}
-                    quantity={selectedTickets[ticket.id] || 0}
-                    onQuantityChange={(quantity) => 
-                      setSelectedTickets(prev => ({...prev, [ticket.id]: quantity}))
-                    }
-                  />
-                ))}
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-4">
-                <Button 
-                  className="w-full bg-gradient-primary text-white hover:opacity-90"
-                  size="lg"
-                  disabled={!hasSelectedTickets}
-                >
-                  Finalizar pedido
-                </Button>
-                
-                <p className="text-xs text-gray-500 text-center">
-                  Ao finalizar o pedido você concorda com os termos de uso e política de privacidade
-                </p>
-              </div>
+              ))}
             </div>
-          </div>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-primary mb-4">Localização</h2>
+            <div className="h-[300px] rounded-lg overflow-hidden">
+              <EventMap coordinates={eventDetails.coordinates} />
+            </div>
+          </section>
         </div>
       </main>
     </div>
