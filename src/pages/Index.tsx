@@ -30,13 +30,33 @@ const mockEvents = [
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-background to-background/80">
       <Header />
-      <main className="max-w-7xl mx-auto">
+      <main className="container mx-auto px-4 py-8 space-y-12">
+        <section className="text-center space-y-4 max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Encontre seus eventos favoritos
+          </h1>
+          <p className="text-lg text-gray-400">
+            Descubra eventos incríveis acontecendo perto de você
+          </p>
+        </section>
+
         <SearchBar />
-        <CategoryCarousel />
-        <div className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <section className="space-y-6">
+          <h2 className="text-2xl font-semibold text-primary">Categorias em Destaque</h2>
+          <CategoryCarousel />
+        </section>
+
+        <section className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold text-primary">Eventos em Destaque</h2>
+            <button className="text-secondary hover:text-secondary-light transition-colors">
+              Ver todos
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {mockEvents.map((event) => (
               <EventCard
                 key={event.id}
@@ -47,10 +67,11 @@ const Index = () => {
               />
             ))}
           </div>
-        </div>
+        </section>
       </main>
     </div>
   )
 }
 
 export default Index
+
