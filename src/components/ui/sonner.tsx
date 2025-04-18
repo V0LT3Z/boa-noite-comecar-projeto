@@ -1,6 +1,6 @@
 
 import { useTheme } from "next-themes"
-import { Toaster as Sonner, toast } from "sonner"
+import { Toaster as Sonner, toast as sonnerToast } from "sonner"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
@@ -26,5 +26,18 @@ const Toaster = ({ ...props }: ToasterProps) => {
     />
   )
 }
+
+// Creating a wrapper around sonner toast to provide proper typing
+interface ToastOptions {
+  title?: string;
+  description?: string;
+  variant?: "default" | "destructive";
+  type?: "default" | "success";
+}
+
+const toast = (options: ToastOptions) => {
+  const { type, ...rest } = options;
+  return sonnerToast(rest, { type });
+};
 
 export { Toaster, toast }

@@ -1,6 +1,5 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/sonner";
 
 interface User {
   id: string;
@@ -33,7 +32,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in on mount
     const checkAuth = async () => {
       try {
         const storedUser = localStorage.getItem('user');
@@ -52,7 +50,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, []);
 
-  // Helper function to get registered users from localStorage
   const getRegisteredUsers = (): Record<string, { user: User, password: string }> => {
     const users = localStorage.getItem('registeredUsers');
     return users ? JSON.parse(users) : {};
@@ -61,10 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Check if user exists in localStorage
       const registeredUsers = getRegisteredUsers();
       const userRecord = registeredUsers[email];
       
@@ -77,10 +72,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
       
-      // User exists and password matches
       const mockToken = `mock-jwt-token-${Date.now()}`;
       
-      // Store auth data
       localStorage.setItem('authToken', mockToken);
       localStorage.setItem('user', JSON.stringify(userRecord.user));
       
@@ -103,10 +96,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (userData: RegisterData): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Check if email is already registered
       const registeredUsers = getRegisteredUsers();
       
       if (registeredUsers[userData.email]) {
@@ -118,7 +109,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
       
-      // Create new user
       const newUser = {
         id: `user-${Date.now()}`,
         fullName: userData.fullName,
@@ -126,7 +116,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         cpf: userData.cpf,
       };
       
-      // Store user in "database" (localStorage)
       registeredUsers[userData.email] = {
         user: newUser,
         password: userData.password
@@ -134,7 +123,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
       
-      // Auto-login after registration
       const mockToken = `mock-jwt-token-${Date.now()}`;
       
       localStorage.setItem('authToken', mockToken);
