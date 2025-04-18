@@ -1,7 +1,6 @@
-
 import { useState } from "react"
-import { useParams } from "react-router-dom"
-import { Info, Clock, MapPin, AlertTriangle } from "lucide-react"
+import { useParams, useNavigate } from "react-router-dom"
+import { Info, Clock, MapPin, AlertTriangle, ChevronLeft } from "lucide-react"
 import Header from "@/components/Header"
 import TicketSelector from "@/components/TicketSelector"
 import EventMap from "@/components/EventMap"
@@ -11,7 +10,6 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { EventDetails } from "@/types/event"
 
-// Mock data - This should come from an API in a real application
 const eventDetails: EventDetails = {
   id: 1,
   title: "Festival de Música 2024",
@@ -59,16 +57,29 @@ const eventDetails: EventDetails = {
 }
 
 const EventDetailsPage = () => {
+  const navigate = useNavigate()
   const { id } = useParams()
   const [selectedTickets, setSelectedTickets] = useState<Record<number, number>>({})
   
   const hasSelectedTickets = Object.values(selectedTickets).some(quantity => quantity > 0)
+
+  const handleGoBack = () => {
+    navigate('/')
+  }
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
       
       <div className="relative h-[400px] w-full overflow-hidden">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="absolute top-4 left-4 z-10 bg-black/50 text-white hover:bg-black/60"
+          onClick={handleGoBack}
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
         <img 
           src={eventDetails.image} 
           alt={eventDetails.title}
