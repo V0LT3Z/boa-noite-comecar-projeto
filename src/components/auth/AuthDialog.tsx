@@ -8,8 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LoginForm } from "./auth/LoginForm"
-import { RegisterForm } from "./auth/RegisterForm"
+import { LoginForm } from "./LoginForm"
+import { RegisterForm } from "./RegisterForm"
 
 interface AuthDialogProps {
   open: boolean
