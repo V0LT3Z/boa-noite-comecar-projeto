@@ -36,7 +36,7 @@ const featuredEvent = {
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155] text-white">
+    <div className="min-h-screen bg-white text-black">
       <Header />
       <main className="container mx-auto px-4 space-y-8 py-8">
         <SearchBar />
@@ -48,7 +48,7 @@ const Index = () => {
             className="w-full h-[400px] object-cover transition-transform duration-300 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-primary opacity-50 mix-blend-multiply" />
-          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/50 to-transparent">
             <h2 className="text-4xl font-bold text-white mb-2">{featuredEvent.title}</h2>
             <div className="flex items-center gap-4 text-white/90">
               <p>{featuredEvent.date}</p>
@@ -59,7 +59,7 @@ const Index = () => {
         </section>
 
         <section className="space-y-6">
-          <h2 className="text-2xl font-semibold text-primary-light">Eventos</h2>
+          <h2 className="text-2xl font-semibold text-primary">Eventos</h2>
           <div className="flex flex-col gap-6">
             {mockEvents.map((event) => (
               <EventCard
