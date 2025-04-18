@@ -124,6 +124,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       toast({
         title: "Cadastro realizado com sucesso!",
         description: "Redirecionando para o checkout...",
+        type: "success"
       })
       
       // Check if we have a redirect URL saved

@@ -163,6 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     toast({
       title: "Logout realizado",
       description: "Você saiu da sua conta com sucesso.",
+      type: "success"
     });
   };
 

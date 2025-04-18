@@ -52,6 +52,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         toast({
           title: "Login realizado com sucesso!",
           description: "Redirecionando...",
+          type: "success"
         });
         
         // Check if we have a redirect URL saved
@@ -62,7 +63,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         
         onSuccess();
       } else {
-        // Explicitly set variant to destructive for error messages
         toast({
           title: "Erro ao fazer login",
           description: "Email ou senha incorretos.",
