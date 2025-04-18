@@ -382,7 +382,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                        <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
                             selected={field.value}
@@ -395,7 +395,6 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
                             captionLayout="dropdown-buttons"
                             fromYear={1900}
                             toYear={new Date().getFullYear()}
-                            className="rounded-md border pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>
