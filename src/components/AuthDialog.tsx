@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -31,6 +32,58 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { toast } from "@/hooks/use-toast"
+
+// Função para validar CPF
+const validateCPF = (cpf: string): boolean => {
+  // Remove caracteres não numéricos
+  const cleanCPF = cpf.replace(/\D/g, "")
+  
+  // Verifica se tem 11 dígitos
+  if (cleanCPF.length !== 11) {
+    return false
+  }
+  
+  // Verifica se todos os dígitos são iguais (caso inválido)
+  if (/^(\d)\1+$/.test(cleanCPF)) {
+    return false
+  }
+
+  // Cálculo de validação do CPF
+  let sum = 0
+  let remainder
+  
+  for (let i = 1; i <= 9; i++) {
+    sum = sum + parseInt(cleanCPF.substring(i-1, i)) * (11 - i)
+  }
+  
+  remainder = (sum * 10) % 11
+  
+  if ((remainder === 10) || (remainder === 11)) {
+    remainder = 0
+  }
+  
+  if (remainder !== parseInt(cleanCPF.substring(9, 10))) {
+    return false
+  }
+  
+  sum = 0
+  for (let i = 1; i <= 10; i++) {
+    sum = sum + parseInt(cleanCPF.substring(i-1, i)) * (12 - i)
+  }
+  
+  remainder = (sum * 10) % 11
+  
+  if ((remainder === 10) || (remainder === 11)) {
+    remainder = 0
+  }
+  
+  if (remainder !== parseInt(cleanCPF.substring(10, 11))) {
+    return false
+  }
+  
+  return true
+}
 
 // Esquema de validação para o formulário de login
 const loginSchema = z.object({
@@ -44,7 +97,10 @@ const registerSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
   confirmPassword: z.string().min(6, "A confirmação de senha é obrigatória"),
-  cpf: z.string().min(11, "CPF inválido").max(14, "CPF inválido"),
+  cpf: z.string()
+    .min(11, "CPF inválido")
+    .max(14, "CPF inválido")
+    .refine(cpf => validateCPF(cpf), { message: "CPF inválido" }),
   birthDate: z.date({
     required_error: "Data de nascimento é obrigatória",
   }),
@@ -93,6 +149,10 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
     // Aqui você implementaria a lógica de autenticação real
     // Simulando um login bem-sucedido
     setTimeout(() => {
+      toast({
+        title: "Login realizado com sucesso!",
+        description: "Redirecionando para o checkout...",
+      })
       onSuccess()
     }, 1000)
   }
@@ -103,6 +163,10 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
     // Aqui você implementaria a lógica de registro real
     // Simulando um registro bem-sucedido
     setTimeout(() => {
+      toast({
+        title: "Cadastro realizado com sucesso!",
+        description: "Redirecionando para o checkout...",
+      })
       onSuccess()
     }, 1000)
   }
@@ -304,7 +368,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
-                              variant={"outline"}
+                              variant="outline"
                               className={cn(
                                 "w-full pl-10 text-left font-normal",
                                 !field.value && "text-muted-foreground"
@@ -319,7 +383,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
                           <Calendar
                             mode="single"
                             selected={field.value}
@@ -332,6 +396,7 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
                             captionLayout="dropdown-buttons"
                             fromYear={1900}
                             toYear={new Date().getFullYear()}
+                            className="rounded-md border pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>
