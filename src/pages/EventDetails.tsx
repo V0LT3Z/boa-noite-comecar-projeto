@@ -119,13 +119,6 @@ const EventDetailsPage = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-primary mb-4">Localização</h2>
-              <div className="h-[300px] rounded-lg overflow-hidden">
-                <EventMap coordinates={eventDetails.coordinates} />
-              </div>
-            </section>
-
-            <section>
               <h2 className="text-2xl font-semibold text-primary mb-4">Avisos importantes</h2>
               <div className="space-y-4">
                 <Alert>
@@ -140,6 +133,13 @@ const EventDetailsPage = () => {
                     <AlertDescription>{warning}</AlertDescription>
                   </Alert>
                 ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-primary mb-4">Localização</h2>
+              <div className="h-[300px] rounded-lg overflow-hidden">
+                <EventMap coordinates={eventDetails.coordinates} />
               </div>
             </section>
           </div>
