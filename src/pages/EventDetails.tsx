@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Info, Clock, MapPin, AlertTriangle, ChevronLeft } from "lucide-react"
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { EventDetails } from "@/types/event"
+import { AuthDialog } from "@/components/AuthDialog"
 
 const eventDetails: EventDetails = {
   id: 1,
@@ -60,11 +62,26 @@ const EventDetailsPage = () => {
   const navigate = useNavigate()
   const { id } = useParams()
   const [selectedTickets, setSelectedTickets] = useState<Record<number, number>>({})
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false)
   
   const hasSelectedTickets = Object.values(selectedTickets).some(quantity => quantity > 0)
 
   const handleGoBack = () => {
     navigate('/')
+  }
+  
+  const handleFinalizePurchase = () => {
+    // Abrir o diálogo de autenticação quando o usuário clicar em "Finalizar pedido"
+    setIsAuthDialogOpen(true)
+  }
+  
+  const handleAuthSuccess = () => {
+    // Fechar o diálogo e redirecionar para a próxima etapa do checkout
+    setIsAuthDialogOpen(false)
+    // Aqui você implementaria a navegação para a próxima etapa
+    console.log("Autenticação bem-sucedida, redirecionando para checkout...")
+    // Por enquanto apenas um alerta para simular
+    alert("Login realizado com sucesso! Redirecionando para o checkout...")
   }
 
   return (
@@ -131,6 +148,7 @@ const EventDetailsPage = () => {
               className="w-full bg-gradient-primary text-white hover:opacity-90"
               size="lg"
               disabled={!hasSelectedTickets}
+              onClick={handleFinalizePurchase}
             >
               Finalizar pedido
             </Button>
@@ -173,8 +191,16 @@ const EventDetailsPage = () => {
           </section>
         </div>
       </main>
+      
+      {/* Diálogo de autenticação */}
+      <AuthDialog 
+        open={isAuthDialogOpen} 
+        onOpenChange={setIsAuthDialogOpen} 
+        onSuccess={handleAuthSuccess} 
+      />
     </div>
   )
 }
 
 export default EventDetailsPage
+
