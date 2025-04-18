@@ -1,11 +1,10 @@
-
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { Calendar as CalendarIcon, User, Mail, Lock, CreditCard, Calendar } from "lucide-react"
+import { Calendar as CalendarIcon, User, Mail, Lock, CreditCard } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
