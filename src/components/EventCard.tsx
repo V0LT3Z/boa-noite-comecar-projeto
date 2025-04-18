@@ -12,29 +12,34 @@ interface EventCardProps {
 
 const EventCard = ({ title, date, location, image }: EventCardProps) => {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <CardHeader className="p-0">
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-48 object-cover"
-        />
+    <Card className="overflow-hidden hover:shadow-event-card transition-shadow group">
+      <CardHeader className="p-0 relative">
+        <div className="relative">
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-primary opacity-30 mix-blend-multiply"></div>
+        </div>
       </CardHeader>
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-xl mb-2">{title}</h3>
-        <div className="flex flex-col gap-2 text-sm text-gray-600">
+      <CardContent className="p-4 bg-white dark:bg-gray-900">
+        <h3 className="font-bold text-xl mb-2 text-primary dark:text-primary-light">{title}</h3>
+        <div className="flex flex-col gap-2 text-sm text-gray-600 dark:text-gray-300">
           <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-2" />
+            <Calendar className="h-4 w-4 mr-2 text-secondary" />
             {date}
           </div>
           <div className="flex items-center">
-            <MapPin className="h-4 w-4 mr-2" />
+            <MapPin className="h-4 w-4 mr-2 text-secondary" />
             {location}
           </div>
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <Button className="w-full">Ver ingressos</Button>
+      <CardFooter className="p-4 pt-0 bg-white dark:bg-gray-900">
+        <Button className="w-full bg-gradient-primary text-white hover:opacity-90">
+          Ver ingressos
+        </Button>
       </CardFooter>
     </Card>
   )
