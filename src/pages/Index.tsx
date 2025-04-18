@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
 import EventCard from "@/components/EventCard"
@@ -35,9 +36,9 @@ const featuredEvent = {
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background/80">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A1F2C] via-[#2A2F3C] to-[#3A3F4C] text-white">
       <Header />
-      <main className="container mx-auto px-4 space-y-8">
+      <main className="container mx-auto px-4 space-y-8 py-8">
         <SearchBar />
         
         <section className="relative rounded-2xl overflow-hidden group cursor-pointer">
