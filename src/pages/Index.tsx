@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
 import EventCard from "@/components/EventCard"
@@ -31,6 +30,27 @@ const mockEvents = [
     date: "10 Julho 2024",
     location: "Curitiba, PR",
     image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop"
+  },
+  {
+    id: 4,
+    title: "Feira de Startups",
+    date: "5 Agosto 2024",
+    location: "Belo Horizonte, MG",
+    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=500&fit=crop"
+  },
+  {
+    id: 5,
+    title: "Dev Conference Brasil",
+    date: "22 Setembro 2024",
+    location: "Florianópolis, SC",
+    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=500&fit=crop"
+  },
+  {
+    id: 6,
+    title: "UX Design Summit",
+    date: "12 Outubro 2024",
+    location: "Porto Alegre, RS",
+    image: "https://images.unsplash.com/photo-1483058712412-4245e9b90334?w=800&h=500&fit=crop"
   }
 ]
 
