@@ -1,4 +1,3 @@
-
 import * as React from "react"
 
 import type {
@@ -154,8 +153,7 @@ function toast({ ...props }: Toast) {
       ...props,
       id,
       open: true,
-      // Add variant for destructive toast to ensure high readability
-      variant: props.variant || "destructive", 
+      variant: props.variant || "default",
       onOpenChange: (open) => {
         if (!open) dismiss()
       },

@@ -61,7 +61,20 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         }
         
         onSuccess();
+      } else {
+        // Explicitly set variant to destructive for error messages
+        toast({
+          title: "Erro ao fazer login",
+          description: "Email ou senha incorretos.",
+          variant: "destructive",
+        });
       }
+    } catch (error) {
+      toast({
+        title: "Erro ao fazer login",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }

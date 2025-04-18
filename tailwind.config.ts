@@ -37,6 +37,10 @@ export default {
           light: 'hsl(210 70% 75%)',
           dark: 'hsl(210 80% 45%)'
         },
+        destructive: {
+          DEFAULT: '#ea384c', // Solid red color for error messages
+          foreground: '#ffffff', // White text for high contrast
+        },
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))'

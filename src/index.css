@@ -11,6 +11,8 @@
     --primary-foreground: 0 0% 98%;
     --secondary: 210 80% 60%;
     --secondary-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
   }
 
   .dark {
@@ -20,5 +22,7 @@
     --primary-foreground: 0 0% 98%;
     --secondary: 210 80% 60%;
     --secondary-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
   }
 }
