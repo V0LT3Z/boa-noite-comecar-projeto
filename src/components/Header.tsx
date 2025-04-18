@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 
 const Header = () => {
   return (
-    <header className="border-b border-white/10 bg-background/50 backdrop-blur-lg sticky top-0 z-50">
+    <header className="border-b border-primary/10 bg-[#0f172a]/70 backdrop-blur-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex-1" /> {/* Espaçador esquerdo */}
@@ -12,7 +12,7 @@ const Header = () => {
             Ticket Hub
           </div>
           <div className="flex-1 flex justify-end">
-            <Button className="bg-white/10 hover:bg-white/20 text-white border-white/10">
+            <Button className="bg-primary/20 hover:bg-primary/30 text-primary-light border-primary/20">
               <LogIn className="mr-2 h-4 w-4" />
               Login
             </Button>
