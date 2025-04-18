@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Info, Clock, MapPin, AlertTriangle, ChevronLeft } from "lucide-react"
@@ -10,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { EventDetails } from "@/types/event"
-import { AuthDialog } from "@/components/AuthDialog"
+import { AuthDialog } from "@/components/auth/AuthDialog"
 
 const eventDetails: EventDetails = {
   id: 1,
@@ -203,4 +202,3 @@ const EventDetailsPage = () => {
 }
 
 export default EventDetailsPage
-
