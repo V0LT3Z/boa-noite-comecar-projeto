@@ -2,15 +2,17 @@
 import { Calendar, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Link } from "react-router-dom"
 
 interface EventCardProps {
+  id: number
   title: string
   date: string
   location: string
   image: string
 }
 
-const EventCard = ({ title, date, location, image }: EventCardProps) => {
+const EventCard = ({ id, title, date, location, image }: EventCardProps) => {
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow group">
       <div className="flex">
@@ -38,9 +40,11 @@ const EventCard = ({ title, date, location, image }: EventCardProps) => {
             </div>
           </div>
           
-          <Button className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap">
-            Ver ingressos
-          </Button>
+          <Link to={`/evento/${id}`}>
+            <Button className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap">
+              Ver ingressos
+            </Button>
+          </Link>
         </div>
       </div>
     </Card>
