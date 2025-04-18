@@ -1,7 +1,5 @@
-
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
-import CategoryCarousel from "@/components/CategoryCarousel"
 import EventCard from "@/components/EventCard"
 
 const mockEvents = [
@@ -28,35 +26,40 @@ const mockEvents = [
   }
 ]
 
+const featuredEvent = {
+  title: "Rock in Rio 2024",
+  date: "Setembro 2024",
+  location: "Rio de Janeiro, RJ",
+  image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&h=400&fit=crop"
+}
+
 const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/80">
       <Header />
-      <main className="container mx-auto px-4 py-8 space-y-12">
-        <section className="text-center space-y-4 max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Encontre seus eventos favoritos
-          </h1>
-          <p className="text-lg text-gray-400">
-            Descubra eventos incríveis acontecendo perto de você
-          </p>
-        </section>
-
+      <main className="container mx-auto px-4 space-y-8">
         <SearchBar />
         
-        <section className="space-y-6">
-          <h2 className="text-2xl font-semibold text-primary">Categorias em Destaque</h2>
-          <CategoryCarousel />
+        <section className="relative rounded-2xl overflow-hidden group cursor-pointer">
+          <img 
+            src={featuredEvent.image} 
+            alt={featuredEvent.title}
+            className="w-full h-[400px] object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-primary opacity-30 mix-blend-multiply" />
+          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
+            <h2 className="text-4xl font-bold text-white mb-2">{featuredEvent.title}</h2>
+            <div className="flex items-center gap-4 text-white/90">
+              <p>{featuredEvent.date}</p>
+              <p>•</p>
+              <p>{featuredEvent.location}</p>
+            </div>
+          </div>
         </section>
 
         <section className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-primary">Eventos em Destaque</h2>
-            <button className="text-secondary hover:text-secondary-light transition-colors">
-              Ver todos
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <h2 className="text-2xl font-semibold text-primary">Eventos</h2>
+          <div className="flex flex-col gap-6">
             {mockEvents.map((event) => (
               <EventCard
                 key={event.id}
@@ -74,4 +77,3 @@ const Index = () => {
 }
 
 export default Index
-
