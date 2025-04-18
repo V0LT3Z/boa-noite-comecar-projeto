@@ -24,18 +24,13 @@ import {
 } from "@/components/ui/popover"
 import { toast } from "@/hooks/use-toast"
 
-// CPF validation function
 const validateCPF = (cpf: string): boolean => {
-  // Remove any non-digit characters
   const cleanCPF = cpf.replace(/\D/g, "")
 
-  // Check if it has 11 digits
   if (cleanCPF.length !== 11) return false
 
-  // Check if all digits are the same
   if (/^(\d)\1+$/.test(cleanCPF)) return false
 
-  // Validate first verification digit
   let sum = 0
   for (let i = 0; i < 9; i++) {
     sum += parseInt(cleanCPF.charAt(i)) * (10 - i)
@@ -44,7 +39,6 @@ const validateCPF = (cpf: string): boolean => {
   if (digit >= 10) digit = 0
   if (digit !== parseInt(cleanCPF.charAt(9))) return false
 
-  // Validate second verification digit
   sum = 0
   for (let i = 0; i < 10; i++) {
     sum += parseInt(cleanCPF.charAt(i)) * (11 - i)
@@ -115,23 +109,6 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => {
     const formatted = formatCPF(e.target.value)
     onChange(formatted)
-
-    // Show toast indicating CPF validity after user types all numbers
-    if (e.target.value.replace(/\D/g, "").length === 11) {
-      if (validateCPF(formatted)) {
-        toast({
-          title: "CPF válido",
-          description: "O CPF informado é válido.",
-          variant: "default",
-        })
-      } else {
-        toast({
-          title: "CPF inválido",
-          description: "Por favor, verifique o número informado.",
-          variant: "destructive",
-        })
-      }
-    }
   }
 
   function onSubmit(data: RegisterFormValues) {
