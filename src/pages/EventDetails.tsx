@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Info, Clock, MapPin, AlertTriangle, ChevronLeft } from "lucide-react"
@@ -70,28 +69,20 @@ const EventDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 relative">
+      <Header />
+      
+      <div className="container mx-auto px-4 py-4">
         <Button 
           variant="outline"
-          className="absolute -top-14 left-4 z-10 text-primary border-primary/30 hover:bg-primary/10"
+          className="mb-4 text-primary border-primary hover:bg-primary/10 flex items-center"
           onClick={handleGoBack}
         >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Voltar
+          <ChevronLeft className="mr-2 h-5 w-5" />
+          Voltar para página inicial
         </Button>
       </div>
       
-      <Header />
-      
       <div className="relative h-[400px] w-full overflow-hidden">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute top-4 left-4 z-10 bg-black/50 text-white hover:bg-black/60"
-          onClick={handleGoBack}
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
         <img 
           src={eventDetails.image} 
           alt={eventDetails.title}
