@@ -1,6 +1,8 @@
+import { useState } from "react"
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
 import EventCard from "@/components/EventCard"
+import { Button } from "@/components/ui/button"
 import {
   Carousel,
   CarouselContent,
@@ -86,6 +88,9 @@ const featuredEvents = [
 ]
 
 const Index = () => {
+  const [showAllEvents, setShowAllEvents] = useState(false)
+  const displayedEvents = showAllEvents ? mockEvents : mockEvents.slice(0, 3)
+
   return (
     <div className="min-h-screen bg-white text-black">
       <Header />
@@ -122,7 +127,7 @@ const Index = () => {
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold text-primary">Eventos</h2>
           <div className="flex flex-col gap-6">
-            {mockEvents.map((event) => (
+            {displayedEvents.map((event) => (
               <EventCard
                 key={event.id}
                 title={event.title}
@@ -132,6 +137,16 @@ const Index = () => {
               />
             ))}
           </div>
+          {!showAllEvents && mockEvents.length > 3 && (
+            <div className="flex justify-center mt-6">
+              <Button 
+                onClick={() => setShowAllEvents(true)}
+                className="bg-gradient-primary text-white hover:opacity-90"
+              >
+                Ver mais eventos
+              </Button>
+            </div>
+          )}
         </section>
       </main>
     </div>
