@@ -60,22 +60,6 @@ const isValidDateFormat = (dateString: string) => {
   );
 };
 
-// Function to check if the user is at least 18 years old
-const isAtLeast18YearsOld = (dateString: string) => {
-  const [day, month, year] = dateString.split('/').map(Number);
-  const birthDate = new Date(year, month - 1, day);
-  const today = new Date();
-  
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
-  return age >= 18;
-};
-
 const registerSchema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   email: z.string().email("Email inválido"),
@@ -87,9 +71,7 @@ const registerSchema = z.object({
     .regex(/[0-9]/, "Senha deve ter pelo menos um número"),
   confirmPassword: z.string(),
   cpf: z.string().regex(cpfRegex, "CPF inválido").refine(validateCPF, "CPF inválido ou inexistente"),
-  birthDate: z.string()
-    .refine(isValidDateFormat, "Data inválida. Use o formato DD/MM/YYYY")
-    .refine(isAtLeast18YearsOld, "Você precisa ter pelo menos 18 anos"),
+  birthDate: z.string().refine(isValidDateFormat, "Data inválida. Use o formato DD/MM/YYYY"),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Senhas não coincidem",
   path: ["confirmPassword"],
@@ -241,7 +223,7 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
         <FormattedInput
           placeholder="CPF"
           value={formData.cpf || ""}
-          onChange={(e) => handleInputChange("cpf", e.target.value)}
+          onChange={(value) => handleInputChange("cpf", value)}
           disabled={isLoading}
           format={formatCPF}
           className={formErrors.cpf ? "border-destructive" : ""}
@@ -253,7 +235,7 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
         <FormattedInput
           placeholder="Data de nascimento (DD/MM/AAAA)"
           value={formData.birthDate || ""}
-          onChange={(e) => handleInputChange("birthDate", e.target.value)}
+          onChange={(value) => handleInputChange("birthDate", value)}
           disabled={isLoading}
           format={formatDate}
           className={formErrors.birthDate ? "border-destructive" : ""}
