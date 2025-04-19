@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { CreditCard, Wallet, Tag, Info, MessageCircleQuestion } from "lucide-react"
+import { CreditCard, Wallet, Tag, MessageCircleQuestion } from "lucide-react"
 
 import Header from "@/components/Header"
 import { Button } from "@/components/ui/button"
@@ -24,11 +24,12 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import FormattedInput from "@/components/FormattedInput"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { TicketType, EventDetails } from "@/types/event"
 import { toast } from "@/components/ui/sonner"
 import { useAuth } from "@/contexts/AuthContext"
+import OrderSummary from "@/components/checkout/OrderSummary"
+import CardForm from "@/components/checkout/CardForm"
+import PixQRCode from "@/components/checkout/PixQRCode"
 
 interface CheckoutState {
   eventDetails: EventDetails;
@@ -53,7 +54,6 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [discount, setDiscount] = useState(0)
   const [couponApplied, setCouponApplied] = useState(false)
-  const [showPixQR, setShowPixQR] = useState(false)
 
   const validCoupons = {
     "EVENTO10": 10, // 10% de desconto
@@ -217,8 +217,6 @@ const Checkout = () => {
   const ticketItems = getTicketCountByType()
   const total = calculateTotal()
 
-  const pixQRCodeURL = `https://chart.googleapis.com/chart?cht=qr&chl=00020126330014BR.GOV.BCB.PIX0111EXAMPLE1234520400005303986540${total.toFixed(2).replace('.', '')}5802BR5913EventPayment6008Sao Paulo62070503***6304${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}&chs=300x300&choe=UTF-8&chld=L|2`;
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -228,46 +226,12 @@ const Checkout = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumo do Pedido</CardTitle>
-                <CardDescription>{eventDetails.title}</CardDescription>
-                <div className="text-sm text-gray-500 mt-1 flex items-center gap-2">
-                  <Info className="h-4 w-4" />
-                  <span>{eventDetails.date} - {eventDetails.time}</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {ticketItems.map((item, index) => (
-                    <div key={index} className="flex justify-between">
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-gray-500">Quantidade: {item.quantity}</p>
-                      </div>
-                      <div className="text-right">
-                        <p>R$ {item.price.toFixed(2)}</p>
-                        <p className="font-medium">R$ {(item.price * item.quantity).toFixed(2)}</p>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <p>Desconto:</p>
-                      <p>-{discount}%</p>
-                    </div>
-                  )}
-                  
-                  <div className="border-t pt-4 mt-4">
-                    <div className="flex justify-between font-bold">
-                      <p>Total:</p>
-                      <p>R$ {total.toFixed(2)}</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <OrderSummary 
+              eventDetails={eventDetails}
+              ticketItems={ticketItems}
+              discount={discount}
+              total={total}
+            />
           </div>
           
           <div className="md:col-span-2">
@@ -383,96 +347,13 @@ const Checkout = () => {
                         )}
                       />
                       
-                      {form.watch("paymentMethod") === "credit" || form.watch("paymentMethod") === "debit" ? (
-                        <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
-                          <FormField
-                            control={form.control}
-                            name="cardNumber"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Número do Cartão</FormLabel>
-                                <FormControl>
-                                  <FormattedInput 
-                                    format={formatCardNumber}
-                                    placeholder="0000 0000 0000 0000" 
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="expiryDate"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Validade</FormLabel>
-                                  <FormControl>
-                                    <FormattedInput 
-                                      format={formatExpiryDate}
-                                      placeholder="MM/AA" 
-                                      {...field} 
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="cvc"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>CVC</FormLabel>
-                                  <FormControl>
-                                    <FormattedInput 
-                                      format={formatCVC}
-                                      placeholder="123" 
-                                      {...field} 
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
-                      ) : form.watch("paymentMethod") === "pix" ? (
-                        <div className="border rounded-lg p-4 bg-gray-50">
-                          <div className="text-center space-y-4">
-                            <p className="font-medium text-lg">QR Code para pagamento PIX</p>
-                            <div className="flex justify-center">
-                              <img 
-                                src={pixQRCodeURL} 
-                                alt="QR Code PIX" 
-                                className="border p-2 bg-white rounded-lg" 
-                                width={200} 
-                                height={200}
-                              />
-                            </div>
-                            <div className="text-sm text-gray-500 mt-2">
-                              <p>Escaneie o QR Code acima com o aplicativo do seu banco</p>
-                              <p>Valor a pagar: <span className="font-semibold">R$ {total.toFixed(2)}</span></p>
-                            </div>
-                            <div className="border-t pt-3 mt-3">
-                              <p className="font-medium">Instruções:</p>
-                              <ol className="text-sm text-left list-decimal pl-5 pt-2">
-                                <li>Abra o aplicativo do seu banco</li>
-                                <li>Selecione a opção PIX</li>
-                                <li>Escaneie o QR Code</li>
-                                <li>Confirme as informações e o valor</li>
-                                <li>Finalize o pagamento</li>
-                              </ol>
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-
+                      {(form.watch("paymentMethod") === "credit" || form.watch("paymentMethod") === "debit") && (
+                        <CardForm form={form} />
+                      )}
                       
+                      {form.watch("paymentMethod") === "pix" && (
+                        <PixQRCode total={total} />
+                      )}
                     </div>
 
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center space-x-3">
