@@ -35,27 +35,27 @@ interface ToastOptions {
   type?: "success";
 }
 
-// Fix: Use the imported sonnerToast directly
 const toast = (options: ToastOptions) => {
   const { title, description, variant, type } = options;
   
-  // Base style for the toast
-  const baseClassName = "flex flex-col gap-1 p-2";
-  let className = baseClassName;
-  
-  // Handle destructive (error) toasts
+  // Se for um toast de erro (destructive)
   if (variant === "destructive") {
-    className = `${baseClassName} bg-destructive border-destructive text-destructive-foreground`;
+    return sonnerToast(title || "", {
+      description,
+      className: "bg-destructive text-destructive-foreground border-destructive",
+    });
   } 
-  // Handle success toasts 
+  // Se for um toast de sucesso
   else if (type === "success") {
-    className = `${baseClassName} bg-[#F2FCE2] border-green-200 text-green-800`;
+    return sonnerToast(title || "", {
+      description,
+      className: "bg-[#F2FCE2] text-green-800 border-green-200",
+    });
   }
   
-  // Fix: Use the imported sonnerToast function instead of Sonner.toast
+  // Toast default
   return sonnerToast(title || "", {
     description,
-    className,
   });
 };
 
