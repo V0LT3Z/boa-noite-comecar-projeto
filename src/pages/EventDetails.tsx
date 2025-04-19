@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock } from "lucide-react";
@@ -160,7 +161,7 @@ const EventDetails = () => {
             <img
               src={event.image}
               alt={event.title}
-              className="w-full rounded-lg mb-4"
+              className="w-full rounded-lg mb-4 object-cover h-48 md:h-64"
             />
             <h1 className="text-3xl font-bold text-primary mb-2">{event.title}</h1>
             <div className="flex items-center text-gray-600 mb-4">
@@ -177,15 +178,16 @@ const EventDetails = () => {
               <MapPin className="mr-2 h-5 w-5" />
               {event.location}
             </div>
+            
             <Card className="mb-4">
-              <CardContent>
+              <CardContent className="pt-6">
                 <h2 className="text-xl font-semibold mb-2">Descrição</h2>
                 <p className="text-gray-700">{event.description}</p>
               </CardContent>
             </Card>
 
             <Card className="mb-4">
-              <CardContent>
+              <CardContent className="pt-6">
                 <h2 className="text-xl font-semibold mb-2">Local do Evento</h2>
                 <p className="text-gray-700">
                   <strong>{event.venue.name}</strong>
@@ -197,7 +199,7 @@ const EventDetails = () => {
                 <Button
                   variant="link"
                   asChild
-                  className="mt-2"
+                  className="mt-2 p-0"
                 >
                   <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
                     Ver no Mapa
@@ -207,9 +209,9 @@ const EventDetails = () => {
             </Card>
 
             <Card className="mb-4">
-              <CardContent>
+              <CardContent className="pt-6">
                 <h2 className="text-xl font-semibold mb-2">Avisos</h2>
-                {event.warnings.length > 0 ? (
+                {event.warnings && event.warnings.length > 0 ? (
                   <ul className="list-disc pl-5 text-gray-700">
                     {event.warnings.map((warning, index) => (
                       <li key={index}>{warning}</li>
@@ -228,13 +230,14 @@ const EventDetails = () => {
               tickets={event.tickets} 
               onPurchase={handlePurchase}
             />
-            <FavoriteButton eventId={event.id.toString()} />
-            <EventMap
-              coordinates={{
-                lat: event.coordinates.lat,
-                lng: event.coordinates.lng
-              }}
-            />
+            <div className="mt-6">
+              <EventMap
+                coordinates={{
+                  lat: event.coordinates.lat,
+                  lng: event.coordinates.lng
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

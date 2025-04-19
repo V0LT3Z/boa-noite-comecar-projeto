@@ -1,4 +1,6 @@
 
+import { MapPin } from "lucide-react";
+
 interface Coordinates {
   lat: number;
   lng: number;
@@ -10,10 +12,14 @@ interface EventMapProps {
 
 const EventMap = ({ coordinates }: EventMapProps) => {
   return (
-    <div className="w-full h-64 mt-6 bg-gray-100 flex items-center justify-center rounded-lg border">
-      <p className="text-gray-500">
-        Mapa em {coordinates.lat}, {coordinates.lng}
-      </p>
+    <div className="w-full h-64 bg-gray-100 flex items-center justify-center rounded-lg border relative overflow-hidden">
+      <div className="absolute inset-0 bg-soft-gray opacity-50"></div>
+      <div className="flex flex-col items-center justify-center z-10">
+        <MapPin className="h-8 w-8 text-primary mb-2" />
+        <p className="text-gray-700 font-medium">
+          Mapa em {coordinates.lat}, {coordinates.lng}
+        </p>
+      </div>
     </div>
   );
 };
