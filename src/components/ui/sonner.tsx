@@ -32,7 +32,7 @@ interface ToastOptions {
   title?: string;
   description?: string;
   variant?: "default" | "destructive";
-  type?: "default" | "success";
+  type?: "success";
 }
 
 const toast = (options: ToastOptions) => {
