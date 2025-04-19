@@ -25,11 +25,14 @@ export interface Notification {
 // Add an event to favorites
 export const addToFavorites = async (eventId: number): Promise<boolean> => {
   try {
-    // Get the current user's session
-    const { data: { session } } = await supabase.auth.getSession();
+    // Get user from localStorage instead of relying on Supabase session
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('authToken');
     
-    if (!session?.user?.id) {
-      console.error("No user session found");
+    console.log("Adding to favorites, stored user:", storedUser, "token:", !!token);
+    
+    if (!storedUser || !token) {
+      console.error("No user found in localStorage");
       toast({
         title: "Você precisa estar logado",
         description: "Faça login para adicionar eventos aos favoritos",
@@ -38,18 +41,23 @@ export const addToFavorites = async (eventId: number): Promise<boolean> => {
       return false;
     }
     
-    const userId = session.user.id;
+    const user = JSON.parse(storedUser);
+    const userId = user.id;
     console.log("Adding to favorites with user ID:", userId);
     
     // Check if the favorite already exists
-    const { data: existingFavorite } = await supabase
+    const { data: existingFavorites, error: fetchError } = await supabase
       .from("favorites")
       .select()
       .eq("event_id", eventId)
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", userId);
     
-    if (existingFavorite) {
+    if (fetchError) {
+      console.error("Error checking for existing favorites:", fetchError);
+      throw fetchError;
+    }
+    
+    if (existingFavorites && existingFavorites.length > 0) {
       console.log("Favorite already exists");
       return true; // Already favorited
     }
@@ -86,11 +94,12 @@ export const addToFavorites = async (eventId: number): Promise<boolean> => {
 // Remove an event from favorites
 export const removeFromFavorites = async (eventId: number): Promise<boolean> => {
   try {
-    // Get the current user's session
-    const { data: { session } } = await supabase.auth.getSession();
+    // Get user from localStorage instead of relying on Supabase session
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('authToken');
     
-    if (!session?.user?.id) {
-      console.error("No user session found");
+    if (!storedUser || !token) {
+      console.error("No user found in localStorage");
       toast({
         title: "Você precisa estar logado",
         description: "Faça login para remover eventos dos favoritos",
@@ -99,7 +108,8 @@ export const removeFromFavorites = async (eventId: number): Promise<boolean> => 
       return false;
     }
     
-    const userId = session.user.id;
+    const user = JSON.parse(storedUser);
+    const userId = user.id;
     console.log("Removing from favorites with user ID:", userId);
     
     const { error } = await supabase
@@ -132,15 +142,17 @@ export const removeFromFavorites = async (eventId: number): Promise<boolean> => 
 // Check if an event is in favorites
 export const isEventFavorited = async (eventId: number): Promise<boolean> => {
   try {
-    // Get the current user's session
-    const { data: { session } } = await supabase.auth.getSession();
+    // Get user from localStorage instead of relying on Supabase session
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('authToken');
     
-    if (!session?.user?.id) {
-      console.log("No user session found, can't check favorite status");
+    if (!storedUser || !token) {
+      console.log("No user found in localStorage, can't check favorite status");
       return false;
     }
     
-    const userId = session.user.id;
+    const user = JSON.parse(storedUser);
+    const userId = user.id;
     console.log("Checking favorite status with user ID:", userId);
     
     // Query to check if event is favorited

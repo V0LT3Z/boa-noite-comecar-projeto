@@ -16,17 +16,17 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   
   useEffect(() => {
     // Only check favorite status when user is authenticated
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       checkFavoriteStatus();
     } else {
       setIsLoading(false);
       setIsFavorite(false);
     }
-  }, [eventId, isAuthenticated]);
+  }, [eventId, isAuthenticated, user]);
   
   // Function to check if event is favorited
   const checkFavoriteStatus = async () => {
@@ -60,9 +60,9 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
     e.preventDefault(); // Prevent event bubbling when used in cards
     e.stopPropagation(); // Ensure event doesn't propagate
     
-    console.log("Toggle favorite clicked, isAuthenticated:", isAuthenticated);
+    console.log("Toggle favorite clicked, isAuthenticated:", isAuthenticated, "user:", !!user);
     
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       console.log("User not authenticated, opening auth dialog");
       // Store current path to redirect back after login
       localStorage.setItem('redirectAfterLogin', window.location.pathname);
@@ -97,7 +97,7 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
     setIsAuthDialogOpen(false);
     
     // Check favorite status again after login
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       checkFavoriteStatus();
     }
   };
