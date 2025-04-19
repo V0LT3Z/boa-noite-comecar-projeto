@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bookmark, AlertCircle, Bell } from "lucide-react";
@@ -100,17 +101,19 @@ const Favorites = () => {
             Meus Favoritos
           </h1>
           
-          <Button
-            variant="outline"
-            className="flex items-center gap-2 relative"
-            onClick={() => setHasUnreadNotifications(false)}
-          >
-            <Bell />
-            Notificações
-            {hasUnreadNotifications && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />
-            )}
-          </Button>
+          <Link to="/notificacoes">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 relative"
+              onClick={() => setHasUnreadNotifications(false)}
+            >
+              <Bell />
+              Notificações
+              {hasUnreadNotifications && (
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />
+              )}
+            </Button>
+          </Link>
         </div>
         
         {/* Notifications panel (simplified) */}

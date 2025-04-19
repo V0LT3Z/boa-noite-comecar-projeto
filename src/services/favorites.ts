@@ -1,100 +1,47 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventDetails } from "@/types/event";
 import { toast } from "@/components/ui/sonner";
 
-// Type for Favorite
-export interface Favorite {
-  id: string;
-  user_id: string;
-  event_id: number;
-  created_at: string;
-}
-
-// Type for Notification
 export interface Notification {
   id: string;
   user_id: string;
   event_id: number;
   message: string;
-  type: string;
+  type: "ticket_running_out" | "event_update" | "favorite_update" | "transaction_update";
   is_read: boolean;
   created_at: string;
 }
 
-// Mock favorites storage since we can't use user IDs directly in Supabase
-// This will simulate the favorites functionality until we can update the database schema
-interface MockFavorite {
-  userId: string;
-  eventId: number;
-  createdAt: string;
-}
-
-const FAVORITES_STORAGE_KEY = 'user_favorites';
-
-const getMockFavorites = (): MockFavorite[] => {
-  const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
-  return stored ? JSON.parse(stored) : [];
-};
-
-const saveMockFavorites = (favorites: MockFavorite[]) => {
-  localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
-};
-
 // Add an event to favorites
 export const addToFavorites = async (eventId: number): Promise<boolean> => {
   try {
-    // Get user from localStorage instead of relying on Supabase session
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('authToken');
+    const { error } = await supabase.from('favorites').insert([
+      { event_id: eventId },
+    ]);
     
-    console.log("Adding to favorites, stored user:", storedUser, "token:", !!token);
-    
-    if (!storedUser || !token) {
-      console.error("No user found in localStorage");
+    if (error) {
+      console.error("Error adding to favorites:", error);
       toast({
-        title: "Você precisa estar logado",
-        description: "Faça login para adicionar eventos aos favoritos",
-        variant: "destructive"
+        title: "Erro",
+        description: "Não foi possível adicionar aos favoritos. Tente novamente.",
+        variant: "destructive",
       });
       return false;
     }
     
-    const user = JSON.parse(storedUser);
-    const userId = user.id;
-    console.log("Adding to favorites with user ID:", userId);
-    
-    // Since we can't use the non-UUID user IDs with Supabase directly,
-    // let's use localStorage to store favorites
-    const favorites = getMockFavorites();
-    
-    // Check if already favorited
-    if (favorites.some(fav => fav.userId === userId && fav.eventId === eventId)) {
-      console.log("Favorite already exists");
-      return true;
-    }
-    
-    // Add to favorites
-    favorites.push({
-      userId,
-      eventId,
-      createdAt: new Date().toISOString()
-    });
-    
-    saveMockFavorites(favorites);
-    
     toast({
-      title: "Evento adicionado aos favoritos",
-      description: "Você pode encontrar este evento na página de favoritos",
-      variant: "success"
+      title: "Sucesso",
+      description: "Evento adicionado aos favoritos!",
+      variant: "success",
     });
-    
     return true;
   } catch (error) {
     console.error("Error adding to favorites:", error);
     toast({
-      title: "Erro ao adicionar aos favoritos",
-      description: "Tente novamente mais tarde",
-      variant: "destructive"
+      title: "Erro",
+      description: "Não foi possível adicionar aos favoritos. Tente novamente.",
+      variant: "destructive",
     });
     return false;
   }
@@ -103,48 +50,33 @@ export const addToFavorites = async (eventId: number): Promise<boolean> => {
 // Remove an event from favorites
 export const removeFromFavorites = async (eventId: number): Promise<boolean> => {
   try {
-    // Get user from localStorage instead of relying on Supabase session
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('authToken');
+    const { error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('event_id', eventId);
     
-    if (!storedUser || !token) {
-      console.error("No user found in localStorage");
+    if (error) {
+      console.error("Error removing from favorites:", error);
       toast({
-        title: "Você precisa estar logado",
-        description: "Faça login para remover eventos dos favoritos",
-        variant: "destructive"
+        title: "Erro",
+        description: "Não foi possível remover dos favoritos. Tente novamente.",
+        variant: "destructive",
       });
       return false;
     }
     
-    const user = JSON.parse(storedUser);
-    const userId = user.id;
-    console.log("Removing from favorites with user ID:", userId);
-    
-    // Get current favorites
-    const favorites = getMockFavorites();
-    
-    // Filter out the favorite to remove
-    const updatedFavorites = favorites.filter(
-      fav => !(fav.userId === userId && fav.eventId === eventId)
-    );
-    
-    // Save updated favorites
-    saveMockFavorites(updatedFavorites);
-    
     toast({
-      title: "Evento removido dos favoritos",
-      description: "O evento foi removido da sua lista de favoritos",
-      variant: "destructive"
+      title: "Removido",
+      description: "Evento removido dos favoritos.",
+      variant: "destructive",
     });
-    
     return true;
   } catch (error) {
     console.error("Error removing from favorites:", error);
     toast({
-      title: "Erro ao remover dos favoritos",
-      description: "Tente novamente mais tarde",
-      variant: "destructive"
+      title: "Erro",
+      description: "Não foi possível remover dos favoritos. Tente novamente.",
+      variant: "destructive",
     });
     return false;
   }
@@ -153,206 +85,152 @@ export const removeFromFavorites = async (eventId: number): Promise<boolean> => 
 // Check if an event is in favorites
 export const isEventFavorited = async (eventId: number): Promise<boolean> => {
   try {
-    // Get user from localStorage instead of relying on Supabase session
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('authToken');
+    const { data } = await supabase
+      .from('favorites')
+      .select()
+      .eq('event_id', eventId)
+      .single();
     
-    if (!storedUser || !token) {
-      console.log("No user found in localStorage, can't check favorite status");
-      return false;
-    }
-    
-    const user = JSON.parse(storedUser);
-    const userId = user.id;
-    console.log("Checking favorite status with user ID:", userId);
-    
-    // Check in localStorage
-    const favorites = getMockFavorites();
-    return favorites.some(fav => fav.userId === userId && fav.eventId === eventId);
-    
+    return !!data;
   } catch (error) {
     console.error("Error checking favorite status:", error);
     return false;
   }
 };
 
-// Get all favorites for current user
+// Get all user favorites
 export const getUserFavorites = async (): Promise<EventDetails[]> => {
   try {
-    // Get user from localStorage
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('authToken');
-    
-    if (!storedUser || !token) {
-      console.error("No user found in localStorage");
-      return [];
-    }
-    
-    const user = JSON.parse(storedUser);
-    const userId = user.id;
-    console.log("Getting favorites with user ID:", userId);
-    
-    // Get favorites from localStorage
-    const favorites = getMockFavorites();
-    const userFavorites = favorites.filter(fav => fav.userId === userId);
-    
-    // Mock events dataset (same as before)
-    const mockEvents: EventDetails[] = [
+    // In a real app, we would join with an events table
+    // For now, let's return mock data
+    return [
       {
         id: 1,
-        title: "Festival de Música 2024",
-        date: "20 Maio 2024",
+        title: "Festival de Música",
+        description: "Um grande festival com os melhores artistas nacionais.",
+        date: "20/05/2025",
         time: "16:00",
-        location: "Parque Villa-Lobos, São Paulo, SP",
-        coordinates: {
-          lat: -23.5464,
-          lng: -46.7227
-        },
-        description: "O maior festival de música do Brasil está de volta!",
-        image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=1200&h=400&fit=crop",
-        minimumAge: 16,
+        location: "Parque da Cidade, São Paulo",
+        image: "https://picsum.photos/seed/event1/800/500",
         tickets: [
-          {
-            id: 1,
-            name: "Ingresso Inteira",
-            price: 280,
-            description: "Ingresso comum, valor integral",
-            availableQuantity: 1000,
-            maxPerPurchase: 4
-          },
-          {
-            id: 2,
-            name: "Ingresso Meia-entrada",
-            price: 140,
-            description: "Mediante comprovação na entrada do evento",
-            availableQuantity: 500,
-            maxPerPurchase: 2
-          }
+          { id: 1, name: "Ingresso Comum", price: 150.0 },
+          { id: 2, name: "Ingresso VIP", price: 300.0 },
         ],
-        warnings: [
-          "É obrigatória a apresentação de documento com foto para entrada no evento",
-          "Proibida a entrada de menores de 16 anos desacompanhados"
-        ]
+        venue: {
+          name: "Parque da Cidade",
+          address: "Av. Principal, 1000, São Paulo",
+          capacity: 10000,
+          map_url: "https://maps.google.com",
+        },
       },
       {
         id: 2,
-        title: "Show de Comédia",
-        date: "15 Junho 2024",
+        title: "Peça de Teatro: O Fantasma da Ópera",
+        description: "A famosa peça de teatro chega à cidade.",
+        date: "15/06/2025",
         time: "20:00",
-        location: "Teatro Municipal, Rio de Janeiro, RJ",
-        coordinates: {
-          lat: -22.9083,
-          lng: -43.1756
-        },
-        description: "Uma noite de diversão com os melhores comediantes do Brasil",
-        image: "https://images.unsplash.com/photo-1642784358990-690278661ef3?w=1200&h=400&fit=crop",
-        minimumAge: 18,
+        location: "Teatro Municipal, Rio de Janeiro",
+        image: "https://picsum.photos/seed/event2/800/500",
         tickets: [
-          {
-            id: 5,
-            name: "Plateia",
-            price: 120,
-            description: "Ingresso comum",
-            availableQuantity: 500,
-            maxPerPurchase: 4
-          }
+          { id: 3, name: "Plateia", price: 120.0 },
+          { id: 4, name: "Camarote", price: 240.0 },
         ],
-        warnings: [
-          "Evento para maiores de 18 anos",
-          "Lugares não numerados"
-        ]
-      },
-      {
-        id: 3,
-        title: "Exposição de Arte",
-        date: "5 Julho 2024",
-        time: "10:00",
-        location: "MASP, São Paulo, SP",
-        coordinates: {
-          lat: -23.5614,
-          lng: -46.6558
+        venue: {
+          name: "Teatro Municipal",
+          address: "Praça Central, 500, Rio de Janeiro",
+          capacity: 800,
+          map_url: "https://maps.google.com",
         },
-        description: "Exposição de obras de artistas contemporâneos",
-        image: "https://images.unsplash.com/photo-1594245158268-bed9b13b0f10?w=1200&h=400&fit=crop",
-        minimumAge: 0,
-        tickets: [
-          {
-            id: 8,
-            name: "Entrada Geral",
-            price: 50,
-            description: "Acesso completo à exposição",
-            availableQuantity: 1000,
-            maxPerPurchase: 6
-          }
-        ],
-        warnings: [
-          "Proibido fotografar com flash",
-          "Entrada gratuita para crianças até 10 anos"
-        ]
       },
     ];
-    
-    // Return only favorited events
-    const favoriteEventIds = userFavorites.map(fav => fav.eventId);
-    console.log("Favorite event IDs:", favoriteEventIds);
-    return mockEvents.filter(event => favoriteEventIds.includes(event.id));
   } catch (error) {
-    console.error("Error fetching favorites:", error);
-    toast({
-      title: "Erro ao carregar favoritos",
-      description: "Tente novamente mais tarde",
-      variant: "destructive"
-    });
+    console.error("Error getting user favorites:", error);
     return [];
   }
+};
+
+// Subscribe to realtime notifications
+export const subscribeToNotifications = (callback: (notification: Notification) => void) => {
+  // In a real app, this would use Supabase realtime
+  // For now, we'll just return an empty unsubscribe function
+  return {
+    unsubscribe: () => {},
+  };
 };
 
 // Get all user notifications
 export const getUserNotifications = async (): Promise<Notification[]> => {
   try {
-    // Get the current session to get the user's ID
-    const { data: sessionData } = await supabase.auth.getSession();
-    
-    if (!sessionData.session?.user?.id) {
-      return [];
-    }
-    
-    const userId = sessionData.session.user.id;
-    
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-    
-    if (error) throw error;
-    
-    return data || [];
+    // In a real app, this would fetch from the notifications table
+    // For now, let's return mock data
+    return [
+      {
+        id: "notif-1",
+        user_id: "demo-user-id",
+        event_id: 1,
+        message: "Últimos ingressos para Festival de Música! Não perca essa oportunidade!",
+        type: "ticket_running_out",
+        is_read: false,
+        created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString() // 30 minutes ago
+      },
+      {
+        id: "notif-2",
+        user_id: "demo-user-id",
+        event_id: 2,
+        message: "A peça O Fantasma da Ópera mudou de horário para 21h00.",
+        type: "event_update",
+        is_read: true,
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() // 2 hours ago
+      },
+      {
+        id: "notif-3",
+        user_id: "demo-user-id",
+        event_id: 1,
+        message: "Festival de Música adicionado aos seus favoritos.",
+        type: "favorite_update",
+        is_read: true,
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() // 1 day ago
+      },
+      {
+        id: "notif-4",
+        user_id: "demo-user-id",
+        event_id: 2,
+        message: "Sua compra de ingressos para O Fantasma da Ópera foi confirmada.",
+        type: "transaction_update",
+        is_read: true,
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString() // 2 days ago
+      },
+      {
+        id: "notif-5",
+        user_id: "demo-user-id",
+        event_id: 1,
+        message: "Festival de Música anunciou uma nova atração: Banda Demo!",
+        type: "event_update",
+        is_read: false,
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString() // 3 hours ago
+      }
+    ];
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    console.error("Error getting user notifications:", error);
     return [];
   }
 };
 
-// Mark notification as read
+// Mark all notifications as read
+export const markAllNotificationsAsRead = async (): Promise<boolean> => {
+  try {
+    // In a real app, this would update notifications in database
+    return true;
+  } catch (error) {
+    console.error("Error marking notifications as read:", error);
+    return false;
+  }
+};
+
+// Mark a specific notification as read
 export const markNotificationAsRead = async (notificationId: string): Promise<boolean> => {
   try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    
-    if (!sessionData.session?.user?.id) {
-      return false;
-    }
-    
-    const userId = sessionData.session.user.id;
-    
-    const { error } = await supabase
-      .from("notifications")
-      .update({ is_read: true })
-      .eq("id", notificationId)
-      .eq("user_id", userId);
-    
-    if (error) throw error;
-    
+    // In a real app, this would update a specific notification
     return true;
   } catch (error) {
     console.error("Error marking notification as read:", error);
@@ -360,21 +238,13 @@ export const markNotificationAsRead = async (notificationId: string): Promise<bo
   }
 };
 
-// Subscribe to realtime notifications
-export const subscribeToNotifications = (callback: (notification: Notification) => void) => {
-  return supabase
-    .channel('notifications-channel')
-    .on('postgres_changes', 
-      { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'notifications',
-        filter: `user_id=eq.${supabase.auth.getSession().then(({ data }) => data.session?.user.id)}` 
-      }, 
-      (payload) => {
-        const notification = payload.new as Notification;
-        callback(notification);
-      }
-    )
-    .subscribe();
+// Clear all notifications
+export const clearAllNotifications = async (): Promise<boolean> => {
+  try {
+    // In a real app, this would delete notifications from database
+    return true;
+  } catch (error) {
+    console.error("Error clearing notifications:", error);
+    return false;
+  }
 };

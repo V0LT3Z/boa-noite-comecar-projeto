@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard"
 import MyTickets from "./pages/MyTickets"
 import EditProfile from "./pages/EditProfile"
 import Favorites from "./pages/Favorites"
+import Notifications from "./pages/Notifications"
 
 const queryClient = new QueryClient()
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/meus-ingressos" element={<MyTickets />} />
             <Route path="/editar-perfil" element={<EditProfile />} />
             <Route path="/favoritos" element={<Favorites />} />
+            <Route path="/notificacoes" element={<Notifications />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

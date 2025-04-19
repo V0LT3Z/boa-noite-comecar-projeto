@@ -1,303 +1,215 @@
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { User, Mail, Lock, CreditCard, Eye, EyeOff } from "lucide-react"
-import { useState } from "react"
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { toast } from "@/components/ui/sonner"
-import { useAuth } from "@/contexts/AuthContext"
-
-const validateCPF = (cpf: string): boolean => {
-  const cleanCPF = cpf.replace(/\D/g, "")
-
-  if (cleanCPF.length !== 11) return false
-
-  if (/^(\d)\1+$/.test(cleanCPF)) return false
-
-  let sum = 0
-  for (let i = 0; i < 9; i++) {
-    sum += parseInt(cleanCPF.charAt(i)) * (10 - i)
-  }
-  let digit = 11 - (sum % 11)
-  if (digit >= 10) digit = 0
-  if (digit !== parseInt(cleanCPF.charAt(9))) return false
-
-  sum = 0
-  for (let i = 0; i < 10; i++) {
-    sum += parseInt(cleanCPF.charAt(i)) * (11 - i)
-  }
-  digit = 11 - (sum % 11)
-  if (digit >= 10) digit = 0
-  if (digit !== parseInt(cleanCPF.charAt(10))) return false
-
-  return true
-}
+import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const registerSchema = z.object({
-  fullName: z.string().min(3, "Nome completo é obrigatório"),
+  name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   email: z.string().email("Email inválido"),
-  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-  confirmPassword: z.string().min(6, "A confirmação de senha é obrigatória"),
-  cpf: z.string()
-    .min(11, "CPF inválido")
-    .max(14, "CPF inválido")
-    .refine(cpf => validateCPF(cpf), { message: "CPF inválido" }),
-  birthDate: z.string().refine(date => {
-    const parsedDate = new Date(date);
-    return !isNaN(parsedDate.getTime()) && 
-           parsedDate < new Date() && 
-           parsedDate > new Date("1900-01-01");
-  }, { message: "Data de nascimento inválida" }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "As senhas não correspondem",
+  password: z
+    .string()
+    .min(8, "Senha deve ter pelo menos 8 caracteres")
+    .regex(/[A-Z]/, "Senha deve ter pelo menos uma letra maiúscula")
+    .regex(/[a-z]/, "Senha deve ter pelo menos uma letra minúscula")
+    .regex(/[0-9]/, "Senha deve ter pelo menos um número"),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Senhas não coincidem",
   path: ["confirmPassword"],
-})
+});
 
-type RegisterFormValues = z.infer<typeof registerSchema>
+type RegisterFormData = z.infer<typeof registerSchema>;
 
-interface RegisterFormProps {
-  onSuccess: () => void
-}
-
-export function RegisterForm({ onSuccess }: RegisterFormProps) {
-  const { register } = useAuth();
+const RegisterForm = () => {
+  const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      cpf: "",
-      birthDate: "",
-    },
-  })
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<Partial<RegisterFormData>>({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const formatCPF = (value: string) => {
-    const cleaned = value.replace(/\D/g, "")
-    let formatted = ""
-    
-    if (cleaned.length <= 3) {
-      formatted = cleaned
-    } else if (cleaned.length <= 6) {
-      formatted = `${cleaned.slice(0, 3)}.${cleaned.slice(3)}`
-    } else if (cleaned.length <= 9) {
-      formatted = `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6)}`
-    } else {
-      formatted = `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 9)}-${cleaned.slice(9, 11)}`
-    }
-    
-    return formatted
-  }
+  // Password validation states
+  const hasMinLength = formData.password && formData.password.length >= 8;
+  const hasUpperCase = formData.password && /[A-Z]/.test(formData.password);
+  const hasLowerCase = formData.password && /[a-z]/.test(formData.password);
+  const hasNumber = formData.password && /[0-9]/.test(formData.password);
+  const passwordsMatch = formData.password === formData.confirmPassword && formData.confirmPassword !== "";
 
-  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => {
-    const formatted = formatCPF(e.target.value)
-    onChange(formatted)
-  }
-
-  async function onSubmit(data: RegisterFormValues) {
-    console.log("Register data:", data)
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
     
-    const success = await register({
-      fullName: data.fullName,
-      email: data.email,
-      password: data.password,
-      cpf: data.cpf,
-      birthDate: data.birthDate
-    });
-    
-    if (success) {
-      toast({
-        title: "Cadastro realizado com sucesso!",
-        description: "Redirecionando para o checkout...",
-        type: "success"
-      })
+    try {
+      const result = registerSchema.safeParse(formData);
       
-      // Check if we have a redirect URL saved
-      const redirectUrl = localStorage.getItem('redirectAfterLogin');
-      if (redirectUrl) {
-        localStorage.removeItem('redirectAfterLogin');
+      if (!result.success) {
+        const errors: Record<string, string> = {};
+        result.error.errors.forEach((err) => {
+          if (err.path) {
+            errors[err.path[0].toString()] = err.message;
+          }
+        });
+        setFormErrors(errors);
+        setIsLoading(false);
+        return;
       }
       
-      onSuccess();
+      setFormErrors({});
+      
+      // In a real app, this would call a supabase/firebase method
+      await signUp(formData.email || "", formData.password || "", formData.name || "");
+
+      // In a real app, the navigation would happen after email confirmation
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Seja bem-vindo ao TicketHub.",
+        variant: "success",
+      });
+      
+      navigate("/minha-conta");
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Erro no cadastro",
+        description: "Não foi possível criar sua conta. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
+  const handleInputChange = (field: keyof RegisterFormData, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    
+    // Clear error when user starts typing again
+    if (formErrors[field]) {
+      setFormErrors({ ...formErrors, [field]: "" });
+    }
+  };
+  
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="fullName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome completo</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Seu nome completo" {...field} className="pl-10" />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-4 w-full">
+      <div className="space-y-2">
+        <Input
+          type="text"
+          placeholder="Nome completo"
+          value={formData.name || ""}
+          onChange={(e) => handleInputChange("name", e.target.value)}
+          disabled={isLoading}
+          className={formErrors.name ? "border-destructive" : ""}
         />
+        {formErrors.name && <p className="text-destructive text-sm">{formErrors.name}</p>}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="seu@email.com" {...field} className="pl-10" />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div className="space-y-2">
+        <Input
+          type="email"
+          placeholder="Email"
+          value={formData.email || ""}
+          onChange={(e) => handleInputChange("email", e.target.value)}
+          disabled={isLoading}
+          className={formErrors.email ? "border-destructive" : ""}
         />
+        {formErrors.email && <p className="text-destructive text-sm">{formErrors.email}</p>}
+      </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Senha</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    <Input 
-                      type={showPassword ? "text" : "password"} 
-                      placeholder="••••••" 
-                      {...field} 
-                      className="pl-10 pr-10" 
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" aria-hidden="true" />
-                      ) : (
-                        <Eye className="h-4 w-4" aria-hidden="true" />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+      <div className="space-y-2">
+        <div className="relative">
+          <Input
+            type={showPassword ? "text" : "password"}
+            placeholder="Senha"
+            value={formData.password || ""}
+            onChange={(e) => handleInputChange("password", e.target.value)}
+            disabled={isLoading}
+            className={formErrors.password ? "border-destructive pr-10" : "pr-10"}
           />
-
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirmar senha</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    <Input 
-                      type={showConfirmPassword ? "text" : "password"} 
-                      placeholder="••••••" 
-                      {...field} 
-                      className="pl-10 pr-10" 
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-                      aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" aria-hidden="true" />
-                      ) : (
-                        <Eye className="h-4 w-4" aria-hidden="true" />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
+        {formErrors.password && <p className="text-destructive text-sm">{formErrors.password}</p>}
+        
+        {/* Password requirements */}
+        <div className="space-y-1 text-xs mt-2">
+          <p className="font-medium text-sm text-gray-700">A senha deve conter:</p>
+          <div className={`flex items-center gap-1 ${hasMinLength ? "text-green-600" : "text-gray-500"}`}>
+            <CheckCircle2 size={12} className={hasMinLength ? "text-green-600" : "text-gray-300"} />
+            <span>Pelo menos 8 caracteres</span>
+          </div>
+          <div className={`flex items-center gap-1 ${hasUpperCase ? "text-green-600" : "text-gray-500"}`}>
+            <CheckCircle2 size={12} className={hasUpperCase ? "text-green-600" : "text-gray-300"} />
+            <span>Uma letra maiúscula (A-Z)</span>
+          </div>
+          <div className={`flex items-center gap-1 ${hasLowerCase ? "text-green-600" : "text-gray-500"}`}>
+            <CheckCircle2 size={12} className={hasLowerCase ? "text-green-600" : "text-gray-300"} />
+            <span>Uma letra minúscula (a-z)</span>
+          </div>
+          <div className={`flex items-center gap-1 ${hasNumber ? "text-green-600" : "text-gray-500"}`}>
+            <CheckCircle2 size={12} className={hasNumber ? "text-green-600" : "text-gray-300"} />
+            <span>Um número (0-9)</span>
+          </div>
+        </div>
+      </div>
 
-        <FormField
-          control={form.control}
-          name="cpf"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>CPF</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="000.000.000-00"
-                    value={field.value}
-                    onChange={(e) => handleCPFChange(e, field.onChange)}
-                    maxLength={14}
-                    className={cn(
-                      "pl-10",
-                      field.value && validateCPF(field.value) ? "border-green-500" : "",
-                      field.value && !validateCPF(field.value) ? "border-red-500" : ""
-                    )}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <div className="space-y-2">
+        <div className="relative">
+          <Input
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="Confirmar senha"
+            value={formData.confirmPassword || ""}
+            onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+            disabled={isLoading}
+            className={formErrors.confirmPassword ? "border-destructive pr-10" : "pr-10"}
+          />
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
+        {formErrors.confirmPassword && <p className="text-destructive text-sm">{formErrors.confirmPassword}</p>}
+        
+        {/* Password match indicator */}
+        {formData.confirmPassword && (
+          <div className={`flex items-center gap-1 text-xs ${passwordsMatch ? "text-green-600" : "text-gray-500"}`}>
+            <CheckCircle2 size={12} className={passwordsMatch ? "text-green-600" : "text-gray-300"} />
+            <span>Senhas coincidem</span>
+          </div>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="birthDate"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Data de nascimento</FormLabel>
-              <FormControl>
-                <Input 
-                  type="date" 
-                  {...field}
-                  className="w-full"
-                  placeholder="Selecione uma data"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <Button 
+        type="submit" 
+        className="w-full bg-gradient-primary hover:bg-gradient-primary-hover"
+        disabled={isLoading}
+      >
+        {isLoading ? "Cadastrando..." : "Cadastrar"}
+        <ArrowRight size={16} />
+      </Button>
 
-        <Button 
-          type="submit" 
-          className="w-full bg-gradient-primary text-white hover:opacity-90"
-          disabled={form.formState.isSubmitting}
-        >
-          {form.formState.isSubmitting ? "Cadastrando..." : "Cadastrar"}
-        </Button>
-      </form>
-    </Form>
-  )
-}
+      <p className="text-sm text-center text-gray-600 mt-4">
+        Ao se cadastrar, você concorda com nossos Termos de Uso e Política de Privacidade.
+      </p>
+    </form>
+  );
+};
+
+export default RegisterForm;
