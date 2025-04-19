@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
@@ -27,6 +28,7 @@ import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "@/components/ui/sonner"
 import { useAuth } from "@/contexts/AuthContext"
+import { EventDetails } from "@/types/event"
 import OrderSummary from "@/components/checkout/OrderSummary"
 import CardForm from "@/components/checkout/CardForm"
 import PixQRCode from "@/components/checkout/PixQRCode"
@@ -54,6 +56,7 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [discount, setDiscount] = useState(0)
   const [couponApplied, setCouponApplied] = useState(false)
+  const [showPixQR, setShowPixQR] = useState(false)
 
   const validCoupons = {
     "EVENTO10": 10, // 10% de desconto
