@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/contexts/AuthContext"
 import { useProtectedRoute } from "@/hooks/use-protected-route"
 import { ShoppingCart, Settings, Heart, Bell, Tag, ArrowLeft } from "lucide-react"
@@ -5,6 +6,7 @@ import { Link } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Card } from "@/components/ui/card"
+import NextEvent from "@/components/dashboard/NextEvent"
 
 const menuItems = [
   {
@@ -88,16 +90,27 @@ const Dashboard = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 pb-20 md:pb-0">
+      <div className="flex-1 pb-20 md:pb-0 overflow-y-auto">
         {/* Header */}
-        <div className="p-6 text-center">
+        <div className="p-6 text-center mb-4">
           <h1 className="text-3xl font-bold mb-2 animate-bounce text-primary">
             Olá, {user?.fullName?.split(' ')[0]}! 👋
           </h1>
+          <p className="text-dashboard-muted">Bem-vindo(a) de volta à sua conta</p>
+        </div>
+
+        {/* Next Event Section */}
+        <div className="px-4 mb-8">
+          <NextEvent />
+        </div>
+
+        {/* Section Title */}
+        <div className="px-4 mb-4">
+          <h2 className="text-xl font-semibold">Novidades e Promoções</h2>
         </div>
 
         {/* Promotional Banners */}
-        <div className="px-4 space-y-4">
+        <div className="px-4 space-y-4 mb-8">
           {promotionalBanners.map((banner, index) => (
             <Card 
               key={index}
@@ -122,7 +135,7 @@ const Dashboard = () => {
       {isMobile && (
         <nav className="fixed bottom-0 left-0 right-0 bg-dashboard-card border-t border-gray-200">
           <div className="flex justify-around items-center h-16">
-            {menuItems.map((item) => (
+            {menuItems.slice(0, 5).map((item) => (
               <Link
                 key={item.title}
                 to={item.url}
@@ -132,7 +145,7 @@ const Dashboard = () => {
                 )}
               >
                 <item.icon className="h-6 w-6" />
-                <span className="text-xs mt-1">{item.title}</span>
+                <span className="text-xs mt-1">{item.title.split(' ')[0]}</span>
               </Link>
             ))}
           </div>
