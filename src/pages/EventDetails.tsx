@@ -1,246 +1,232 @@
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Calendar, MapPin, Clock, AlertTriangle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { EventMap } from "@/components/EventMap";
+import { TicketSelector } from "@/components/TicketSelector";
+import FavoriteButton from "@/components/FavoriteButton";
+import Header from "@/components/Header";
+import { useToast } from "@/hooks/use-toast";
+import { EventDetails as EventDetailsType } from "@/types/event";
 
-import { useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { Info, Clock, MapPin, AlertTriangle, ChevronLeft } from "lucide-react"
-import Header from "@/components/Header"
-import TicketSelector from "@/components/TicketSelector"
-import EventMap from "@/components/EventMap"
-import FavoriteButton from "@/components/FavoriteButton"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { EventDetails } from "@/types/event"
-import { AuthDialog } from "@/components/auth/AuthDialog"
-import { useAuth } from "@/contexts/AuthContext"
-import { toast } from "@/components/ui/sonner"
+const EventDetails = () => {
+  const { eventId } = useParams<{ eventId: string }>();
+  const [event, setEvent] = useState<EventDetailsType | null>(null);
+  const { toast } = useToast();
 
-const eventDetails: EventDetails = {
-  id: 1,
-  title: "Festival de Música 2024",
-  date: "20 Maio 2024",
-  time: "16:00",
-  location: "Parque Villa-Lobos, São Paulo, SP",
-  coordinates: {
-    lat: -23.5464,
-    lng: -46.7227
-  },
-  description: "O maior festival de música do Brasil está de volta! Com mais de 30 atrações distribuídas em 3 palcos, o Festival de Música 2024 promete ser um evento inesquecível. Traga sua família e amigos para curtir o melhor da música nacional e internacional.",
-  image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=1200&h=400&fit=crop",
-  minimumAge: 16,
-  tickets: [
-    {
-      id: 1,
-      name: "Ingresso Inteira",
-      price: 280,
-      description: "Ingresso comum, valor integral",
-      availableQuantity: 1000,
-      maxPerPurchase: 4
-    },
-    {
-      id: 2,
-      name: "Ingresso Meia-entrada",
-      price: 140,
-      description: "Mediante comprovação na entrada do evento",
-      availableQuantity: 500,
-      maxPerPurchase: 2
-    },
-    {
-      id: 3,
-      name: "Ingresso VIP",
-      price: 560,
-      description: "Área exclusiva com open bar e food",
-      availableQuantity: 200,
-      maxPerPurchase: 4
-    }
-  ],
-  warnings: [
-    "É obrigatória a apresentação de documento com foto para entrada no evento",
-    "Proibida a entrada de menores de 16 anos desacompanhados dos pais ou responsáveis legais",
-    "A meia-entrada é válida mediante apresentação de documento comprobatório na entrada do evento"
-  ]
-}
-
-const EventDetailsPage = () => {
-  const navigate = useNavigate()
-  const { id } = useParams()
-  const [selectedTickets, setSelectedTickets] = useState<Record<number, number>>({})
-  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false)
-  const { isAuthenticated } = useAuth();
-  
-  const hasSelectedTickets = Object.values(selectedTickets).some(quantity => quantity > 0)
-
-  const handleGoBack = () => {
-    navigate('/')
-  }
-  
-  const handleFinalizePurchase = () => {
-    if (!isAuthenticated) {
-      // Store current path to redirect back after login
-      localStorage.setItem('redirectAfterLogin', `/evento/${id}`);
-      // Show auth dialog if user is not authenticated
-      setIsAuthDialogOpen(true);
-    } else {
-      // User is already authenticated, proceed to checkout
-      if (hasSelectedTickets) {
-        navigate('/checkout', { 
-          state: {
-            eventDetails,
-            selectedTickets
-          }
-        });
+  useEffect(() => {
+    if (eventId) {
+      const eventData = eventsMockData[eventId];
+      if (eventData) {
+        setEvent(eventData);
       } else {
         toast({
-          title: "Selecione ingressos",
-          description: "Você precisa selecionar pelo menos um ingresso para continuar.",
-          variant: "destructive"
+          title: "Evento não encontrado",
+          description: "Não foi possível encontrar os detalhes para este evento.",
+          variant: "destructive",
         });
       }
     }
-  }
-  
-  const handleAuthSuccess = () => {
-    // Close the dialog
-    setIsAuthDialogOpen(false);
-    // Check if user selected tickets
-    if (hasSelectedTickets) {
-      navigate('/checkout', { 
-        state: {
-          eventDetails,
-          selectedTickets
+  }, [eventId, toast]);
+
+  // Mock data for events - updated to include the venue property
+  const eventsMockData: Record<string, EventDetailsType> = {
+    "1": {
+      id: 1,
+      title: "Festival de Música Eletrônica 2023",
+      date: "2023-05-20",
+      time: "22:00",
+      location: "Arena São Paulo",
+      coordinates: {
+        lat: -23.5505,
+        lng: -46.6333
+      },
+      description: "O maior festival de música eletrônica do Brasil. Uma experiência sensacional com os melhores DJs do mundo.",
+      image: "https://source.unsplash.com/random?electronic,music,festival",
+      minimumAge: 18,
+      tickets: [
+        {
+          id: 1,
+          name: "Pista",
+          price: 120.00,
+          description: "Acesso à pista principal do evento",
+          availableQuantity: 300,
+          maxPerPurchase: 4
+        },
+        {
+          id: 2,
+          name: "VIP",
+          price: 250.00,
+          description: "Acesso à área VIP com open bar",
+          availableQuantity: 100,
+          maxPerPurchase: 2
+        },
+        {
+          id: 3,
+          name: "Backstage",
+          price: 450.00,
+          description: "Acesso à área backstage e meet & greet com os artistas",
+          availableQuantity: 30,
+          maxPerPurchase: 2
         }
-      });
-    } else {
-      toast({
-        title: "Selecione ingressos",
-        description: "Você precisa selecionar pelo menos um ingresso para continuar.",
-        variant: "destructive"
-      });
+      ],
+      warnings: [
+        "É proibida a entrada com bebidas e alimentos externos",
+        "É obrigatória a apresentação de documento com foto",
+        "Menores de 16 anos apenas acompanhados dos pais ou responsáveis legais"
+      ],
+      venue: {
+        name: "Arena São Paulo",
+        address: "Av. Exemplo, 1000 - São Paulo, SP",
+        capacity: 5000,
+        map_url: "https://map-url-example.com"
+      }
+    },
+    "2": {
+      id: 2,
+      title: "Show de Rock - Bandas Nacionais",
+      date: "2023-06-15",
+      time: "20:00",
+      location: "Estádio Municipal",
+      coordinates: {
+        lat: -23.5458,
+        lng: -46.6358
+      },
+      description: "Um super show de rock com as melhores bandas nacionais. Uma noite épica para os amantes do bom e velho rock n' roll.",
+      image: "https://source.unsplash.com/random?rock,concert",
+      minimumAge: 16,
+      tickets: [
+        {
+          id: 4,
+          name: "Arquibancada",
+          price: 90.00,
+          description: "Acesso à arquibancada geral",
+          availableQuantity: 500,
+          maxPerPurchase: 4
+        },
+        {
+          id: 5,
+          name: "Pista Premium",
+          price: 180.00,
+          description: "Acesso à pista premium próxima ao palco",
+          availableQuantity: 200,
+          maxPerPurchase: 4
+        }
+      ],
+      warnings: [
+        "É proibido fumar em qualquer área do evento",
+        "Sujeito a revista na entrada"
+      ],
+      venue: {
+        name: "Estádio Municipal",
+        address: "R. do Estádio, 500 - São Paulo, SP",
+        capacity: 8000,
+        map_url: "https://map-url-example.com"
+      }
     }
+  };
+
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        {eventId ? (
+          <p className="text-gray-600">Carregando detalhes do evento...</p>
+        ) : (
+          <p className="text-red-500">Nenhum evento especificado.</p>
+        )}
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
       <Header />
-      
-      <div className="container mx-auto px-4 py-4">
-        <Button 
-          variant="outline"
-          className="mb-4 text-primary border-primary hover:bg-primary/10 flex items-center"
-          onClick={handleGoBack}
-        >
-          <ChevronLeft className="mr-2 h-5 w-5" />
-          Voltar para página inicial
-        </Button>
-      </div>
-      
-      <div className="relative h-[400px] w-full overflow-hidden">
-        <img 
-          src={eventDetails.image} 
-          alt={eventDetails.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-primary opacity-50 mix-blend-multiply" />
-        <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
-          <div className="container mx-auto">
-            <h1 className="text-4xl font-bold text-white mb-4">{eventDetails.title}</h1>
-            <div className="flex flex-wrap gap-4 text-white/90">
-              <div className="flex items-center gap-2">
-                <Info className="h-5 w-5" />
-                <span>{eventDetails.date}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                <span>{eventDetails.time}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                <span>{eventDetails.location}</span>
-              </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Event Details */}
+          <div>
+            <img
+              src={event.image}
+              alt={event.title}
+              className="w-full rounded-lg mb-4"
+            />
+            <h1 className="text-3xl font-bold text-primary mb-2">{event.title}</h1>
+            <div className="flex items-center text-gray-600 mb-4">
+              <Calendar className="mr-2 h-5 w-5" />
+              {new Date(event.date).toLocaleDateString("pt-BR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+              <Separator orientation="vertical" className="mx-2 h-5" />
+              <Clock className="mr-2 h-5 w-5" />
+              {event.time}
+              <Separator orientation="vertical" className="mx-2 h-5" />
+              <MapPin className="mr-2 h-5 w-5" />
+              {event.location}
             </div>
-            
-            {/* Add favorite button in the top right corner */}
-            <div className="absolute top-4 right-4">
-              <FavoriteButton eventId={Number(id)} variant="icon" />
-            </div>
+            <Card className="mb-4">
+              <CardContent>
+                <h2 className="text-xl font-semibold mb-2">Descrição</h2>
+                <p className="text-gray-700">{event.description}</p>
+              </CardContent>
+            </Card>
+
+            {/* Venue Details */}
+            <Card className="mb-4">
+              <CardContent>
+                <h2 className="text-xl font-semibold mb-2">Local do Evento</h2>
+                <p className="text-gray-700">
+                  <strong>{event.venue.name}</strong>
+                  <br />
+                  {event.venue.address}
+                  <br />
+                  Capacidade: {event.venue.capacity}
+                </p>
+                <Button
+                  variant="link"
+                  asChild
+                  className="mt-2"
+                >
+                  <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
+                    Ver no Mapa
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="mb-4">
+              <CardContent>
+                <h2 className="text-xl font-semibold mb-2">Avisos</h2>
+                {event.warnings.length > 0 ? (
+                  <ul className="list-disc pl-5 text-gray-700">
+                    {event.warnings.map((warning, index) => (
+                      <li key={index}>{warning}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-700">Nenhum aviso especial para este evento.</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Ticket Selection and Map */}
+          <div>
+            <TicketSelector eventId={event.id.toString()} tickets={event.tickets} />
+            <FavoriteButton eventId={event.id.toString()} />
+            <EventMap
+              lat={event.coordinates.lat}
+              lng={event.coordinates.lng}
+              eventName={event.title}
+            />
           </div>
         </div>
       </div>
+    </>
+  );
+};
 
-      <main className="container mx-auto px-4 py-8">
-        <section className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-primary">Ingressos</h2>
-            <FavoriteButton eventId={Number(id)} variant="outline" />
-          </div>
-          <div className="space-y-4">
-            {eventDetails.tickets.map((ticket) => (
-              <TicketSelector
-                key={ticket.id}
-                ticket={ticket}
-                quantity={selectedTickets[ticket.id] || 0}
-                onQuantityChange={(quantity) => 
-                  setSelectedTickets(prev => ({...prev, [ticket.id]: quantity}))
-                }
-              />
-            ))}
-          </div>
-          
-          <div className="mt-6 space-y-4">
-            <Button 
-              className="w-full bg-gradient-primary text-white hover:opacity-90"
-              size="lg"
-              disabled={!hasSelectedTickets}
-              onClick={handleFinalizePurchase}
-            >
-              Finalizar pedido
-            </Button>
-            
-            <p className="text-xs text-gray-500 text-center">
-              Ao finalizar o pedido você concorda com os termos de uso e política de privacidade
-            </p>
-          </div>
-        </section>
-
-        <div className="grid grid-cols-1 gap-8">
-          <section>
-            <h2 className="text-2xl font-semibold text-primary mb-4">Sobre o evento</h2>
-            <p className="text-gray-600 leading-relaxed">{eventDetails.description}</p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-primary mb-4">Avisos importantes</h2>
-            <div className="space-y-4">
-              <Alert>
-                <AlertTriangle className="h-5 w-5" />
-                <AlertDescription>
-                  Idade mínima: {eventDetails.minimumAge} anos
-                </AlertDescription>
-              </Alert>
-              {eventDetails.warnings.map((warning, index) => (
-                <Alert key={index}>
-                  <AlertTriangle className="h-5 w-5" />
-                  <AlertDescription>{warning}</AlertDescription>
-                </Alert>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-primary mb-4">Localização</h2>
-            <div className="h-[300px] rounded-lg overflow-hidden">
-              <EventMap coordinates={eventDetails.coordinates} />
-            </div>
-          </section>
-        </div>
-      </main>
-      
-      {/* Diálogo de autenticação */}
-      <AuthDialog 
-        open={isAuthDialogOpen} 
-        onOpenChange={setIsAuthDialogOpen} 
-        onSuccess={handleAuthSuccess} 
-      />
-    </div>
-  )
-}
-
-export default EventDetailsPage
+export default EventDetails;

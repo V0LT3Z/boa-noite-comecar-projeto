@@ -7,7 +7,7 @@ import { useProtectedRoute } from "@/hooks/use-protected-route";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { FormattedInput } from "@/components/FormattedInput";
+import FormattedInput from "@/components/FormattedInput";
 import { toast } from "@/components/ui/sonner";
 
 const EditProfile = () => {
