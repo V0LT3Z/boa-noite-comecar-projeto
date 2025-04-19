@@ -49,7 +49,7 @@ export default {
         "dashboard-card": "#F1F0FB",
         "dashboard-text": "#000000",
         "dashboard-muted": "#666666",
-        // Add pastel / low saturation colors
+        // Pastel / low saturation colors matching the project theme
         "soft-purple": "#E5DEFF",
         "soft-pink": "#FFDEE2",
         "soft-peach": "#FDE1D3", 
