@@ -205,7 +205,7 @@ const Checkout = () => {
 
   // Gerar uma URL de QR code para simulação
   // Em produção, você substituiria isso por uma API real de PIX
-  const pixQRCodeURL = `https://chart.googleapis.com/chart?cht=qr&chl=PIX%20Payment%20for%20${encodeURIComponent(eventDetails.title)}%20-%20R$${total.toFixed(2)}&chs=300x300&choe=UTF-8&chld=L|2`;
+  const pixQRCodeURL = `https://chart.googleapis.com/chart?cht=qr&chl=00020126330014BR.GOV.BCB.PIX0111EXAMPLE1234520400005303986540${total.toFixed(2).replace('.', '')}5802BR5913EventPayment6008Sao Paulo62070503***6304${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}&chs=300x300&choe=UTF-8&chld=L|2`;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -435,6 +435,7 @@ const Checkout = () => {
                             <div className="text-sm text-gray-500 mt-2">
                               <p>Escaneie o QR Code acima com o aplicativo do seu banco</p>
                               <p>Valor a pagar: <span className="font-semibold">R$ {total.toFixed(2)}</span></p>
+                              <p className="text-xs mt-1 text-green-600 font-semibold">O valor será enviado automaticamente e não poderá ser alterado</p>
                             </div>
                             <div className="border-t pt-3 mt-3">
                               <p className="font-medium">Instruções:</p>
