@@ -14,8 +14,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg data-[type=success]:!bg-[#F2FCE2] data-[type=success]:!border-green-200 data-[type=success]:!text-green-800 data-[type=destructive]:!bg-destructive data-[type=destructive]:!border-destructive/20 data-[type=destructive]:!text-white",
-          description: "group-[.toast]:text-muted-foreground group-[.toast]:data-[type=success]:!text-green-700 group-[.toast]:data-[type=destructive]:!text-white/90",
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+          description: "group-[.toast]:text-muted-foreground",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:
@@ -38,23 +38,19 @@ interface ToastOptions {
 const toast = (options: ToastOptions) => {
   const { title, description, variant, type } = options;
   
+  let className = "";
+  
   if (variant === "destructive") {
-    return sonnerToast(title || "", {
-      description,
-      // Use data attributes for styling
-      className: 'data-[type=destructive]',
-    });
+    className = "bg-destructive border-destructive/20 text-white";
   } else if (type === "success") {
-    return sonnerToast(title || "", {
-      description,
-      // Use data attributes for styling
-      className: 'data-[type=success]',
-    });
-  } else {
-    return sonnerToast(title || "", {
-      description,
-    });
+    className = "bg-[#F2FCE2] border-green-200 text-green-800";
   }
+  
+  return sonnerToast(title || "", {
+    description,
+    className,
+    descriptionClassName: variant === "destructive" ? "text-white/90" : type === "success" ? "text-green-700" : "",
+  });
 };
 
 export { Toaster, toast }
