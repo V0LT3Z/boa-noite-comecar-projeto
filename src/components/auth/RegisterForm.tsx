@@ -220,14 +220,16 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       </div>
 
       <div className="space-y-2">
-        <FormattedInput
-          placeholder="CPF"
-          value={formData.cpf || ""}
-          onChange={(value) => handleInputChange("cpf", value)}
-          disabled={isLoading}
-          format={formatCPF}
-          className={formErrors.cpf ? "border-destructive" : ""}
-        />
+        <div className="relative">
+          <FormattedInput
+            placeholder="CPF"
+            value={formData.cpf || ""}
+            onChange={(value: string) => handleInputChange("cpf", value)}
+            disabled={isLoading}
+            format={formatCPF}
+            className={formErrors.cpf ? "border-destructive" : ""}
+          />
+        </div>
         {formErrors.cpf && <p className="text-destructive text-sm">{formErrors.cpf}</p>}
       </div>
 
@@ -235,7 +237,7 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
         <FormattedInput
           placeholder="Data de nascimento (DD/MM/AAAA)"
           value={formData.birthDate || ""}
-          onChange={(value) => handleInputChange("birthDate", value)}
+          onChange={(value: string) => handleInputChange("birthDate", value)}
           disabled={isLoading}
           format={formatDate}
           className={formErrors.birthDate ? "border-destructive" : ""}
