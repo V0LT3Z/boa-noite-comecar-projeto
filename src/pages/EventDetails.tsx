@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Info, Clock, MapPin, AlertTriangle, ChevronLeft } from "lucide-react"
@@ -10,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { EventDetails } from "@/types/event"
 import { AuthDialog } from "@/components/auth/AuthDialog"
 import { useAuth } from "@/contexts/AuthContext"
+import { toast } from "@/components/ui/sonner"
 
 const eventDetails: EventDetails = {
   id: 1,
@@ -78,17 +78,41 @@ const EventDetailsPage = () => {
       setIsAuthDialogOpen(true);
     } else {
       // User is already authenticated, proceed to checkout
-      // This would redirect to checkout in a real application
-      alert("Redirecionando para o checkout...");
+      if (hasSelectedTickets) {
+        navigate('/checkout', { 
+          state: {
+            eventDetails,
+            selectedTickets
+          }
+        });
+      } else {
+        toast({
+          title: "Selecione ingressos",
+          description: "Você precisa selecionar pelo menos um ingresso para continuar.",
+          variant: "destructive"
+        });
+      }
     }
   }
   
   const handleAuthSuccess = () => {
     // Close the dialog
     setIsAuthDialogOpen(false);
-    // In a real app, this would redirect to checkout
-    console.log("Autenticação bem-sucedida, redirecionando para checkout...");
-    alert("Login realizado com sucesso! Redirecionando para o checkout...");
+    // Check if user selected tickets
+    if (hasSelectedTickets) {
+      navigate('/checkout', { 
+        state: {
+          eventDetails,
+          selectedTickets
+        }
+      });
+    } else {
+      toast({
+        title: "Selecione ingressos",
+        description: "Você precisa selecionar pelo menos um ingresso para continuar.",
+        variant: "destructive"
+      });
+    }
   }
 
   return (
