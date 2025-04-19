@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventDetails } from "@/types/event";
 import { toast } from "@/components/ui/sonner";
@@ -24,10 +25,11 @@ export interface Notification {
 // Add an event to favorites
 export const addToFavorites = async (eventId: number): Promise<boolean> => {
   try {
-    // Get the current session to get the user's ID
-    const { data: sessionData } = await supabase.auth.getSession();
+    // Get the current user's session
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!sessionData.session?.user?.id) {
+    if (!session?.user?.id) {
+      console.error("No user session found");
       toast({
         title: "Você precisa estar logado",
         description: "Faça login para adicionar eventos aos favoritos",
@@ -36,21 +38,37 @@ export const addToFavorites = async (eventId: number): Promise<boolean> => {
       return false;
     }
     
-    const userId = sessionData.session.user.id;
+    const userId = session.user.id;
+    console.log("Adding to favorites with user ID:", userId);
     
-    const { data, error } = await supabase
+    // Check if the favorite already exists
+    const { data: existingFavorite } = await supabase
+      .from("favorites")
+      .select()
+      .eq("event_id", eventId)
+      .eq("user_id", userId)
+      .single();
+    
+    if (existingFavorite) {
+      console.log("Favorite already exists");
+      return true; // Already favorited
+    }
+    
+    // Add to favorites
+    const { error } = await supabase
       .from("favorites")
       .insert({
         event_id: eventId,
         user_id: userId
-      })
-      .select();
+      });
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error adding favorite:", error);
+      throw error;
+    }
     
     toast({
       title: "Evento adicionado aos favoritos!",
-      type: "success"
     });
     
     return true;
@@ -68,10 +86,11 @@ export const addToFavorites = async (eventId: number): Promise<boolean> => {
 // Remove an event from favorites
 export const removeFromFavorites = async (eventId: number): Promise<boolean> => {
   try {
-    // Get the current session to get the user's ID
-    const { data: sessionData } = await supabase.auth.getSession();
+    // Get the current user's session
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!sessionData.session?.user?.id) {
+    if (!session?.user?.id) {
+      console.error("No user session found");
       toast({
         title: "Você precisa estar logado",
         description: "Faça login para remover eventos dos favoritos",
@@ -80,7 +99,8 @@ export const removeFromFavorites = async (eventId: number): Promise<boolean> => 
       return false;
     }
     
-    const userId = sessionData.session.user.id;
+    const userId = session.user.id;
+    console.log("Removing from favorites with user ID:", userId);
     
     const { error } = await supabase
       .from("favorites")
@@ -88,11 +108,13 @@ export const removeFromFavorites = async (eventId: number): Promise<boolean> => 
       .eq("event_id", eventId)
       .eq("user_id", userId);
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error removing favorite:", error);
+      throw error;
+    }
     
     toast({
       title: "Evento removido dos favoritos",
-      type: "success"
     });
     
     return true;
@@ -110,28 +132,30 @@ export const removeFromFavorites = async (eventId: number): Promise<boolean> => 
 // Check if an event is in favorites
 export const isEventFavorited = async (eventId: number): Promise<boolean> => {
   try {
-    // Get the current session to get the user's ID
-    const { data: sessionData } = await supabase.auth.getSession();
+    // Get the current user's session
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!sessionData.session?.user?.id) {
+    if (!session?.user?.id) {
+      console.log("No user session found, can't check favorite status");
       return false;
     }
     
-    const userId = sessionData.session.user.id;
+    const userId = session.user.id;
+    console.log("Checking favorite status with user ID:", userId);
     
+    // Query to check if event is favorited
     const { data, error } = await supabase
       .from("favorites")
       .select()
       .eq("event_id", eventId)
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", userId);
     
-    if (error && error.code !== "PGRST116") {
+    if (error) {
       console.error("Error checking favorite status:", error);
       return false;
     }
     
-    return !!data;
+    return data && data.length > 0;
   } catch (error) {
     console.error("Error checking favorite status:", error);
     return false;
@@ -141,21 +165,26 @@ export const isEventFavorited = async (eventId: number): Promise<boolean> => {
 // Get all favorites for current user
 export const getUserFavorites = async (): Promise<EventDetails[]> => {
   try {
-    // Get the current session to get the user's ID
-    const { data: sessionData } = await supabase.auth.getSession();
+    // Get the current user's session
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!sessionData.session?.user?.id) {
+    if (!session?.user?.id) {
+      console.error("No user session found");
       return [];
     }
     
-    const userId = sessionData.session.user.id;
+    const userId = session.user.id;
+    console.log("Getting favorites with user ID:", userId);
     
     const { data: favorites, error } = await supabase
       .from("favorites")
       .select("event_id")
       .eq("user_id", userId);
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching favorites:", error);
+      throw error;
+    }
     
     // For demo purposes, we'll filter the mock events by the favorite IDs
     // In a real app, you would fetch the actual events from the database
@@ -255,6 +284,7 @@ export const getUserFavorites = async (): Promise<EventDetails[]> => {
     ];
     
     const favoriteEventIds = favorites?.map(fav => fav.event_id) || [];
+    console.log("Favorite event IDs:", favoriteEventIds);
     return mockEvents.filter(event => favoriteEventIds.includes(event.id));
   } catch (error) {
     console.error("Error fetching favorites:", error);

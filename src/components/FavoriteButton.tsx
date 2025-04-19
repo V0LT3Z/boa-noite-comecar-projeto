@@ -19,19 +19,29 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
   const { isAuthenticated } = useAuth();
   
   useEffect(() => {
-    const checkFavoriteStatus = async () => {
-      if (isAuthenticated) {
-        setIsLoading(true);
-        const favorited = await isEventFavorited(eventId);
-        setIsFavorite(favorited);
-        setIsLoading(false);
-      } else {
-        setIsLoading(false);
-      }
-    };
-    
-    checkFavoriteStatus();
+    // Only check favorite status when user is authenticated
+    if (isAuthenticated) {
+      checkFavoriteStatus();
+    } else {
+      setIsLoading(false);
+      setIsFavorite(false);
+    }
   }, [eventId, isAuthenticated]);
+  
+  // Function to check if event is favorited
+  const checkFavoriteStatus = async () => {
+    try {
+      setIsLoading(true);
+      console.log("Checking favorite status for event:", eventId);
+      const favorited = await isEventFavorited(eventId);
+      console.log("Is event favorited?", favorited);
+      setIsFavorite(favorited);
+    } catch (error) {
+      console.error("Error checking favorite status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   // Listen for custom event to open auth modal
   useEffect(() => {
@@ -48,8 +58,12 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
   
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent event bubbling when used in cards
+    e.stopPropagation(); // Ensure event doesn't propagate
+    
+    console.log("Toggle favorite clicked, isAuthenticated:", isAuthenticated);
     
     if (!isAuthenticated) {
+      console.log("User not authenticated, opening auth dialog");
       // Store current path to redirect back after login
       localStorage.setItem('redirectAfterLogin', window.location.pathname);
       // Open authentication modal
@@ -59,27 +73,32 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
     
     setIsLoading(true);
     
-    let success;
-    if (isFavorite) {
-      success = await removeFromFavorites(eventId);
-    } else {
-      success = await addToFavorites(eventId);
+    try {
+      let success;
+      if (isFavorite) {
+        console.log("Removing from favorites, event ID:", eventId);
+        success = await removeFromFavorites(eventId);
+      } else {
+        console.log("Adding to favorites, event ID:", eventId);
+        success = await addToFavorites(eventId);
+      }
+      
+      if (success) {
+        setIsFavorite(!isFavorite);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    } finally {
+      setIsLoading(false);
     }
-    
-    if (success) {
-      setIsFavorite(!isFavorite);
-    }
-    
-    setIsLoading(false);
   };
   
   const handleAuthSuccess = () => {
     setIsAuthDialogOpen(false);
-    // Refresh favorite status after successful login
+    
+    // Check favorite status again after login
     if (isAuthenticated) {
-      isEventFavorited(eventId).then((favorited) => {
-        setIsFavorite(favorited);
-      });
+      checkFavoriteStatus();
     }
   };
   

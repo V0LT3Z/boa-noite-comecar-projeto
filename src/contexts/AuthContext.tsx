@@ -15,7 +15,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => void;
-  openAuthModal: () => void; // Add this function to open auth modal
+  openAuthModal: () => void;
 }
 
 interface RegisterData {
@@ -31,7 +31,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -39,8 +38,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const storedUser = localStorage.getItem('user');
         const token = localStorage.getItem('authToken');
         
+        console.log("Checking authentication:", { hasUser: !!storedUser, hasToken: !!token });
+        
         if (storedUser && token) {
-          setUser(JSON.parse(storedUser));
+          const parsedUser = JSON.parse(storedUser);
+          console.log("User authenticated:", parsedUser);
+          setUser(parsedUser);
+        } else {
+          console.log("No authenticated user found");
         }
       } catch (error) {
         console.error("Authentication error:", error);
@@ -79,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('authToken', mockToken);
       localStorage.setItem('user', JSON.stringify(userRecord.user));
       
+      console.log("User logged in:", userRecord.user);
       setUser(userRecord.user);
       
       toast({
@@ -134,7 +140,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('authToken', mockToken);
       localStorage.setItem('user', JSON.stringify(newUser));
       
+      console.log("User registered:", newUser);
       setUser(newUser);
+      
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Bem-vindo ao Lovue Tickets!",
+      });
       
       return true;
     } catch (error) {
@@ -151,6 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    console.log("Logging out user");
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     setUser(null);
@@ -160,11 +173,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // New function to open auth modal
   const openAuthModal = () => {
-    // This will be handled by the AuthDialog component
-    // We're just providing the interface here
-    // The actual implementation will be in the components that use this context
+    console.log("Opening auth modal via context");
     document.dispatchEvent(new CustomEvent('openAuthModal'));
   };
 
