@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { Calendar, MapPin, Clock, AlertTriangle } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Calendar, MapPin, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -16,6 +15,7 @@ const EventDetails = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<EventDetailsType | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (eventId) {
@@ -32,7 +32,16 @@ const EventDetails = () => {
     }
   }, [eventId, toast]);
 
-  // Mock data for events - updated to include the venue property
+  const handlePurchase = (selectedTickets: { ticketId: number, quantity: number }[]) => {
+    if (selectedTickets.length > 0) {
+      toast({
+        title: "Ingressos selecionados",
+        description: `${selectedTickets.reduce((total, item) => total + item.quantity, 0)} ingressos adicionados ao carrinho.`
+      });
+      navigate("/checkout");
+    }
+  };
+
   const eventsMockData: Record<string, EventDetailsType> = {
     "1": {
       id: 1,
@@ -175,7 +184,6 @@ const EventDetails = () => {
               </CardContent>
             </Card>
 
-            {/* Venue Details */}
             <Card className="mb-4">
               <CardContent>
                 <h2 className="text-xl font-semibold mb-2">Local do Evento</h2>
@@ -216,7 +224,10 @@ const EventDetails = () => {
 
           {/* Ticket Selection and Map */}
           <div>
-            <TicketSelector eventId={event.id.toString()} tickets={event.tickets} />
+            <TicketSelector 
+              tickets={event.tickets} 
+              onPurchase={handlePurchase}
+            />
             <FavoriteButton eventId={event.id.toString()} />
             <EventMap
               coordinates={{
