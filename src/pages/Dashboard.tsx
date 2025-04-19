@@ -71,9 +71,9 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="flex-1 pb-20 md:pb-0">
         {/* Header */}
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-2">
-            Olá, {user?.fullName?.split(' ')[0]}!
+        <div className="p-6 text-center">
+          <h1 className="text-3xl font-bold mb-2 animate-bounce text-primary">
+            Olá, {user?.fullName?.split(' ')[0]}! 👋
           </h1>
         </div>
 
