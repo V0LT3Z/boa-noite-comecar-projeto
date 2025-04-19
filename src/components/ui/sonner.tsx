@@ -1,4 +1,5 @@
 
+
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, toast as sonnerToast } from "sonner"
 
@@ -42,20 +43,21 @@ const toast = (options: ToastOptions) => {
   if (variant === "destructive") {
     return sonnerToast(title || "", {
       description,
-      className: "bg-destructive text-destructive-foreground border-destructive",
+      style: { backgroundColor: "#ea384c", color: "#ffffff", borderColor: "#ea384c" },
     });
   } 
   // Se for um toast de sucesso
   else if (type === "success") {
     return sonnerToast(title || "", {
       description,
-      className: "bg-[#F2FCE2] text-green-800 border-green-200",
+      style: { backgroundColor: "#F2FCE2", color: "#3a7113", borderColor: "#bae563" },
     });
   }
   
   // Toast default
   return sonnerToast(title || "", {
     description,
+    style: { backgroundColor: "#f1f5f9", color: "#334155", borderColor: "#e2e8f0" },
   });
 };
 
