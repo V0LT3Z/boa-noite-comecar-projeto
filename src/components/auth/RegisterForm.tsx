@@ -2,30 +2,26 @@
 import { FormEvent, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Eye, EyeOff, ArrowRight, CheckCircle2, CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import FormattedInput from "@/components/FormattedInput";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 
 const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
 
 const validateCPF = (cpf: string) => {
+  // Remove non-numeric characters
   const numbers = cpf.replace(/[^\d]/g, "");
   
+  // Check if it has 11 digits
   if (numbers.length !== 11) return false;
   
+  // Check if all digits are the same
   if (numbers.split("").every(char => char === numbers[0])) return false;
   
+  // Validate first verification digit
   let sum = 0;
   for (let i = 0; i < 9; i++) {
     sum += parseInt(numbers.charAt(i)) * (10 - i);
@@ -34,6 +30,7 @@ const validateCPF = (cpf: string) => {
   if (remainder === 10 || remainder === 11) remainder = 0;
   if (remainder !== parseInt(numbers.charAt(9))) return false;
   
+  // Validate second verification digit
   sum = 0;
   for (let i = 0; i < 10; i++) {
     sum += parseInt(numbers.charAt(i)) * (11 - i);
@@ -43,6 +40,40 @@ const validateCPF = (cpf: string) => {
   if (remainder !== parseInt(numbers.charAt(10))) return false;
   
   return true;
+};
+
+// Function to validate date format DD/MM/YYYY
+const isValidDateFormat = (dateString: string) => {
+  // Check the format first
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return false;
+  
+  const [day, month, year] = dateString.split('/').map(Number);
+  
+  // Check if the date is valid
+  const date = new Date(year, month - 1, day);
+  return (
+    date.getDate() === day &&
+    date.getMonth() === month - 1 &&
+    date.getFullYear() === year &&
+    year >= 1900 && 
+    year <= new Date().getFullYear()
+  );
+};
+
+// Function to check if the user is at least 18 years old
+const isAtLeast18YearsOld = (dateString: string) => {
+  const [day, month, year] = dateString.split('/').map(Number);
+  const birthDate = new Date(year, month - 1, day);
+  const today = new Date();
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age >= 18;
 };
 
 const registerSchema = z.object({
@@ -55,14 +86,10 @@ const registerSchema = z.object({
     .regex(/[a-z]/, "Senha deve ter pelo menos uma letra minúscula")
     .regex(/[0-9]/, "Senha deve ter pelo menos um número"),
   confirmPassword: z.string(),
-  cpf: z.string().regex(cpfRegex, "CPF inválido").refine(validateCPF, "CPF inválido"),
-  birthDate: z.date({
-    required_error: "Data de nascimento é obrigatória",
-    invalid_type_error: "Data inválida",
-  }).refine((date) => {
-    const age = Math.floor((new Date().getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-    return age >= 18;
-  }, "Você precisa ter pelo menos 18 anos"),
+  cpf: z.string().regex(cpfRegex, "CPF inválido").refine(validateCPF, "CPF inválido ou inexistente"),
+  birthDate: z.string()
+    .refine(isValidDateFormat, "Data inválida. Use o formato DD/MM/YYYY")
+    .refine(isAtLeast18YearsOld, "Você precisa ter pelo menos 18 anos"),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Senhas não coincidem",
   path: ["confirmPassword"],
@@ -82,7 +109,7 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     password: "",
     confirmPassword: "",
     cpf: "",
-    birthDate: undefined,
+    birthDate: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -116,7 +143,14 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
   };
 
-  const handleInputChange = (field: keyof RegisterFormData, value: string | Date) => {
+  const formatDate = (value: string) => {
+    const numbers = value.replace(/[^\d]/g, "");
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 4) return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+    return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
+  };
+
+  const handleInputChange = (field: keyof RegisterFormData, value: string) => {
     setFormData({ ...formData, [field]: value });
     
     if (formErrors[field]) {
@@ -145,12 +179,16 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       
       setFormErrors({});
       
+      // Parse the date from DD/MM/YYYY to ISO format
+      const [day, month, year] = (formData.birthDate as string).split('/').map(Number);
+      const birthDateISO = new Date(year, month - 1, day).toISOString();
+      
       await register({
         fullName: formData.name || "",
         email: formData.email || "",
         password: formData.password || "",
         cpf: formData.cpf,
-        birthDate: formData.birthDate?.toISOString(),
+        birthDate: birthDateISO,
       });
 
       toast({
@@ -212,41 +250,16 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       </div>
 
       <div className="space-y-2">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !formData.birthDate && "text-muted-foreground",
-                formErrors.birthDate && "border-destructive"
-              )}
-              disabled={isLoading}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {formData.birthDate ? (
-                format(formData.birthDate, "dd/MM/yyyy")
-              ) : (
-                "Data de nascimento"
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={formData.birthDate}
-              onSelect={(date) => handleInputChange("birthDate", date as Date)}
-              disabled={(date) =>
-                date > new Date() || date < new Date("1900-01-01")
-              }
-              initialFocus
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
-        {formErrors.birthDate && (
-          <p className="text-destructive text-sm">{formErrors.birthDate}</p>
-        )}
+        <FormattedInput
+          placeholder="Data de nascimento (DD/MM/AAAA)"
+          value={formData.birthDate || ""}
+          onChange={(e) => handleInputChange("birthDate", e.target.value)}
+          disabled={isLoading}
+          format={formatDate}
+          className={formErrors.birthDate ? "border-destructive" : ""}
+          maxLength={10}
+        />
+        {formErrors.birthDate && <p className="text-destructive text-sm">{formErrors.birthDate}</p>}
       </div>
 
       <div className="space-y-2">
