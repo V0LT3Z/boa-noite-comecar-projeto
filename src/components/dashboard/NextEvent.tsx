@@ -1,7 +1,8 @@
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Calendar, MapPin, ChevronRight } from "lucide-react"
+import { Calendar, MapPin, ChevronRight, ChevronLeft } from "lucide-react"
 import QRCode from "react-qr-code"
 
 const NextEvent = () => {
@@ -91,6 +92,12 @@ const NextEvent = () => {
     )
   }
 
+  const handlePreviousTicket = () => {
+    setCurrentTicketIndex((prev) => 
+      prev === 0 ? currentEvent.tickets.length - 1 : prev - 1
+    )
+  }
+
   const currentEvent = events[currentEventIndex]
   const currentTicket = currentEvent.tickets[currentTicketIndex]
 
@@ -123,12 +130,8 @@ const NextEvent = () => {
             <div className="flex justify-between items-center mb-3">
               <h4 className="font-medium text-primary">Seus ingressos</h4>
               {currentEvent.tickets.length > 1 && (
-                <div 
-                  className="flex items-center gap-1 text-sm text-primary cursor-pointer"
-                  onClick={handleNextTicket}
-                >
-                  <span>1 de {currentEvent.tickets.length}</span>
-                  <ChevronRight className="h-4 w-4" />
+                <div className="flex items-center gap-1 text-sm text-primary">
+                  <span>{currentTicketIndex + 1} de {currentEvent.tickets.length}</span>
                 </div>
               )}
             </div>
@@ -138,11 +141,44 @@ const NextEvent = () => {
                 className="flex flex-col items-center justify-center gap-4 p-4 bg-white rounded-lg mb-3 cursor-pointer"
                 onClick={currentEvent.tickets.length > 1 ? handleNextTicket : undefined}
               >
+                {currentEvent.tickets.length > 1 && (
+                  <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10">
+                    <Button
+                      variant="ghost" 
+                      size="icon"
+                      className="rounded-full bg-white shadow-sm hover:bg-gray-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePreviousTicket();
+                      }}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+                
                 <QRCode
                   value={currentTicket.qrValue}
                   size={150}
                   className="max-w-full h-auto"
                 />
+                
+                {currentEvent.tickets.length > 1 && (
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10">
+                    <Button
+                      variant="ghost" 
+                      size="icon"
+                      className="rounded-full bg-white shadow-sm hover:bg-gray-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNextTicket();
+                      }}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+                
                 {currentEvent.tickets.length > 1 && (
                   <p className="text-xs text-center text-primary">
                     Toque para ver próximo ingresso
