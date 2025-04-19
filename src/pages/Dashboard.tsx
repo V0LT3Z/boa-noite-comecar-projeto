@@ -1,12 +1,10 @@
-
 import { useAuth } from "@/contexts/AuthContext"
 import { useProtectedRoute } from "@/hooks/use-protected-route"
-import { ShoppingCart, Settings, Heart, Bell, Tag } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ShoppingCart, Settings, Heart, Bell, Tag, ArrowLeft } from "lucide-react"
 import { Link } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Card } from "@/components/ui/card"
 
 const menuItems = [
   {
@@ -33,6 +31,27 @@ const menuItems = [
     title: "Acessar Marketplace",
     icon: Tag,
     url: "/marketplace"
+  }
+]
+
+const promotionalBanners = [
+  {
+    title: "Instale nosso app!",
+    description: "Receba notificações em tempo real sobre eventos e descontos!",
+    gradient: "from-primary to-secondary",
+    icon: "🔔"
+  },
+  {
+    title: "Novidade: Revenda de Ingressos",
+    description: "Agora você pode revender seus ingressos direto no app!",
+    gradient: "from-purple-500 to-pink-500",
+    icon: "⚠️"
+  },
+  {
+    title: "Compartilhe e Ganhe",
+    description: "Indique amigos e ganhe descontos exclusivos!",
+    gradient: "from-blue-500 to-teal-500",
+    icon: "🎁"
   }
 ]
 
@@ -77,50 +96,25 @@ const Dashboard = () => {
           </h1>
         </div>
 
-        {/* Content */}
-        <div className="px-4">
-          <Tabs defaultValue="ingressos" className="w-full">
-            <TabsList className="w-full grid grid-cols-2 bg-dashboard-card rounded-xl h-12 p-1">
-              <TabsTrigger 
-                value="ingressos"
-                className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
-              >
-                Ingressos
-              </TabsTrigger>
-              <TabsTrigger 
-                value="produtos"
-                className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
-              >
-                Produtos
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="ingressos" className="mt-4">
-              {/* Lista de ingressos aqui */}
-              <div className="space-y-4">
-                {[1, 2, 3].map((item) => (
-                  <Card key={item} className="bg-dashboard-card border border-gray-200 p-4">
-                    <div className="flex gap-4">
-                      <div className="w-24 h-24 bg-primary/20 rounded-lg" />
-                      <div>
-                        <h3 className="font-semibold">Deu Baile | Sexta {item}4.03</h3>
-                        <p className="text-dashboard-muted">Pacco Club</p>
-                        <span className="inline-block mt-2 px-3 py-1 bg-gray-100 rounded-full text-sm">
-                          1 ingresso
-                        </span>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+        {/* Promotional Banners */}
+        <div className="px-4 space-y-4">
+          {promotionalBanners.map((banner, index) => (
+            <Card 
+              key={index}
+              className={cn(
+                "p-6 bg-gradient-to-r text-white cursor-pointer transition-transform hover:scale-[1.02]",
+                banner.gradient
+              )}
+            >
+              <div className="flex items-start gap-4">
+                <span className="text-4xl">{banner.icon}</span>
+                <div>
+                  <h3 className="text-xl font-bold mb-2">{banner.title}</h3>
+                  <p className="text-white/90">{banner.description}</p>
+                </div>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="produtos">
-              <div className="text-center py-8 text-dashboard-muted">
-                Nenhum produto disponível
-              </div>
-            </TabsContent>
-          </Tabs>
+            </Card>
+          ))}
         </div>
       </div>
 

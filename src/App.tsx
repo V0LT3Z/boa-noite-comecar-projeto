@@ -9,6 +9,7 @@ import Checkout from "./pages/Checkout"
 import PaymentSuccess from "./pages/PaymentSuccess"
 import NotFound from "./pages/NotFound"
 import Dashboard from "./pages/Dashboard"
+import MyTickets from "./pages/MyTickets"
 
 const queryClient = new QueryClient()
 
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
             <Route path="/minha-conta" element={<Dashboard />} />
+            <Route path="/meus-ingressos" element={<MyTickets />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
