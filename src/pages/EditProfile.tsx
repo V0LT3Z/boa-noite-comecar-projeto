@@ -1,14 +1,42 @@
-
-import { useState } from "react";
-import { ArrowLeft, Save, User } from "lucide-react";
-import { Link } from "react-router-dom";
-import Header from "@/components/Header";
-import { useProtectedRoute } from "@/hooks/use-protected-route";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { User, ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import FormattedInput from "@/components/FormattedInput";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
+import FormattedInput from "@/components/FormattedInput";
+
+const formatCPF = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, "");
+  if (numbers.length <= 3) return numbers;
+  if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+  if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+  return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
+};
+
+const formatPhone = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, "");
+  if (numbers.length <= 2) return numbers;
+  if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+  return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+};
+
+const formatDate = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, "");
+  if (numbers.length <= 2) return numbers;
+  if (numbers.length <= 4) return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+  return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
+};
+
+const formatZipCode = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, "");
+  if (numbers.length <= 5) return numbers;
+  return `${numbers.slice(0, 5)}-${numbers.slice(5, 8)}`;
+};
 
 const EditProfile = () => {
   const { isLoading } = useProtectedRoute();

@@ -1,8 +1,8 @@
 
-import { FormEvent, useState, useMemo } from "react";
+import { FormEvent, useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
@@ -94,6 +94,7 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     birthDate: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [isCPFValid, setIsCPFValid] = useState<boolean | null>(null);
 
   // Password validation helpers
   const hasMinLength = useMemo(() => 
@@ -132,10 +133,35 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
   };
 
+  // Validate CPF in real-time as the user types
+  useEffect(() => {
+    if (formData.cpf && formData.cpf.length >= 14) {
+      const isValid = validateCPF(formData.cpf);
+      setIsCPFValid(isValid);
+      
+      if (!isValid) {
+        setFormErrors(prev => ({ ...prev, cpf: "CPF inválido ou inexistente" }));
+      } else {
+        setFormErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.cpf;
+          return newErrors;
+        });
+      }
+    } else if (formData.cpf) {
+      setIsCPFValid(null);
+      setFormErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.cpf;
+        return newErrors;
+      });
+    }
+  }, [formData.cpf]);
+
   const handleInputChange = (field: keyof RegisterFormData, value: string) => {
     setFormData({ ...formData, [field]: value });
     
-    if (formErrors[field]) {
+    if (field !== "cpf" && formErrors[field]) {
       setFormErrors({ ...formErrors, [field]: "" });
     }
   };
@@ -227,8 +253,18 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
             onChange={(value: string) => handleInputChange("cpf", value)}
             disabled={isLoading}
             format={formatCPF}
+            isValid={isCPFValid === false ? false : undefined}
             className={formErrors.cpf ? "border-destructive" : ""}
           />
+          {formData.cpf && formData.cpf.length >= 14 && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              {isCPFValid === true ? (
+                <CheckCircle2 size={18} className="text-green-600" />
+              ) : isCPFValid === false ? (
+                <XCircle size={18} className="text-destructive" />
+              ) : null}
+            </div>
+          )}
         </div>
         {formErrors.cpf && <p className="text-destructive text-sm">{formErrors.cpf}</p>}
       </div>

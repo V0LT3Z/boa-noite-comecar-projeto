@@ -1,62 +1,48 @@
 
-import { useState } from "react";
+import React from "react";
 import QRCode from "react-qr-code";
-import { Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
-interface PixQRCodeProps {
-  pixCode: string;
-  amount?: number;
+export interface PixQRCodeProps {
+  amount: number;
+  onConfirm?: () => Promise<void>;
+  isSubmitting?: boolean;
 }
 
-const PixQRCode = ({ pixCode, amount }: PixQRCodeProps) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyClick = () => {
-    navigator.clipboard.writeText(pixCode);
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
-  };
+const PixQRCode = ({ amount, onConfirm, isSubmitting = false }: PixQRCodeProps) => {
+  // Mock PIX code - in a real app, this would come from a payment gateway
+  const pixCode = `00020126580014br.gov.bcb.pix0136123e4567-e12b-12d1-a456-426655440000520400005303986540${amount.toFixed(2).replace('.', '')}5802BR5913Ticket Hub SA6008Sao Paulo62070503***6304E2CA`;
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-gray-50 border">
-      <QRCode value={pixCode} size={256} level="H" />
-      {amount && (
-        <p className="mt-2 text-lg font-semibold">
-          Valor: R$ {amount.toFixed(2)}
-        </p>
-      )}
-      <p className="mt-4 text-sm text-gray-600">
-        Escaneie o código QR acima ou copie o código PIX abaixo:
-      </p>
-      <div className="flex items-center mt-4">
-        <input
-          type="text"
-          value={pixCode}
-          readOnly
-          className="px-4 py-2 border rounded-md text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-full md:w-64"
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          className="ml-2"
-          onClick={handleCopyClick}
-          disabled={copied}
-        >
-          {copied ? (
-            <>
-              Copiado <Check className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            <>
-              Copiar <Copy className="ml-2 h-4 w-4" />
-            </>
+    <Card className="w-full">
+      <CardContent className="flex flex-col items-center justify-center p-6 space-y-6">
+        <div className="text-center mb-4">
+          <h3 className="text-xl font-semibold mb-2">Pagamento via PIX</h3>
+          <p className="text-gray-500">Escaneie o QR code abaixo para pagar R$ {amount.toFixed(2)}</p>
+        </div>
+        
+        <div className="bg-white p-4 rounded-lg">
+          <QRCode value={pixCode} size={200} />
+        </div>
+        
+        <div className="w-full max-w-xs space-y-4">
+          <p className="text-center text-sm text-gray-500">
+            Após o pagamento, o status da compra será atualizado automaticamente em instantes.
+          </p>
+          
+          {onConfirm && (
+            <Button 
+              onClick={onConfirm}
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              {isSubmitting ? "Processando..." : "Confirmar pagamento"}
+            </Button>
           )}
-        </Button>
-      </div>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
