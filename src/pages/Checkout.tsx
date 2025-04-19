@@ -24,7 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import FormattedInput from "@/components/FormattedInput"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { TicketType, EventDetails } from "@/types/event"
 import { toast } from "@/components/ui/sonner"
@@ -183,6 +183,30 @@ const Checkout = () => {
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  const formatCardNumber = (value: string) => {
+    if (!value) return "";
+    const cardNumberChunks = [];
+    for (let i = 0; i < value.length; i += 4) {
+      cardNumberChunks.push(value.slice(i, i + 4));
+    }
+    return cardNumberChunks.join(' ').trim().slice(0, 19); // 16 digits + 3 spaces
+  };
+
+  const formatExpiryDate = (value: string) => {
+    if (!value) return "";
+    if (value.length > 4) {
+      value = value.slice(0, 4);
+    }
+    if (value.length > 2) {
+      return `${value.slice(0, 2)}/${value.slice(2)}`;
+    }
+    return value;
+  };
+
+  const formatCVC = (value: string) => {
+    return value.slice(0, 3); // CVC is typically 3 digits
   }
 
   if (!checkoutData) {
@@ -368,7 +392,11 @@ const Checkout = () => {
                               <FormItem>
                                 <FormLabel>Número do Cartão</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="0000 0000 0000 0000" {...field} />
+                                  <FormattedInput 
+                                    format={formatCardNumber}
+                                    placeholder="0000 0000 0000 0000" 
+                                    {...field} 
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -383,7 +411,11 @@ const Checkout = () => {
                                 <FormItem>
                                   <FormLabel>Validade</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="MM/AA" {...field} />
+                                    <FormattedInput 
+                                      format={formatExpiryDate}
+                                      placeholder="MM/AA" 
+                                      {...field} 
+                                    />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -397,7 +429,11 @@ const Checkout = () => {
                                 <FormItem>
                                   <FormLabel>CVC</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="123" {...field} />
+                                    <FormattedInput 
+                                      format={formatCVC}
+                                      placeholder="123" 
+                                      {...field} 
+                                    />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
