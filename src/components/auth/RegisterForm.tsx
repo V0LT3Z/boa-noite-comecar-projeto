@@ -1,12 +1,48 @@
-
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, CheckCircle2, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import FormattedInput from "@/components/FormattedInput";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+
+const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
+
+const validateCPF = (cpf: string) => {
+  const numbers = cpf.replace(/[^\d]/g, "");
+  
+  if (numbers.length !== 11) return false;
+  
+  if (numbers.split("").every(char => char === numbers[0])) return false;
+  
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(numbers.charAt(i)) * (10 - i);
+  }
+  let remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(numbers.charAt(9))) return false;
+  
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(numbers.charAt(i)) * (11 - i);
+  }
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(numbers.charAt(10))) return false;
+  
+  return true;
+};
 
 const registerSchema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
@@ -18,6 +54,14 @@ const registerSchema = z.object({
     .regex(/[a-z]/, "Senha deve ter pelo menos uma letra minúscula")
     .regex(/[0-9]/, "Senha deve ter pelo menos um número"),
   confirmPassword: z.string(),
+  cpf: z.string().regex(cpfRegex, "CPF inválido").refine(validateCPF, "CPF inválido"),
+  birthDate: z.date({
+    required_error: "Data de nascimento é obrigatória",
+    invalid_type_error: "Data inválida",
+  }).refine((date) => {
+    const age = Math.floor((new Date().getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+    return age >= 18;
+  }, "Você precisa ter pelo menos 18 anos"),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Senhas não coincidem",
   path: ["confirmPassword"],
@@ -36,20 +80,22 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     email: "",
     password: "",
     confirmPassword: "",
+    cpf: "",
+    birthDate: undefined,
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Password validation states
-  const hasMinLength = formData.password && formData.password.length >= 8;
-  const hasUpperCase = formData.password && /[A-Z]/.test(formData.password);
-  const hasLowerCase = formData.password && /[a-z]/.test(formData.password);
-  const hasNumber = formData.password && /[0-9]/.test(formData.password);
-  const passwordsMatch = formData.password === formData.confirmPassword && formData.confirmPassword !== "";
+  const formatCPF = (value: string) => {
+    const numbers = value.replace(/[^\d]/g, "");
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
+  };
 
-  const handleInputChange = (field: keyof RegisterFormData, value: string) => {
+  const handleInputChange = (field: keyof RegisterFormData, value: string | Date) => {
     setFormData({ ...formData, [field]: value });
     
-    // Clear error when user starts typing again
     if (formErrors[field]) {
       setFormErrors({ ...formErrors, [field]: "" });
     }
@@ -76,14 +122,14 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       
       setFormErrors({});
       
-      // Call register instead of signUp
       await register({
         fullName: formData.name || "",
         email: formData.email || "",
-        password: formData.password || ""
+        password: formData.password || "",
+        cpf: formData.cpf,
+        birthDate: formData.birthDate?.toISOString(),
       });
 
-      // In a real app, the navigation would happen after email confirmation
       toast({
         title: "Conta criada com sucesso!",
         description: "Seja bem-vindo ao TicketHub.",
@@ -131,6 +177,56 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       </div>
 
       <div className="space-y-2">
+        <FormattedInput
+          placeholder="CPF"
+          value={formData.cpf || ""}
+          onChange={(e) => handleInputChange("cpf", e.target.value)}
+          disabled={isLoading}
+          format={formatCPF}
+          className={formErrors.cpf ? "border-destructive" : ""}
+        />
+        {formErrors.cpf && <p className="text-destructive text-sm">{formErrors.cpf}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !formData.birthDate && "text-muted-foreground",
+                formErrors.birthDate && "border-destructive"
+              )}
+              disabled={isLoading}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {formData.birthDate ? (
+                format(formData.birthDate, "dd/MM/yyyy")
+              ) : (
+                "Data de nascimento"
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={formData.birthDate}
+              onSelect={(date) => handleInputChange("birthDate", date as Date)}
+              disabled={(date) =>
+                date > new Date() || date < new Date("1900-01-01")
+              }
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
+        {formErrors.birthDate && (
+          <p className="text-destructive text-sm">{formErrors.birthDate}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
         <div className="relative">
           <Input
             type={showPassword ? "text" : "password"}
@@ -150,7 +246,6 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
         </div>
         {formErrors.password && <p className="text-destructive text-sm">{formErrors.password}</p>}
         
-        {/* Password requirements */}
         <div className="space-y-1 text-xs mt-2">
           <p className="font-medium text-sm text-gray-700">A senha deve conter:</p>
           <div className={`flex items-center gap-1 ${hasMinLength ? "text-green-600" : "text-gray-500"}`}>
@@ -192,7 +287,6 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
         </div>
         {formErrors.confirmPassword && <p className="text-destructive text-sm">{formErrors.confirmPassword}</p>}
         
-        {/* Password match indicator */}
         {formData.confirmPassword && (
           <div className={`flex items-center gap-1 text-xs ${passwordsMatch ? "text-green-600" : "text-gray-500"}`}>
             <CheckCircle2 size={12} className={passwordsMatch ? "text-green-600" : "text-gray-300"} />
