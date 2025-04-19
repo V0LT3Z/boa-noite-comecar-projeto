@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
 import { Button } from "@/components/ui/button";
 import FormattedInput from "@/components/FormattedInput"
+import { Input } from "@/components/ui/input";
 
 const cardSchema = z.object({
   cardNumber: z.string().min(16, "Número do cartão inválido").max(19),
@@ -85,8 +86,7 @@ const CardForm = ({ onSubmit, isSubmitting }: CardFormProps) => {
               <FormItem>
                 <FormLabel>Nome do Titular</FormLabel>
                 <FormControl>
-                  <FormattedInput 
-                    format={(value) => value}
+                  <Input 
                     placeholder="Nome como está no cartão" 
                     {...field} 
                   />
