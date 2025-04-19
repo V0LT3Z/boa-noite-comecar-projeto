@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from "@/components/ui/sonner";
 
@@ -81,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast({
         title: "Login realizado com sucesso!",
         description: "Redirecionando...",
-        type: "success"
+        variant: "success"
       });
       
       return true;
@@ -155,7 +156,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     toast({
       title: "Logout realizado",
       description: "Você saiu da sua conta com sucesso.",
-      type: "success"
     });
   };
 

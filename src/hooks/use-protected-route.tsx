@@ -24,5 +24,5 @@ export function useProtectedRoute() {
     }
   }, [isAuthenticated, isLoading, navigate, location.pathname]);
 
-  return { isLoading };
+  return { isLoading, isAuthenticated };
 }

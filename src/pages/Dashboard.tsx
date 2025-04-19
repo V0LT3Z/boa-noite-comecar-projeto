@@ -1,5 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext"
+import { useProtectedRoute } from "@/hooks/use-protected-route"
 import {
   SidebarProvider,
   Sidebar,
@@ -13,9 +14,9 @@ import {
   SidebarInset
 } from "@/components/ui/sidebar"
 import { ShoppingCart, UserCog, Heart, Bell, Tags } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import NextEvent from "@/components/dashboard/NextEvent"
+import { Link } from "react-router-dom"
 
 const menuItems = [
   {
@@ -47,6 +48,11 @@ const menuItems = [
 
 const Dashboard = () => {
   const { user } = useAuth()
+  const { isLoading } = useProtectedRoute();
+  
+  if (isLoading) {
+    return <div className="p-6">Carregando...</div>;
+  }
   
   return (
     <SidebarProvider>
@@ -60,10 +66,10 @@ const Dashboard = () => {
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
-                        <a href={item.url}>
+                        <Link to={item.url}>
                           <item.icon />
                           <span>{item.title}</span>
-                        </a>
+                        </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}

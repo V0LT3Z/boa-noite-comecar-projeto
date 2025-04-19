@@ -1,3 +1,4 @@
+
 import { LogIn, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
@@ -11,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Link } from "react-router-dom"
 
 const Header = () => {
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
@@ -26,7 +28,7 @@ const Header = () => {
         <div className="flex justify-between items-center">
           <div className="flex-1" />
           <div className="text-3xl font-bold text-primary text-center flex-1">
-            Ticket Hub
+            <Link to="/">Ticket Hub</Link>
           </div>
           <div className="flex-1 flex justify-end">
             {isAuthenticated ? (
@@ -52,6 +54,16 @@ const Header = () => {
                       </p>
                     </div>
                   </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    asChild
+                    className="cursor-pointer"
+                  >
+                    <Link to="/minha-conta">
+                      <User className="mr-2 h-4 w-4" aria-hidden="true" />
+                      <span>Minha Conta</span>
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={() => logout()}
