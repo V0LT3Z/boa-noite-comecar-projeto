@@ -31,33 +31,41 @@ const Toaster = ({ ...props }: ToasterProps) => {
 interface ToastOptions {
   title?: string;
   description?: string;
-  variant?: "default" | "destructive";
-  type?: "success";
+  variant?: "default" | "destructive" | "success";
 }
 
 const toast = (options: ToastOptions) => {
-  const { title, description, variant, type } = options;
+  const { title, description, variant } = options;
+  
+  // Toast de sucesso com fundo verde suave
+  if (variant === "success") {
+    return sonnerToast.success(title || "", {
+      description,
+      style: { 
+        backgroundColor: "#F2FCE2",  // Soft green background 
+        color: "#2e7d32",  // Dark green text
+        borderColor: "#81c784"  // Light green border
+      },
+    });
+  }
   
   // Toast de erro (destructive)
   if (variant === "destructive") {
     return sonnerToast(title || "", {
       description,
-      style: { backgroundColor: "#ea384c", color: "#ffffff", borderColor: "#ea384c" },
-    });
-  } 
-  // Toast de sucesso - usando cores roxas compatíveis com o tema
-  else if (type === "success") {
-    return sonnerToast.success(title || "", {
-      description,
-      style: { backgroundColor: "#E5DEFF", color: "#6E59A5", borderColor: "#9b87f5" },
+      style: { 
+        backgroundColor: "#FFDEE2",  // Soft red background
+        color: "#c62828",  // Dark red text
+        borderColor: "#ef5350"  // Light red border
+      },
     });
   }
   
   // Toast default
   return sonnerToast(title || "", {
     description,
-    style: { backgroundColor: "#f1f5f9", color: "#334155", borderColor: "#e2e8f0" },
   });
 };
 
 export { Toaster, toast }
+
