@@ -68,4 +68,3 @@ const toast = (options: ToastOptions) => {
 };
 
 export { Toaster, toast }
-

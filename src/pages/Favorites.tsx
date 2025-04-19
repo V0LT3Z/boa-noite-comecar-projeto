@@ -1,11 +1,9 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bookmark, AlertCircle, Bell } from "lucide-react";
 import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useProtectedRoute } from "@/hooks/use-protected-route";
 import { EventDetails } from "@/types/event";
 import { getUserFavorites, removeFromFavorites, subscribeToNotifications, Notification, getUserNotifications } from "@/services/favorites";
@@ -29,7 +27,7 @@ const Favorites = () => {
         toast({
           title: "Nova notificação",
           description: newNotification.message,
-          type: "success"
+          variant: "success"
         });
         setHasUnreadNotifications(true);
       });
@@ -50,7 +48,6 @@ const Favorites = () => {
   const fetchNotifications = async () => {
     const notifs = await getUserNotifications();
     setNotifications(notifs);
-    // Check if there are any unread notifications
     setHasUnreadNotifications(notifs.some(notif => !notif.is_read));
   };
   
@@ -61,11 +58,8 @@ const Favorites = () => {
     }
   };
   
-  // For demo purposes, let's simulate some notifications
   useEffect(() => {
     if (favoriteEvents.length > 0 && !isLoading) {
-      // This would typically be triggered by a backend process
-      // but we'll simulate it for now
       const timeout = setTimeout(() => {
         const mockNotification = {
           id: `notif-${Date.now()}`,
@@ -83,7 +77,7 @@ const Favorites = () => {
         toast({
           title: "Nova notificação",
           description: mockNotification.message,
-          type: "success"
+          variant: "success"
         });
       }, 10000); // Show after 10 seconds
       
@@ -155,8 +149,8 @@ const Favorites = () => {
           <div className="grid grid-cols-1 gap-6">
             {favoriteEvents.map((event) => (
               <Card key={event.id} className="overflow-hidden hover:shadow-event-card transition-shadow">
-                <div className="flex flex-col sm:flex-row">
-                  <div className="w-full sm:w-48 h-48 sm:h-full relative">
+                <div className="flex flex-col sm:flex-row h-auto">
+                  <div className="w-full sm:w-48 h-48 relative">
                     <img 
                       src={event.image} 
                       alt={event.title}
@@ -172,16 +166,6 @@ const Favorites = () => {
                         <p>{event.date} • {event.time}</p>
                         <p>{event.location}</p>
                       </div>
-                      
-                      {event.tickets && event.tickets.length > 0 && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {event.tickets.map(ticket => (
-                            <Badge key={ticket.id} variant="outline" className="bg-soft-gray">
-                              {ticket.name}: R$ {ticket.price.toFixed(2)}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
                     </div>
                     
                     <div className="flex flex-wrap gap-3 mt-2">
