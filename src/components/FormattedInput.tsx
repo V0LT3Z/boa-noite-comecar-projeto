@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 
 interface FormattedInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
@@ -13,6 +13,13 @@ const FormattedInput = React.forwardRef<HTMLInputElement, FormattedInputProps>(
   ({ format, value, onChange, onValidate, isValid, className, ...props }, ref) => {
     const [formattedValue, setFormattedValue] = useState(() => 
       value ? format(String(value)) : "");
+    
+    // Update formatted value when external value changes
+    useEffect(() => {
+      if (value !== undefined) {
+        setFormattedValue(format(String(value)));
+      }
+    }, [value, format]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const rawValue = e.target.value;
@@ -21,6 +28,11 @@ const FormattedInput = React.forwardRef<HTMLInputElement, FormattedInputProps>(
       
       // Pass the formatted value to the parent component
       onChange(formatted);
+      
+      // If validation function is provided, call it immediately
+      if (onValidate) {
+        onValidate(formatted);
+      }
     };
 
     const inputClasses = isValid === false ? "border-destructive" : className;

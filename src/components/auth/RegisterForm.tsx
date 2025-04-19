@@ -133,10 +133,11 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
   };
 
-  // Validate CPF in real-time as the user types
-  useEffect(() => {
-    if (formData.cpf && formData.cpf.length >= 14) {
-      const isValid = validateCPF(formData.cpf);
+  // Function to validate CPF that will be called during input
+  const validateCPFInput = (value: string): boolean => {
+    // Only validate if we have a complete CPF
+    if (value.length === 14) {
+      const isValid = validateCPF(value);
       setIsCPFValid(isValid);
       
       if (!isValid) {
@@ -148,15 +149,18 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
           return newErrors;
         });
       }
-    } else if (formData.cpf) {
+      return isValid;
+    } else {
+      // If not complete, don't show validation yet
       setIsCPFValid(null);
       setFormErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors.cpf;
         return newErrors;
       });
+      return false;
     }
-  }, [formData.cpf]);
+  };
 
   const handleInputChange = (field: keyof RegisterFormData, value: string) => {
     setFormData({ ...formData, [field]: value });
@@ -251,12 +255,13 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
             placeholder="CPF"
             value={formData.cpf || ""}
             onChange={(value: string) => handleInputChange("cpf", value)}
+            onValidate={validateCPFInput}
             disabled={isLoading}
             format={formatCPF}
             isValid={isCPFValid === false ? false : undefined}
             className={formErrors.cpf ? "border-destructive" : ""}
           />
-          {formData.cpf && formData.cpf.length >= 14 && (
+          {formData.cpf && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               {isCPFValid === true ? (
                 <CheckCircle2 size={18} className="text-green-600" />
