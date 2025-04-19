@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -11,6 +12,7 @@ import NotFound from "./pages/NotFound"
 import Dashboard from "./pages/Dashboard"
 import MyTickets from "./pages/MyTickets"
 import EditProfile from "./pages/EditProfile"
+import Favorites from "./pages/Favorites"
 
 const queryClient = new QueryClient()
 
@@ -28,6 +30,7 @@ const App = () => (
             <Route path="/minha-conta" element={<Dashboard />} />
             <Route path="/meus-ingressos" element={<MyTickets />} />
             <Route path="/editar-perfil" element={<EditProfile />} />
+            <Route path="/favoritos" element={<Favorites />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

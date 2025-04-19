@@ -3,6 +3,7 @@ import { Calendar, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Link } from "react-router-dom"
+import FavoriteButton from "./FavoriteButton"
 
 interface EventCardProps {
   id: number
@@ -23,6 +24,11 @@ const EventCard = ({ id, title, date, location, image }: EventCardProps) => {
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-primary opacity-30 mix-blend-multiply" />
+          
+          {/* Add favorite button overlay */}
+          <div className="absolute top-2 right-2">
+            <FavoriteButton eventId={id} variant="icon" />
+          </div>
         </div>
         
         <div className="flex flex-1 items-center p-4 justify-between gap-4">

@@ -1,9 +1,11 @@
+
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Info, Clock, MapPin, AlertTriangle, ChevronLeft } from "lucide-react"
 import Header from "@/components/Header"
 import TicketSelector from "@/components/TicketSelector"
 import EventMap from "@/components/EventMap"
+import FavoriteButton from "@/components/FavoriteButton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { EventDetails } from "@/types/event"
@@ -154,13 +156,21 @@ const EventDetailsPage = () => {
                 <span>{eventDetails.location}</span>
               </div>
             </div>
+            
+            {/* Add favorite button in the top right corner */}
+            <div className="absolute top-4 right-4">
+              <FavoriteButton eventId={Number(id)} variant="icon" />
+            </div>
           </div>
         </div>
       </div>
 
       <main className="container mx-auto px-4 py-8">
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-primary mb-4">Ingressos</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold text-primary">Ingressos</h2>
+            <FavoriteButton eventId={Number(id)} variant="outline" />
+          </div>
           <div className="space-y-4">
             {eventDetails.tickets.map((ticket) => (
               <TicketSelector
