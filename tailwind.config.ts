@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -25,29 +26,29 @@ export default {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         primary: {
-          DEFAULT: 'hsl(270 80% 60%)', // Roxo vibrante
+          DEFAULT: 'hsl(270 80% 60%)', 
           foreground: 'hsl(var(--primary-foreground))',
           light: 'hsl(270 70% 75%)',
           dark: 'hsl(270 80% 45%)'
         },
         secondary: {
-          DEFAULT: 'hsl(210 80% 60%)', // Azul jovem
+          DEFAULT: 'hsl(210 80% 60%)', 
           foreground: 'hsl(var(--secondary-foreground))',
           light: 'hsl(210 70% 75%)',
           dark: 'hsl(210 80% 45%)'
         },
         destructive: {
-          DEFAULT: '#ea384c', // Solid red color for error messages
-          foreground: '#ffffff', // White text for high contrast
+          DEFAULT: '#ea384c', 
+          foreground: '#ffffff', 
         },
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))'
         },
-        "dashboard-bg": "#1A1A1A",
-        "dashboard-card": "#2A2A2A",
-        "dashboard-text": "#FFFFFF",
-        "dashboard-muted": "#999999",
+        "dashboard-bg": "#FFFFFF",
+        "dashboard-card": "#F1F0FB",
+        "dashboard-text": "#000000",
+        "dashboard-muted": "#666666",
       },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(to right, hsl(270 80% 60%), hsl(210 80% 60%))',
@@ -59,3 +60,4 @@ export default {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+

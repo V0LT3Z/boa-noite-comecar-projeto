@@ -49,14 +49,14 @@ const Dashboard = () => {
     <div className="min-h-screen bg-dashboard-bg text-dashboard-text flex">
       {/* Desktop Sidebar */}
       {!isMobile && (
-        <div className="w-64 bg-dashboard-card border-r border-white/10 p-4 hidden md:block">
+        <div className="w-64 bg-dashboard-card border-r border-gray-200 p-4 hidden md:block">
           <div className="space-y-6">
             {menuItems.map((item) => (
               <Link
                 key={item.title}
                 to={item.url}
                 className={cn(
-                  "flex items-center gap-3 p-3 rounded-lg text-dashboard-muted transition-colors hover:bg-white/5",
+                  "flex items-center gap-3 p-3 rounded-lg text-dashboard-muted transition-colors hover:bg-gray-100",
                   window.location.pathname === item.url && "text-primary bg-primary/10"
                 )}
               >
@@ -97,13 +97,13 @@ const Dashboard = () => {
               {/* Lista de ingressos aqui */}
               <div className="space-y-4">
                 {[1, 2, 3].map((item) => (
-                  <Card key={item} className="bg-dashboard-card border-none p-4">
+                  <Card key={item} className="bg-dashboard-card border border-gray-200 p-4">
                     <div className="flex gap-4">
                       <div className="w-24 h-24 bg-primary/20 rounded-lg" />
                       <div>
                         <h3 className="font-semibold">Deu Baile | Sexta {item}4.03</h3>
                         <p className="text-dashboard-muted">Pacco Club</p>
-                        <span className="inline-block mt-2 px-3 py-1 bg-dashboard-bg rounded-full text-sm">
+                        <span className="inline-block mt-2 px-3 py-1 bg-gray-100 rounded-full text-sm">
                           1 ingresso
                         </span>
                       </div>
@@ -124,7 +124,7 @@ const Dashboard = () => {
 
       {/* Mobile Navigation */}
       {isMobile && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-dashboard-card border-t border-white/10">
+        <nav className="fixed bottom-0 left-0 right-0 bg-dashboard-card border-t border-gray-200">
           <div className="flex justify-around items-center h-16">
             {menuItems.map((item) => (
               <Link
@@ -147,3 +147,4 @@ const Dashboard = () => {
 }
 
 export default Dashboard
+
