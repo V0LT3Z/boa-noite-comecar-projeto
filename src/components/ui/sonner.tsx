@@ -38,18 +38,18 @@ interface ToastOptions {
 const toast = (options: ToastOptions) => {
   const { title, description, variant, type } = options;
   
-  // Se for um toast de erro (destructive)
+  // Toast de erro (destructive)
   if (variant === "destructive") {
     return sonnerToast(title || "", {
       description,
       style: { backgroundColor: "#ea384c", color: "#ffffff", borderColor: "#ea384c" },
     });
   } 
-  // Se for um toast de sucesso
+  // Toast de sucesso - usando cores roxas compatíveis com o tema
   else if (type === "success") {
     return sonnerToast.success(title || "", {
       description,
-      style: { backgroundColor: "hsl(270 70% 75%)", color: "hsl(270 80% 25%)", borderColor: "hsl(270 80% 45%)" },
+      style: { backgroundColor: "#E5DEFF", color: "#6E59A5", borderColor: "#9b87f5" },
     });
   }
   

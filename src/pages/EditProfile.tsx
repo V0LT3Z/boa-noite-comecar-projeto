@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -78,6 +79,7 @@ const EditProfile = () => {
   const form = useForm<EditProfileFormValues>({
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
+      email: user?.email || "",
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
@@ -117,7 +119,7 @@ const EditProfile = () => {
               </div>
               <div>
                 <h3 className="text-white font-semibold">{user?.fullName}</h3>
-                <p className="text-white/70 text-sm">{user?.email}</p>
+                {/* Removed email from sidebar */}
               </div>
             </div>
             <SidebarGroup>
@@ -214,6 +216,29 @@ const EditProfile = () => {
                       <div className="bg-soft-purple/40 rounded-lg p-5">
                         <FormField
                           control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                Email
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  type="email"
+                                  placeholder="exemplo@email.com"
+                                  className="border-primary/20 focus:border-primary bg-white"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="bg-soft-purple/40 rounded-lg p-5">
+                        <FormField
+                          control={form.control}
                           name="bio"
                           render={({ field }) => (
                             <FormItem>
@@ -248,7 +273,7 @@ const EditProfile = () => {
                                 <Input 
                                   {...field} 
                                   type="password" 
-                                  className="border-primary/30 focus:border-primary focus:ring-primary"
+                                  className="border-primary/20 focus:border-primary bg-white"
                                 />
                               </FormControl>
                               <FormMessage className="text-red-500" />
@@ -269,7 +294,7 @@ const EditProfile = () => {
                                   <Input 
                                     {...field} 
                                     type="password" 
-                                    className="border-primary/30 focus:border-primary focus:ring-primary" 
+                                    className="border-primary/20 focus:border-primary bg-white" 
                                   />
                                 </FormControl>
                                 <FormMessage className="text-red-500" />
@@ -289,7 +314,7 @@ const EditProfile = () => {
                                   <Input 
                                     {...field} 
                                     type="password" 
-                                    className="border-primary/30 focus:border-primary focus:ring-primary" 
+                                    className="border-primary/20 focus:border-primary bg-white" 
                                   />
                                 </FormControl>
                                 <FormMessage className="text-red-500" />
