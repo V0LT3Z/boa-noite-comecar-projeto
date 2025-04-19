@@ -51,7 +51,7 @@ const toast = (options: ToastOptions) => {
   
   // Toast de erro (destructive)
   if (variant === "destructive") {
-    return sonnerToast(title || "", {
+    return sonnerToast.error(title || "", {
       description,
       style: { 
         backgroundColor: "#FFDEE2",  // Soft red background
