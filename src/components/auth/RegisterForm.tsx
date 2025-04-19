@@ -1,4 +1,5 @@
-import { FormEvent, useState } from "react";
+
+import { FormEvent, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Eye, EyeOff, ArrowRight, CheckCircle2, CalendarIcon } from "lucide-react";
@@ -84,6 +85,28 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     birthDate: undefined,
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Password validation helpers
+  const hasMinLength = useMemo(() => 
+    (formData.password?.length || 0) >= 8, [formData.password]
+  );
+  
+  const hasUpperCase = useMemo(() => 
+    /[A-Z]/.test(formData.password || ""), [formData.password]
+  );
+  
+  const hasLowerCase = useMemo(() => 
+    /[a-z]/.test(formData.password || ""), [formData.password]
+  );
+  
+  const hasNumber = useMemo(() => 
+    /[0-9]/.test(formData.password || ""), [formData.password]
+  );
+  
+  const passwordsMatch = useMemo(() => 
+    !!formData.password && formData.password === formData.confirmPassword, 
+    [formData.password, formData.confirmPassword]
+  );
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/[^\d]/g, "");
