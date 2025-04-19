@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock } from "lucide-react";
@@ -10,6 +9,7 @@ import TicketSelector from "@/components/TicketSelector";
 import FavoriteButton from "@/components/FavoriteButton";
 import Header from "@/components/Header";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { EventDetails as EventDetailsType } from "@/types/event";
 
 const EventDetails = () => {
@@ -17,6 +17,7 @@ const EventDetails = () => {
   const [event, setEvent] = useState<EventDetailsType | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (eventId) {
@@ -151,95 +152,180 @@ const EventDetails = () => {
     );
   }
 
-  return (
-    <>
-      <Header />
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Event Details */}
+  const renderContent = () => {
+    if (isMobile) {
+      return (
+        <div className="space-y-6">
           <div>
             <img
               src={event.image}
               alt={event.title}
-              className="w-full rounded-lg mb-4 object-cover h-48 md:h-64"
+              className="w-full rounded-lg mb-4 object-cover h-48"
             />
-            <h1 className="text-3xl font-bold text-primary mb-2">{event.title}</h1>
-            <div className="flex items-center text-gray-600 mb-4">
-              <Calendar className="mr-2 h-5 w-5" />
-              {new Date(event.date).toLocaleDateString("pt-BR", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-              <Separator orientation="vertical" className="mx-2 h-5" />
-              <Clock className="mr-2 h-5 w-5" />
-              {event.time}
-              <Separator orientation="vertical" className="mx-2 h-5" />
-              <MapPin className="mr-2 h-5 w-5" />
-              {event.location}
+            <h1 className="text-2xl font-bold text-primary mb-2">{event.title}</h1>
+            <div className="flex flex-col gap-2 text-gray-600 mb-4">
+              <div className="flex items-center">
+                <Calendar className="mr-2 h-5 w-5" />
+                {new Date(event.date).toLocaleDateString("pt-BR", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
+              <div className="flex items-center">
+                <Clock className="mr-2 h-5 w-5" />
+                {event.time}
+              </div>
+              <div className="flex items-center">
+                <MapPin className="mr-2 h-5 w-5" />
+                {event.location}
+              </div>
             </div>
-            
-            <Card className="mb-4">
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold mb-2">Descrição</h2>
-                <p className="text-gray-700">{event.description}</p>
-              </CardContent>
-            </Card>
-
-            <Card className="mb-4">
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold mb-2">Local do Evento</h2>
-                <p className="text-gray-700">
-                  <strong>{event.venue.name}</strong>
-                  <br />
-                  {event.venue.address}
-                  <br />
-                  Capacidade: {event.venue.capacity}
-                </p>
-                <Button
-                  variant="link"
-                  asChild
-                  className="mt-2 p-0"
-                >
-                  <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
-                    Ver no Mapa
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="mb-4">
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold mb-2">Avisos</h2>
-                {event.warnings && event.warnings.length > 0 ? (
-                  <ul className="list-disc pl-5 text-gray-700">
-                    {event.warnings.map((warning, index) => (
-                      <li key={index}>{warning}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-gray-700">Nenhum aviso especial para este evento.</p>
-                )}
-              </CardContent>
-            </Card>
           </div>
 
-          {/* Ticket Selection and Map */}
-          <div>
-            <TicketSelector 
-              tickets={event.tickets} 
-              onPurchase={handlePurchase}
-            />
-            <div className="mt-6">
-              <EventMap
-                coordinates={{
-                  lat: event.coordinates.lat,
-                  lng: event.coordinates.lng
-                }}
-              />
-            </div>
+          <TicketSelector 
+            tickets={event.tickets} 
+            onPurchase={handlePurchase}
+          />
+
+          <Card className="mb-4">
+            <CardContent className="pt-6">
+              <h2 className="text-xl font-semibold mb-2">Descrição</h2>
+              <p className="text-gray-700">{event.description}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-4">
+            <CardContent className="pt-6">
+              <h2 className="text-xl font-semibold mb-2">Local do Evento</h2>
+              <p className="text-gray-700">
+                <strong>{event.venue.name}</strong>
+                <br />
+                {event.venue.address}
+                <br />
+                Capacidade: {event.venue.capacity}
+              </p>
+              <Button
+                variant="link"
+                asChild
+                className="mt-2 p-0"
+              >
+                <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
+                  Ver no Mapa
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-4">
+            <CardContent className="pt-6">
+              <h2 className="text-xl font-semibold mb-2">Avisos</h2>
+              {event.warnings && event.warnings.length > 0 ? (
+                <ul className="list-disc pl-5 text-gray-700">
+                  {event.warnings.map((warning, index) => (
+                    <li key={index}>{warning}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-700">Nenhum aviso especial para este evento.</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="mt-6">
+            <EventMap coordinates={event.coordinates} />
           </div>
         </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <img
+            src={event.image}
+            alt={event.title}
+            className="w-full rounded-lg mb-4 object-cover h-48 md:h-64"
+          />
+          <h1 className="text-3xl font-bold text-primary mb-2">{event.title}</h1>
+          <div className="flex items-center text-gray-600 mb-4">
+            <Calendar className="mr-2 h-5 w-5" />
+            {new Date(event.date).toLocaleDateString("pt-BR", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+            <Separator orientation="vertical" className="mx-2 h-5" />
+            <Clock className="mr-2 h-5 w-5" />
+            {event.time}
+            <Separator orientation="vertical" className="mx-2 h-5" />
+            <MapPin className="mr-2 h-5 w-5" />
+            {event.location}
+          </div>
+          
+          <Card className="mb-4">
+            <CardContent className="pt-6">
+              <h2 className="text-xl font-semibold mb-2">Descrição</h2>
+              <p className="text-gray-700">{event.description}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-4">
+            <CardContent className="pt-6">
+              <h2 className="text-xl font-semibold mb-2">Local do Evento</h2>
+              <p className="text-gray-700">
+                <strong>{event.venue.name}</strong>
+                <br />
+                {event.venue.address}
+                <br />
+                Capacidade: {event.venue.capacity}
+              </p>
+              <Button
+                variant="link"
+                asChild
+                className="mt-2 p-0"
+              >
+                <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
+                  Ver no Mapa
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-4">
+            <CardContent className="pt-6">
+              <h2 className="text-xl font-semibold mb-2">Avisos</h2>
+              {event.warnings && event.warnings.length > 0 ? (
+                <ul className="list-disc pl-5 text-gray-700">
+                  {event.warnings.map((warning, index) => (
+                    <li key={index}>{warning}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-700">Nenhum aviso especial para este evento.</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div>
+          <TicketSelector 
+            tickets={event.tickets} 
+            onPurchase={handlePurchase}
+          />
+          <div className="mt-6">
+            <EventMap coordinates={event.coordinates} />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        {renderContent()}
       </div>
     </>
   );
