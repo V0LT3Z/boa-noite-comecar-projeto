@@ -35,9 +35,14 @@ interface ToastOptions {
   type?: "default" | "success";
 }
 
+// Corrigindo a forma como a função toast é implementada
 const toast = (options: ToastOptions) => {
   const { type, ...rest } = options;
-  return sonnerToast(rest, { type });
+  // Passando os parâmetros corretamente para o sonnerToast
+  return sonnerToast(rest.title || "", {
+    description: rest.description,
+    type: type
+  });
 };
 
 export { Toaster, toast }
