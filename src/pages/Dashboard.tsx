@@ -1,7 +1,7 @@
 
 import { useAuth } from "@/contexts/AuthContext"
 import { useProtectedRoute } from "@/hooks/use-protected-route"
-import { Home, Calendar, User, ShoppingCart, Heart } from "lucide-react"
+import { ShoppingCart, Settings, Heart, Bell, Tag } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Link } from "react-router-dom"
@@ -10,19 +10,14 @@ import { useIsMobile } from "@/hooks/use-mobile"
 
 const menuItems = [
   {
-    title: "Início",
-    icon: Home,
-    url: "/minha-conta"
-  },
-  {
-    title: "Agenda",
-    icon: Calendar,
-    url: "/agenda"
-  },
-  {
-    title: "Ingressos",
+    title: "Meus ingressos",
     icon: ShoppingCart,
     url: "/meus-ingressos"
+  },
+  {
+    title: "Editar perfil",
+    icon: Settings,
+    url: "/editar-perfil"
   },
   {
     title: "Favoritos",
@@ -30,9 +25,14 @@ const menuItems = [
     url: "/favoritos"
   },
   {
-    title: "Perfil",
-    icon: User,
-    url: "/editar-perfil"
+    title: "Notificações",
+    icon: Bell,
+    url: "/notificacoes"
+  },
+  {
+    title: "Acessar Marketplace",
+    icon: Tag,
+    url: "/marketplace"
   }
 ]
 
