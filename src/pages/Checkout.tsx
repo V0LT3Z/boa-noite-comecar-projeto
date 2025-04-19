@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
@@ -57,7 +56,6 @@ const Checkout = () => {
   const [couponApplied, setCouponApplied] = useState(false)
   const [showPixQR, setShowPixQR] = useState(false)
 
-  // Cupons de exemplo
   const validCoupons = {
     "EVENTO10": 10, // 10% de desconto
     "PROMO20": 20,  // 20% de desconto
@@ -78,13 +76,11 @@ const Checkout = () => {
     }
   });
 
-  // Atualizar o QR code do PIX quando o método de pagamento mudar
   useEffect(() => {
     setShowPixQR(form.watch("paymentMethod") === "pix");
   }, [form.watch("paymentMethod")]);
 
   useEffect(() => {
-    // Verificar se temos dados do evento e ingressos selecionados
     const state = location.state as CheckoutState | null
     
     if (!state || !state.eventDetails || !state.selectedTickets) {
@@ -109,7 +105,6 @@ const Checkout = () => {
       return acc + (ticket ? ticket.price * quantity : 0)
     }, 0)
 
-    // Aplicar desconto se houver cupom
     if (discount > 0) {
       total = total * (1 - discount / 100)
     }
@@ -166,15 +161,12 @@ const Checkout = () => {
     setIsProcessing(true)
     
     try {
-      // Aqui você implementaria a integração real com a API de pagamento (Stripe, etc)
       console.log("Dados do formulário:", data)
       console.log("Dados do checkout:", checkoutData)
       console.log("Total a pagar:", calculateTotal().toFixed(2))
       
-      // Simulação de processamento de pagamento
       await new Promise(resolve => setTimeout(resolve, 2000))
       
-      // Redirecionar para a página de sucesso
       navigate('/pagamento-sucesso', {
         state: {
           eventName: checkoutData?.eventDetails.title,
@@ -203,8 +195,6 @@ const Checkout = () => {
   const ticketItems = getTicketCountByType()
   const total = calculateTotal()
 
-  // Gerar uma URL de QR code para simulação
-  // Em produção, você substituiria isso por uma API real de PIX
   const pixQRCodeURL = `https://chart.googleapis.com/chart?cht=qr&chl=00020126330014BR.GOV.BCB.PIX0111EXAMPLE1234520400005303986540${total.toFixed(2).replace('.', '')}5802BR5913EventPayment6008Sao Paulo62070503***6304${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}&chs=300x300&choe=UTF-8&chld=L|2`;
 
   return (
@@ -215,7 +205,6 @@ const Checkout = () => {
         <h1 className="text-3xl font-bold text-primary mb-6">Finalizar Compra</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Resumo do Pedido */}
           <div className="md:col-span-1">
             <Card>
               <CardHeader>
@@ -259,7 +248,6 @@ const Checkout = () => {
             </Card>
           </div>
           
-          {/* Formulário de Pagamento */}
           <div className="md:col-span-2">
             <Card>
               <CardHeader>
@@ -435,7 +423,6 @@ const Checkout = () => {
                             <div className="text-sm text-gray-500 mt-2">
                               <p>Escaneie o QR Code acima com o aplicativo do seu banco</p>
                               <p>Valor a pagar: <span className="font-semibold">R$ {total.toFixed(2)}</span></p>
-                              <p className="text-xs mt-1 text-green-600 font-semibold">O valor será enviado automaticamente e não poderá ser alterado</p>
                             </div>
                             <div className="border-t pt-3 mt-3">
                               <p className="font-medium">Instruções:</p>
