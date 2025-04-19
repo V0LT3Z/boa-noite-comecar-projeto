@@ -3,13 +3,6 @@ import { useState } from "react"
 import { Minus, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TicketType } from "@/types/event"
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
 
 interface TicketSelectorProps {
   tickets: TicketType[]
@@ -20,7 +13,6 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
   const [selectedTickets, setSelectedTickets] = useState<{ ticketId: number, quantity: number }[]>(
     tickets?.map(ticket => ({ ticketId: ticket.id, quantity: 0 })) || []
   );
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleQuantityChange = (ticketId: number, quantity: number) => {
     setSelectedTickets(prev => 
@@ -30,22 +22,10 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
     );
   };
 
-  const handlePurchaseClick = () => {
-    setIsDialogOpen(true);
-  };
-
-  const handleConfirmPurchase = () => {
-    setIsDialogOpen(false);
+  const handlePurchase = () => {
     if (onPurchase) {
       onPurchase(selectedTickets.filter(item => item.quantity > 0));
     }
-  };
-
-  const calculateTotal = () => {
-    return selectedTickets.reduce((total, item) => {
-      const ticket = tickets.find(t => t.id === item.ticketId);
-      return total + ((ticket?.price || 0) * item.quantity);
-    }, 0);
   };
 
   if (!tickets || tickets.length === 0) {
@@ -112,7 +92,7 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
       {onPurchase && (
         <div className="space-y-2">
           <Button 
-            onClick={handlePurchaseClick}
+            onClick={handlePurchase}
             className="w-full bg-primary text-white"
             disabled={!selectedTickets.some(item => item.quantity > 0)}
             size="lg"
@@ -128,36 +108,6 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
           </Button>
         </div>
       )}
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Confirmar compra de ingressos</DialogTitle>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <h4 className="font-medium mb-2">Ingressos selecionados:</h4>
-            {selectedTickets.filter(item => item.quantity > 0).map(item => {
-              const ticket = tickets.find(t => t.id === item.ticketId);
-              return (
-                <div key={item.ticketId} className="flex justify-between py-2 border-b">
-                  <span>{ticket?.name} x {item.quantity}</span>
-                  <span>R$ {((ticket?.price || 0) * item.quantity).toFixed(2)}</span>
-                </div>
-              );
-            })}
-            <div className="flex justify-between font-bold mt-4">
-              <span>Total:</span>
-              <span>R$ {calculateTotal().toFixed(2)}</span>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleConfirmPurchase}>Continuar para pagamento</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
