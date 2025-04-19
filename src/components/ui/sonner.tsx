@@ -1,6 +1,6 @@
 
 import { useTheme } from "next-themes"
-import { Toaster as Sonner, toast as sonnerToast } from "sonner"
+import { Toaster as Sonner, toast as sonnerToast, ToastOptions as SonnerToastOptions } from "sonner"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
@@ -35,14 +35,23 @@ interface ToastOptions {
   type?: "default" | "success";
 }
 
-// Corrigindo a forma como a função toast é implementada
 const toast = (options: ToastOptions) => {
-  const { type, ...rest } = options;
-  // Passando os parâmetros corretamente para o sonnerToast
-  return sonnerToast(rest.title || "", {
-    description: rest.description,
-    type: type
-  });
+  const { title, description, type } = options;
+  
+  // Create a compatible options object for sonnerToast
+  const sonnerOptions: SonnerToastOptions = {};
+  
+  if (description) {
+    sonnerOptions.description = description;
+  }
+  
+  // We don't pass type directly as it's not in ExternalToast
+  // Instead we use a custom property for styling that our CSS handles
+  if (type === "success") {
+    sonnerOptions.custom = { type: "success" };
+  }
+
+  return sonnerToast(title || "", sonnerOptions);
 };
 
 export { Toaster, toast }
