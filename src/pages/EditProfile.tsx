@@ -69,44 +69,56 @@ const EditProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-dashboard-bg p-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-dashboard-bg p-6 flex items-center justify-center">
+      <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="mb-8">
+        <div className="bg-gradient-primary p-6 text-white">
           <Button
             variant="ghost"
-            className="mb-4"
+            className="mb-4 text-white hover:bg-white/20"
             onClick={() => navigate("/minha-conta")}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
-          <h1 className="text-2xl font-bold">Editar Perfil</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Editar Perfil</h1>
         </div>
 
-        {/* Profile Form */}
-        <div className="bg-white rounded-lg shadow p-6">
+        {/* Profile Form Container */}
+        <div className="p-8 space-y-6">
           {/* Readonly Fields */}
-          <div className="space-y-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Nome Completo
               </label>
-              <Input value={user?.fullName} disabled className="bg-gray-50" />
+              <Input 
+                value={user?.fullName} 
+                disabled 
+                className="bg-gray-50 cursor-not-allowed" 
+              />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 CPF
               </label>
-              <Input value="000.000.000-00" disabled className="bg-gray-50" />
+              <Input 
+                value="000.000.000-00" 
+                disabled 
+                className="bg-gray-50 cursor-not-allowed" 
+              />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Data de Nascimento
               </label>
-              <Input value="01/01/2000" disabled className="bg-gray-50" />
+              <Input 
+                value="01/01/2000" 
+                disabled 
+                className="bg-gray-50 cursor-not-allowed" 
+              />
             </div>
           </div>
 
@@ -120,7 +132,11 @@ const EditProfile = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input {...field} type="email" />
+                      <Input 
+                        {...field} 
+                        type="email" 
+                        className="focus:ring-primary focus:border-primary" 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -134,7 +150,11 @@ const EditProfile = () => {
                   <FormItem>
                     <FormLabel>Senha Atual</FormLabel>
                     <FormControl>
-                      <Input {...field} type="password" />
+                      <Input 
+                        {...field} 
+                        type="password" 
+                        className="focus:ring-primary focus:border-primary" 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -148,7 +168,11 @@ const EditProfile = () => {
                   <FormItem>
                     <FormLabel>Nova Senha</FormLabel>
                     <FormControl>
-                      <Input {...field} type="password" />
+                      <Input 
+                        {...field} 
+                        type="password" 
+                        className="focus:ring-primary focus:border-primary" 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -162,22 +186,30 @@ const EditProfile = () => {
                   <FormItem>
                     <FormLabel>Confirmar Nova Senha</FormLabel>
                     <FormControl>
-                      <Input {...field} type="password" />
+                      <Input 
+                        {...field} 
+                        type="password" 
+                        className="focus:ring-primary focus:border-primary" 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <div className="flex gap-4 justify-end">
+              <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => navigate("/minha-conta")}
+                  className="hover:bg-gray-50"
                 >
                   Cancelar
                 </Button>
-                <Button type="submit">
+                <Button 
+                  type="submit" 
+                  className="bg-primary hover:bg-primary/90"
+                >
                   Salvar alterações
                 </Button>
               </div>
