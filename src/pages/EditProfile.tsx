@@ -94,6 +94,7 @@ const EditProfile = () => {
       toast({
         title: "Perfil atualizado",
         description: "Suas informações foram atualizadas com sucesso",
+        type: "success",
       })
       navigate("/minha-conta")
     } catch (error) {
@@ -110,8 +111,8 @@ const EditProfile = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex bg-soft-purple/30">
+    <div className="min-h-screen flex w-full">
+      <SidebarProvider>
         {/* Sidebar */}
         <Sidebar>
           <SidebarContent className="bg-gradient-to-b from-primary to-secondary">
@@ -152,8 +153,8 @@ const EditProfile = () => {
         </Sidebar>
 
         {/* Main Content - Using the full width of the screen */}
-        <div className="flex-1 flex items-start justify-center bg-soft-purple/30 w-full">
-          <div className="w-full max-w-5xl mx-auto my-4">
+        <div className="flex-1 bg-soft-purple/30 flex items-center justify-center w-full">
+          <div className="w-full max-w-none px-6 py-4">
             <div className="bg-white rounded-xl shadow-lg overflow-hidden w-full">
               {/* Header */}
               <div className="bg-gradient-primary p-6 text-white relative">
@@ -188,7 +189,7 @@ const EditProfile = () => {
                       />
                     </div>
                     
-                    <div className="bg-soft-blue rounded-lg p-4">
+                    <div className="bg-primary-light/30 rounded-lg p-4">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         CPF
                       </label>
@@ -199,7 +200,7 @@ const EditProfile = () => {
                       />
                     </div>
                     
-                    <div className="bg-soft-peach rounded-lg p-4">
+                    <div className="bg-secondary-light/30 rounded-lg p-4">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Data de Nascimento
                       </label>
@@ -222,7 +223,7 @@ const EditProfile = () => {
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                       {/* Email field */}
-                      <div className="bg-soft-yellow/30 rounded-lg p-5">
+                      <div className="bg-primary-light/20 rounded-lg p-5">
                         <FormField
                           control={form.control}
                           name="email"
@@ -246,7 +247,7 @@ const EditProfile = () => {
                       </div>
                       
                       {/* Bio field (optional) */}
-                      <div className="bg-soft-green/30 rounded-lg p-5">
+                      <div className="bg-secondary-light/20 rounded-lg p-5">
                         <FormField
                           control={form.control}
                           name="bio"
@@ -269,7 +270,7 @@ const EditProfile = () => {
                       </div>
 
                       {/* Security section */}
-                      <div className="bg-soft-purple/20 rounded-lg p-5 space-y-4">
+                      <div className="bg-soft-purple/30 rounded-lg p-5 space-y-4">
                         <h3 className="text-md font-medium text-gray-800">Alterar Senha</h3>
 
                         <FormField
@@ -358,8 +359,8 @@ const EditProfile = () => {
             </div>
           </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </div>
   )
 }
 

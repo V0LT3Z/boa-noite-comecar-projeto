@@ -1,5 +1,4 @@
 
-
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, toast as sonnerToast } from "sonner"
 
@@ -48,9 +47,9 @@ const toast = (options: ToastOptions) => {
   } 
   // Se for um toast de sucesso
   else if (type === "success") {
-    return sonnerToast(title || "", {
+    return sonnerToast.success(title || "", {
       description,
-      style: { backgroundColor: "#F2FCE2", color: "#3a7113", borderColor: "#bae563" },
+      style: { backgroundColor: "hsl(270 70% 75%)", color: "hsl(270 80% 25%)", borderColor: "hsl(270 80% 45%)" },
     });
   }
   
