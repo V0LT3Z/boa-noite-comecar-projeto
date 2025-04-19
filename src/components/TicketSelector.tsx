@@ -3,6 +3,8 @@ import { useState } from "react"
 import { Minus, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TicketType } from "@/types/event"
+import { useAuth } from "@/contexts/AuthContext"
+import { AuthDialog } from "@/components/auth/AuthDialog"
 
 interface TicketSelectorProps {
   tickets: TicketType[]
@@ -13,6 +15,8 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
   const [selectedTickets, setSelectedTickets] = useState<{ ticketId: number, quantity: number }[]>(
     tickets?.map(ticket => ({ ticketId: ticket.id, quantity: 0 })) || []
   );
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const handleQuantityChange = (ticketId: number, quantity: number) => {
     setSelectedTickets(prev => 
@@ -22,10 +26,23 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
     );
   };
 
+  const handlePurchaseClick = () => {
+    if (!isAuthenticated) {
+      setIsAuthDialogOpen(true);
+    } else {
+      handlePurchase();
+    }
+  };
+
   const handlePurchase = () => {
     if (onPurchase) {
       onPurchase(selectedTickets.filter(item => item.quantity > 0));
     }
+  };
+
+  const handleAuthSuccess = () => {
+    setIsAuthDialogOpen(false);
+    handlePurchase();
   };
 
   if (!tickets || tickets.length === 0) {
@@ -92,7 +109,7 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
       {onPurchase && (
         <div className="space-y-2">
           <Button 
-            onClick={handlePurchase}
+            onClick={handlePurchaseClick}
             className="w-full bg-primary text-white"
             disabled={!selectedTickets.some(item => item.quantity > 0)}
             size="lg"
@@ -108,6 +125,12 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
           </Button>
         </div>
       )}
+
+      <AuthDialog 
+        open={isAuthDialogOpen} 
+        onOpenChange={setIsAuthDialogOpen} 
+        onSuccess={handleAuthSuccess} 
+      />
     </div>
   );
 };
