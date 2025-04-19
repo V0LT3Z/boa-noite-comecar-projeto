@@ -25,8 +25,8 @@ const EventCard = ({ id, title, date, location, image }: EventCardProps) => {
           />
           <div className="absolute inset-0 bg-gradient-primary opacity-30 mix-blend-multiply" />
           
-          {/* Add favorite button overlay */}
-          <div className="absolute top-2 right-2">
+          {/* Add favorite button overlay - stop propagation to prevent redirect */}
+          <div className="absolute top-2 right-2 z-10">
             <FavoriteButton eventId={id} variant="icon" />
           </div>
         </div>

@@ -4,6 +4,7 @@ import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { addToFavorites, removeFromFavorites, isEventFavorited } from "@/services/favorites";
+import { toast } from "@/components/ui/sonner";
 
 interface FavoriteButtonProps {
   eventId: number;
@@ -13,7 +14,7 @@ interface FavoriteButtonProps {
 const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, openAuthModal } = useAuth();
   
   useEffect(() => {
     const checkFavoriteStatus = async () => {
@@ -30,11 +31,14 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
     checkFavoriteStatus();
   }, [eventId, isAuthenticated]);
   
-  const handleToggleFavorite = async () => {
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent event bubbling when used in cards
+    
     if (!isAuthenticated) {
       // Store current path to redirect back after login
       localStorage.setItem('redirectAfterLogin', window.location.pathname);
-      // Redirect to login or show auth dialog
+      // Open authentication modal
+      openAuthModal();
       return;
     }
     

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EventDetails } from "@/types/event";
 import { toast } from "@/components/ui/sonner";
@@ -25,9 +24,26 @@ export interface Notification {
 // Add an event to favorites
 export const addToFavorites = async (eventId: number): Promise<boolean> => {
   try {
+    // Get the current session to get the user's ID
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    if (!sessionData.session?.user?.id) {
+      toast({
+        title: "Você precisa estar logado",
+        description: "Faça login para adicionar eventos aos favoritos",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    const userId = sessionData.session.user.id;
+    
     const { data, error } = await supabase
       .from("favorites")
-      .insert([{ event_id: eventId }])
+      .insert({
+        event_id: eventId,
+        user_id: userId
+      })
       .select();
     
     if (error) throw error;
@@ -52,10 +68,25 @@ export const addToFavorites = async (eventId: number): Promise<boolean> => {
 // Remove an event from favorites
 export const removeFromFavorites = async (eventId: number): Promise<boolean> => {
   try {
+    // Get the current session to get the user's ID
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    if (!sessionData.session?.user?.id) {
+      toast({
+        title: "Você precisa estar logado",
+        description: "Faça login para remover eventos dos favoritos",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    const userId = sessionData.session.user.id;
+    
     const { error } = await supabase
       .from("favorites")
       .delete()
-      .eq("event_id", eventId);
+      .eq("event_id", eventId)
+      .eq("user_id", userId);
     
     if (error) throw error;
     
@@ -79,10 +110,20 @@ export const removeFromFavorites = async (eventId: number): Promise<boolean> => 
 // Check if an event is in favorites
 export const isEventFavorited = async (eventId: number): Promise<boolean> => {
   try {
+    // Get the current session to get the user's ID
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    if (!sessionData.session?.user?.id) {
+      return false;
+    }
+    
+    const userId = sessionData.session.user.id;
+    
     const { data, error } = await supabase
       .from("favorites")
       .select()
       .eq("event_id", eventId)
+      .eq("user_id", userId)
       .single();
     
     if (error && error.code !== "PGRST116") {
@@ -100,9 +141,19 @@ export const isEventFavorited = async (eventId: number): Promise<boolean> => {
 // Get all favorites for current user
 export const getUserFavorites = async (): Promise<EventDetails[]> => {
   try {
+    // Get the current session to get the user's ID
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    if (!sessionData.session?.user?.id) {
+      return [];
+    }
+    
+    const userId = sessionData.session.user.id;
+    
     const { data: favorites, error } = await supabase
       .from("favorites")
-      .select("event_id");
+      .select("event_id")
+      .eq("user_id", userId);
     
     if (error) throw error;
     
@@ -219,9 +270,19 @@ export const getUserFavorites = async (): Promise<EventDetails[]> => {
 // Get all user notifications
 export const getUserNotifications = async (): Promise<Notification[]> => {
   try {
+    // Get the current session to get the user's ID
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    if (!sessionData.session?.user?.id) {
+      return [];
+    }
+    
+    const userId = sessionData.session.user.id;
+    
     const { data, error } = await supabase
       .from("notifications")
       .select("*")
+      .eq("user_id", userId)
       .order("created_at", { ascending: false });
     
     if (error) throw error;
@@ -236,10 +297,19 @@ export const getUserNotifications = async (): Promise<Notification[]> => {
 // Mark notification as read
 export const markNotificationAsRead = async (notificationId: string): Promise<boolean> => {
   try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    if (!sessionData.session?.user?.id) {
+      return false;
+    }
+    
+    const userId = sessionData.session.user.id;
+    
     const { error } = await supabase
       .from("notifications")
       .update({ is_read: true })
-      .eq("id", notificationId);
+      .eq("id", notificationId)
+      .eq("user_id", userId);
     
     if (error) throw error;
     
@@ -258,7 +328,8 @@ export const subscribeToNotifications = (callback: (notification: Notification) 
       { 
         event: 'INSERT', 
         schema: 'public', 
-        table: 'notifications' 
+        table: 'notifications',
+        filter: `user_id=eq.${supabase.auth.getSession().then(({ data }) => data.session?.user.id)}` 
       }, 
       (payload) => {
         const notification = payload.new as Notification;
