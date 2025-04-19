@@ -83,7 +83,14 @@ export const addToFavorites = async (eventId: number): Promise<boolean> => {
     saveMockFavorites(favorites);
     
     toast({
-      title: "Evento adicionado aos favoritos!",
+      title: "Evento adicionado aos favoritos",
+      description: "Você pode encontrar este evento na página de favoritos",
+      type: "success",
+      style: {
+        backgroundColor: "#F2FCE2",  // Soft green background
+        color: "#2e7d32",  // Dark green text
+        borderColor: "#81c784"  // Light green border
+      }
     });
     
     return true;
@@ -132,6 +139,13 @@ export const removeFromFavorites = async (eventId: number): Promise<boolean> => 
     
     toast({
       title: "Evento removido dos favoritos",
+      description: "O evento foi removido da sua lista de favoritos",
+      variant: "destructive",
+      style: {
+        backgroundColor: "#FFDEE2",  // Soft red background
+        color: "#c62828",  // Dark red text
+        borderColor: "#ef5350"  // Light red border
+      }
     });
     
     return true;
