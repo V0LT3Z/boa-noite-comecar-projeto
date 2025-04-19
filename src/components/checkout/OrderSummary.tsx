@@ -1,33 +1,45 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Info } from "lucide-react"
-import { EventDetails } from "@/types/event"
 
 interface OrderSummaryProps {
-  eventDetails: EventDetails;
-  ticketItems: Array<{
-    name: string;
-    price: number;
-    quantity: number;
-  }>;
-  discount: number;
-  total: number;
+  orderData: {
+    event: {
+      id: number;
+      title: string;
+      date: string;
+      time: string;
+      location: string;
+      image: string;
+    };
+    tickets: Array<{
+      id: number;
+      name: string;
+      price: number;
+      quantity: number;
+    }>;
+  };
 }
 
-const OrderSummary = ({ eventDetails, ticketItems, discount, total }: OrderSummaryProps) => {
+const OrderSummary = ({ orderData }: OrderSummaryProps) => {
+  const total = orderData.tickets.reduce(
+    (sum, ticket) => sum + (ticket.price * ticket.quantity),
+    0
+  );
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle>Resumo do Pedido</CardTitle>
-        <CardDescription>{eventDetails.title}</CardDescription>
+        <CardDescription>{orderData.event.title}</CardDescription>
         <div className="text-sm text-gray-500 mt-1 flex items-center gap-2">
           <Info className="h-4 w-4" />
-          <span>{eventDetails.date} - {eventDetails.time}</span>
+          <span>{orderData.event.date} - {orderData.event.time}</span>
         </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {ticketItems.map((item, index) => (
+          {orderData.tickets.map((item, index) => (
             <div key={index} className="flex justify-between">
               <div>
                 <p className="font-medium">{item.name}</p>
@@ -39,13 +51,6 @@ const OrderSummary = ({ eventDetails, ticketItems, discount, total }: OrderSumma
               </div>
             </div>
           ))}
-          
-          {discount > 0 && (
-            <div className="flex justify-between text-green-600">
-              <p>Desconto:</p>
-              <p>-{discount}%</p>
-            </div>
-          )}
           
           <div className="border-t pt-4 mt-4">
             <div className="flex justify-between font-bold">

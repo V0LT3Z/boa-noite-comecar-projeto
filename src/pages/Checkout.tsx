@@ -5,9 +5,9 @@ import { ArrowLeft } from "lucide-react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { OrderSummary } from "@/components/checkout/OrderSummary";
-import { CardForm } from "@/components/checkout/CardForm";
-import { PixQRCode } from "@/components/checkout/PixQRCode";
+import OrderSummary from "@/components/checkout/OrderSummary";
+import CardForm from "@/components/checkout/CardForm";
+import PixQRCode from "@/components/checkout/PixQRCode";
 import { toast } from "@/components/ui/sonner";
 import { useProtectedRoute } from "@/hooks/use-protected-route";
 

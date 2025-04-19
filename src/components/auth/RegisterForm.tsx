@@ -25,9 +25,9 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-const RegisterForm = () => {
+const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const navigate = useNavigate();
-  const { signUp } = useAuth();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +45,15 @@ const RegisterForm = () => {
   const hasLowerCase = formData.password && /[a-z]/.test(formData.password);
   const hasNumber = formData.password && /[0-9]/.test(formData.password);
   const passwordsMatch = formData.password === formData.confirmPassword && formData.confirmPassword !== "";
+
+  const handleInputChange = (field: keyof RegisterFormData, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    
+    // Clear error when user starts typing again
+    if (formErrors[field]) {
+      setFormErrors({ ...formErrors, [field]: "" });
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -67,8 +76,12 @@ const RegisterForm = () => {
       
       setFormErrors({});
       
-      // In a real app, this would call a supabase/firebase method
-      await signUp(formData.email || "", formData.password || "", formData.name || "");
+      // Call register instead of signUp
+      await register({
+        fullName: formData.name || "",
+        email: formData.email || "",
+        password: formData.password || ""
+      });
 
       // In a real app, the navigation would happen after email confirmation
       toast({
@@ -78,6 +91,7 @@ const RegisterForm = () => {
       });
       
       navigate("/minha-conta");
+      onSuccess();
     } catch (error) {
       console.error("Registration error:", error);
       toast({
@@ -90,15 +104,6 @@ const RegisterForm = () => {
     }
   };
 
-  const handleInputChange = (field: keyof RegisterFormData, value: string) => {
-    setFormData({ ...formData, [field]: value });
-    
-    // Clear error when user starts typing again
-    if (formErrors[field]) {
-      setFormErrors({ ...formErrors, [field]: "" });
-    }
-  };
-  
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full">
       <div className="space-y-2">

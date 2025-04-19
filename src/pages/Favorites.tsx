@@ -62,7 +62,7 @@ const Favorites = () => {
   useEffect(() => {
     if (favoriteEvents.length > 0 && !isLoading) {
       const timeout = setTimeout(() => {
-        const mockNotification = {
+        const mockNotification: Notification = {
           id: `notif-${Date.now()}`,
           user_id: "demo-user-id",
           event_id: favoriteEvents[0].id,

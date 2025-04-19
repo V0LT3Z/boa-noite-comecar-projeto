@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { EventDetails } from "@/types/event";
+import { EventDetails, TicketType } from "@/types/event";
 import { toast } from "@/components/ui/sonner";
 
 export interface Notification {
@@ -16,9 +16,18 @@ export interface Notification {
 // Add an event to favorites
 export const addToFavorites = async (eventId: number): Promise<boolean> => {
   try {
-    const { error } = await supabase.from('favorites').insert([
-      { event_id: eventId },
-    ]);
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      console.error("No authenticated user");
+      return false;
+    }
+    
+    const { error } = await supabase.from('favorites').insert({
+      event_id: eventId,
+      user_id: user.id
+    });
     
     if (error) {
       console.error("Error adding to favorites:", error);
@@ -113,8 +122,22 @@ export const getUserFavorites = async (): Promise<EventDetails[]> => {
         location: "Parque da Cidade, São Paulo",
         image: "https://picsum.photos/seed/event1/800/500",
         tickets: [
-          { id: 1, name: "Ingresso Comum", price: 150.0 },
-          { id: 2, name: "Ingresso VIP", price: 300.0 },
+          { 
+            id: 1, 
+            name: "Ingresso Comum", 
+            price: 150.0,
+            availableQuantity: 100,
+            maxPerPurchase: 4,
+            description: "Acesso a todas as áreas comuns"
+          },
+          { 
+            id: 2, 
+            name: "Ingresso VIP", 
+            price: 300.0,
+            availableQuantity: 50,
+            maxPerPurchase: 2,
+            description: "Acesso a todas as áreas + open bar"
+          },
         ],
         venue: {
           name: "Parque da Cidade",
@@ -122,6 +145,12 @@ export const getUserFavorites = async (): Promise<EventDetails[]> => {
           capacity: 10000,
           map_url: "https://maps.google.com",
         },
+        minimumAge: 18,
+        warnings: ["Proibido entrada de bebidas", "Obrigatório apresentar documento com foto"],
+        coordinates: {
+          lat: -23.550520,
+          lng: -46.633308
+        }
       },
       {
         id: 2,
@@ -132,8 +161,22 @@ export const getUserFavorites = async (): Promise<EventDetails[]> => {
         location: "Teatro Municipal, Rio de Janeiro",
         image: "https://picsum.photos/seed/event2/800/500",
         tickets: [
-          { id: 3, name: "Plateia", price: 120.0 },
-          { id: 4, name: "Camarote", price: 240.0 },
+          { 
+            id: 3, 
+            name: "Plateia", 
+            price: 120.0,
+            availableQuantity: 300,
+            maxPerPurchase: 4,
+            description: "Assentos na plateia principal"
+          },
+          { 
+            id: 4, 
+            name: "Camarote", 
+            price: 240.0,
+            availableQuantity: 50,
+            maxPerPurchase: 2,
+            description: "Assentos VIP com visão privilegiada"
+          },
         ],
         venue: {
           name: "Teatro Municipal",
@@ -141,6 +184,12 @@ export const getUserFavorites = async (): Promise<EventDetails[]> => {
           capacity: 800,
           map_url: "https://maps.google.com",
         },
+        minimumAge: 12,
+        warnings: ["Não é permitido fotografar ou filmar", "Portas fecham após o início"],
+        coordinates: {
+          lat: -22.908333,
+          lng: -43.176388
+        }
       },
     ];
   } catch (error) {
