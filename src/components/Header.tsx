@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  User, Bell, Heart, Home, Search, Menu, X, LogOut, Ticket, Store
+  User as UserIcon, Bell, Heart, Home, Search, Menu, X, LogOut, Ticket, Store
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -9,7 +10,7 @@ import {
   Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger 
 } from '@/components/ui/sheet';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface NavLinkProps {
@@ -160,8 +161,8 @@ const MobileNav: React.FC<MobileNavProps> = ({
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
-  const { isAuthenticated, user, signOut } = useAuth();
-  const isMobile = useMobile();
+  const { isAuthenticated, user, logout } = useAuth();
+  const isMobile = useIsMobile();
   const location = useLocation();
 
   useEffect(() => {
@@ -198,7 +199,7 @@ const Header = () => {
     { label: 'Meus Ingressos', href: '/meus-ingressos', icon: Ticket },
     { label: 'Favoritos', href: '/favoritos', icon: Heart },
     { label: 'Notificações', href: '/notificacoes', icon: Bell },
-    { label: 'Minha Conta', href: '/minha-conta', icon: User },
+    { label: 'Minha Conta', href: '/minha-conta', icon: UserIcon },
   ];
 
   return (
@@ -237,8 +238,8 @@ const Header = () => {
                 <SheetTrigger asChild>
                   <Button variant="ghost" className="rounded-full p-2 h-9 w-9">
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={user?.avatar} alt={user?.name || 'User'} />
-                      <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
+                      <AvatarImage src={user?.avatar} alt={user?.fullName || 'User'} />
+                      <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </SheetTrigger>
@@ -249,11 +250,11 @@ const Header = () => {
                   <div className="py-4">
                     <div className="flex items-center gap-4 mb-6 pb-6 border-b">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={user?.avatar} alt={user?.name || 'User'} />
-                        <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
+                        <AvatarImage src={user?.avatar} alt={user?.fullName || 'User'} />
+                        <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{user?.name || 'Usuário'}</p>
+                        <p className="font-medium">{user?.fullName || 'Usuário'}</p>
                         <p className="text-sm text-muted-foreground">{user?.email}</p>
                       </div>
                     </div>
@@ -274,7 +275,7 @@ const Header = () => {
                       <Button 
                         variant="ghost" 
                         className="w-full justify-start text-destructive hover:text-destructive gap-2"
-                        onClick={signOut}
+                        onClick={logout}
                       >
                         <LogOut className="h-4 w-4" />
                         Sair
@@ -306,14 +307,15 @@ const Header = () => {
             authenticatedItems={authenticatedItems}
             isAuthenticated={isAuthenticated}
             user={user}
-            signOut={signOut}
+            signOut={logout}
             setIsAuthDialogOpen={setIsAuthDialogOpen}
           />
         )}
       </div>
       <AuthDialog 
         open={isAuthDialogOpen} 
-        onOpenChange={setIsAuthDialogOpen} 
+        onOpenChange={setIsAuthDialogOpen}
+        onSuccess={() => {}}
       />
     </header>
   );
