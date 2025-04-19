@@ -38,19 +38,18 @@ interface ToastOptions {
 const toast = (options: ToastOptions) => {
   const { title, description, variant, type } = options;
   
-  // Define base class name variables
   let className = "";
   let descriptionClassName = "";
   
   // Handle destructive (error) toasts
   if (variant === "destructive") {
-    className = "!bg-destructive !border-destructive/20 !text-white";
-    descriptionClassName = "!text-white/90";
+    className = "bg-destructive border-destructive text-white";
+    descriptionClassName = "text-white";
   } 
   // Handle success toasts 
   else if (type === "success") {
-    className = "!bg-[#F2FCE2] !border-green-200 !text-green-800";
-    descriptionClassName = "!text-green-700";
+    className = "bg-[#F2FCE2] border-green-200 text-green-800";
+    descriptionClassName = "text-green-700";
   }
   
   return sonnerToast(title || "", {
