@@ -1,8 +1,7 @@
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Calendar, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
+import { Calendar, MapPin, ChevronRight } from "lucide-react"
 import QRCode from "react-qr-code"
 
 const NextEvent = () => {
@@ -86,12 +85,6 @@ const NextEvent = () => {
     setCurrentTicketIndex(0) // Reset ticket index when changing events
   }
 
-  const handlePreviousTicket = () => {
-    setCurrentTicketIndex((prev) => 
-      prev === 0 ? currentEvent.tickets.length - 1 : prev - 1
-    )
-  }
-
   const handleNextTicket = () => {
     setCurrentTicketIndex((prev) => 
       prev === currentEvent.tickets.length - 1 ? 0 : prev + 1
@@ -134,14 +127,13 @@ const NextEvent = () => {
                   className="flex items-center gap-1 text-sm text-primary cursor-pointer"
                   onClick={handleNextTicket}
                 >
-                  <span>{currentTicketIndex + 1} de {currentEvent.tickets.length}</span>
+                  <span>1 de {currentEvent.tickets.length}</span>
                   <ChevronRight className="h-4 w-4" />
                 </div>
               )}
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4">
-              {/* QR Code Card - clicável para navegar */}
+            <div className="bg-gray-50 rounded-lg p-4 relative">
               <div 
                 className="flex flex-col items-center justify-center gap-4 p-4 bg-white rounded-lg mb-3 cursor-pointer"
                 onClick={currentEvent.tickets.length > 1 ? handleNextTicket : undefined}
