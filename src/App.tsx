@@ -14,6 +14,7 @@ import MyTickets from "./pages/MyTickets"
 import EditProfile from "./pages/EditProfile"
 import Favorites from "./pages/Favorites"
 import Notifications from "./pages/Notifications"
+import Marketplace from "./pages/Marketplace"
 
 const queryClient = new QueryClient()
 
@@ -33,6 +34,8 @@ const App = () => (
             <Route path="/editar-perfil" element={<EditProfile />} />
             <Route path="/favoritos" element={<Favorites />} />
             <Route path="/notificacoes" element={<Notifications />} />
+            <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/marketplace/:ticketId" element={<Marketplace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
