@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -79,7 +78,6 @@ const EditProfile = () => {
   const form = useForm<EditProfileFormValues>({
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
-      email: user?.email || "",
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
@@ -89,8 +87,6 @@ const EditProfile = () => {
 
   const onSubmit = async (data: EditProfileFormValues) => {
     try {
-      // Aqui você implementará a lógica de atualização do perfil
-      // quando conectar com o Supabase
       toast({
         title: "Perfil atualizado",
         description: "Suas informações foram atualizadas com sucesso",
@@ -111,9 +107,8 @@ const EditProfile = () => {
   }
 
   return (
-    <div className="min-h-screen flex w-full">
+    <div className="flex min-h-screen w-full">
       <SidebarProvider>
-        {/* Sidebar */}
         <Sidebar>
           <SidebarContent className="bg-gradient-to-b from-primary to-secondary">
             <div className="p-6 flex items-center gap-3">
@@ -152,33 +147,29 @@ const EditProfile = () => {
           </SidebarContent>
         </Sidebar>
 
-        {/* Main Content - Using the full width of the screen */}
-        <div className="flex-1 bg-soft-purple/30 flex items-center justify-center w-full">
-          <div className="w-full max-w-none px-6 py-4">
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden w-full">
-              {/* Header */}
+        <div className="flex-1 bg-soft-purple/10">
+          <div className="w-full h-full p-6">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="bg-gradient-primary p-6 text-white relative">
                 <Button
                   variant="ghost"
-                  className="mb-4 text-white hover:bg-white/20 relative z-10"
+                  className="mb-4 text-white hover:bg-white/20"
                   onClick={() => navigate("/minha-conta")}
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Voltar
                 </Button>
-                <h1 className="text-3xl font-bold tracking-tight relative z-10">Editar Perfil</h1>
-                <p className="text-white/80 mt-1 relative z-10">Atualize suas informações pessoais</p>
+                <h1 className="text-3xl font-bold tracking-tight">Editar Perfil</h1>
+                <p className="text-white/80 mt-1">Atualize suas informações pessoais</p>
               </div>
 
-              {/* Profile Form Container */}
               <div className="p-6 md:p-8 space-y-8">
-                {/* Personal Info Section */}
                 <div>
                   <h2 className="text-lg font-medium text-gray-800 mb-4 pb-1 border-b border-gray-100">
                     Informações Pessoais
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-soft-purple rounded-lg p-4">
+                    <div className="bg-soft-purple/40 rounded-lg p-4">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Nome Completo
                       </label>
@@ -189,65 +180,38 @@ const EditProfile = () => {
                       />
                     </div>
                     
-                    <div className="bg-primary-light/30 rounded-lg p-4">
+                    <div className="bg-soft-purple/40 rounded-lg p-4">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         CPF
                       </label>
                       <Input 
                         value="000.000.000-00" 
                         disabled 
-                        className="bg-white/80 border-secondary/20 cursor-not-allowed font-medium" 
+                        className="bg-white/80 border-primary/20 cursor-not-allowed font-medium" 
                       />
                     </div>
                     
-                    <div className="bg-secondary-light/30 rounded-lg p-4">
+                    <div className="bg-soft-purple/40 rounded-lg p-4">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Data de Nascimento
                       </label>
                       <Input 
                         value="01/01/2000" 
                         disabled 
-                        className="bg-white/80 border-primary-light/20 cursor-not-allowed font-medium" 
+                        className="bg-white/80 border-primary/20 cursor-not-allowed font-medium" 
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Account Settings Section */}
                 <div>
                   <h2 className="text-lg font-medium text-gray-800 mb-4 pb-1 border-b border-gray-100">
                     Configurações da Conta
                   </h2>
                   
-                  {/* Editable Form */}
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                      {/* Email field */}
-                      <div className="bg-primary-light/20 rounded-lg p-5">
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">
-                                Email
-                              </FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  type="email"
-                                  placeholder="seu@email.com" 
-                                  className="border-secondary/30 focus:border-primary bg-white"
-                                />
-                              </FormControl>
-                              <FormMessage className="text-red-500" />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      {/* Bio field (optional) */}
-                      <div className="bg-secondary-light/20 rounded-lg p-5">
+                      <div className="bg-soft-purple/40 rounded-lg p-5">
                         <FormField
                           control={form.control}
                           name="bio"
@@ -269,8 +233,7 @@ const EditProfile = () => {
                         />
                       </div>
 
-                      {/* Security section */}
-                      <div className="bg-soft-purple/30 rounded-lg p-5 space-y-4">
+                      <div className="bg-soft-purple/40 rounded-lg p-5 space-y-4">
                         <h3 className="text-md font-medium text-gray-800">Alterar Senha</h3>
 
                         <FormField
@@ -336,7 +299,7 @@ const EditProfile = () => {
                         </div>
                       </div>
 
-                      <div className="flex justify-end space-x-4 pt-6 border-t border-gray-100">
+                      <div className="flex justify-end space-x-4">
                         <Button
                           type="button"
                           variant="outline"
