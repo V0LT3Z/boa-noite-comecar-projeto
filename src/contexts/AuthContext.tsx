@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from "@/components/ui/sonner";
 
@@ -14,6 +15,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => void;
+  openAuthModal: () => void; // Add this function to open auth modal
 }
 
 interface RegisterData {
@@ -29,6 +31,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -157,6 +160,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  // New function to open auth modal
+  const openAuthModal = () => {
+    // This will be handled by the AuthDialog component
+    // We're just providing the interface here
+    // The actual implementation will be in the components that use this context
+    document.dispatchEvent(new CustomEvent('openAuthModal'));
+  };
+
   return (
     <AuthContext.Provider 
       value={{
@@ -165,7 +176,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         login: handleLogin,
         register,
-        logout
+        logout,
+        openAuthModal
       }}
     >
       {children}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { addToFavorites, removeFromFavorites, isEventFavorited } from "@/services/favorites";
 import { toast } from "@/components/ui/sonner";
+import { AuthDialog } from "@/components/auth/AuthDialog";
 
 interface FavoriteButtonProps {
   eventId: number;
@@ -14,7 +15,8 @@ interface FavoriteButtonProps {
 const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { isAuthenticated, openAuthModal } = useAuth();
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
   
   useEffect(() => {
     const checkFavoriteStatus = async () => {
@@ -31,6 +33,19 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
     checkFavoriteStatus();
   }, [eventId, isAuthenticated]);
   
+  // Listen for custom event to open auth modal
+  useEffect(() => {
+    const handleOpenAuthModal = () => {
+      setIsAuthDialogOpen(true);
+    };
+    
+    document.addEventListener('openAuthModal', handleOpenAuthModal);
+    
+    return () => {
+      document.removeEventListener('openAuthModal', handleOpenAuthModal);
+    };
+  }, []);
+  
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent event bubbling when used in cards
     
@@ -38,7 +53,7 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
       // Store current path to redirect back after login
       localStorage.setItem('redirectAfterLogin', window.location.pathname);
       // Open authentication modal
-      openAuthModal();
+      setIsAuthDialogOpen(true);
       return;
     }
     
@@ -58,40 +73,66 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
     setIsLoading(false);
   };
   
+  const handleAuthSuccess = () => {
+    setIsAuthDialogOpen(false);
+    // Refresh favorite status after successful login
+    if (isAuthenticated) {
+      isEventFavorited(eventId).then((favorited) => {
+        setIsFavorite(favorited);
+      });
+    }
+  };
+  
   if (variant === "icon") {
     return (
-      <button
-        className={`rounded-full p-2 transition-colors ${
-          isFavorite 
-            ? "bg-soft-pink text-destructive" 
-            : "bg-white/80 hover:bg-soft-pink/50"
+      <>
+        <button
+          className={`rounded-full p-2 transition-colors ${
+            isFavorite 
+              ? "bg-soft-pink text-destructive" 
+              : "bg-white/80 hover:bg-soft-pink/50"
+          }`}
+          onClick={handleToggleFavorite}
+          disabled={isLoading}
+        >
+          <Heart 
+            className={`h-5 w-5 ${isFavorite ? "fill-destructive" : ""}`} 
+          />
+        </button>
+        
+        <AuthDialog 
+          open={isAuthDialogOpen} 
+          onOpenChange={setIsAuthDialogOpen} 
+          onSuccess={handleAuthSuccess} 
+        />
+      </>
+    );
+  }
+  
+  return (
+    <>
+      <Button
+        variant={variant}
+        className={`flex items-center gap-2 ${
+          isFavorite && variant === "outline" 
+            ? "border-destructive text-destructive hover:bg-destructive/10" 
+            : ""
         }`}
         onClick={handleToggleFavorite}
         disabled={isLoading}
       >
         <Heart 
-          className={`h-5 w-5 ${isFavorite ? "fill-destructive" : ""}`} 
+          className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} 
         />
-      </button>
-    );
-  }
-  
-  return (
-    <Button
-      variant={variant}
-      className={`flex items-center gap-2 ${
-        isFavorite && variant === "outline" 
-          ? "border-destructive text-destructive hover:bg-destructive/10" 
-          : ""
-      }`}
-      onClick={handleToggleFavorite}
-      disabled={isLoading}
-    >
-      <Heart 
-        className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} 
+        {isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+      </Button>
+      
+      <AuthDialog 
+        open={isAuthDialogOpen} 
+        onOpenChange={setIsAuthDialogOpen} 
+        onSuccess={handleAuthSuccess} 
       />
-      {isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-    </Button>
+    </>
   );
 };
 
