@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EventDetails } from "@/types/event";
 import { toast } from "@/components/ui/sonner";
@@ -21,6 +20,25 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
 }
+
+// Mock favorites storage since we can't use user IDs directly in Supabase
+// This will simulate the favorites functionality until we can update the database schema
+interface MockFavorite {
+  userId: string;
+  eventId: number;
+  createdAt: string;
+}
+
+const FAVORITES_STORAGE_KEY = 'user_favorites';
+
+const getMockFavorites = (): MockFavorite[] => {
+  const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
+  return stored ? JSON.parse(stored) : [];
+};
+
+const saveMockFavorites = (favorites: MockFavorite[]) => {
+  localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+};
 
 // Add an event to favorites
 export const addToFavorites = async (eventId: number): Promise<boolean> => {
@@ -45,35 +63,24 @@ export const addToFavorites = async (eventId: number): Promise<boolean> => {
     const userId = user.id;
     console.log("Adding to favorites with user ID:", userId);
     
-    // Check if the favorite already exists
-    const { data: existingFavorites, error: fetchError } = await supabase
-      .from("favorites")
-      .select()
-      .eq("event_id", eventId)
-      .eq("user_id", userId);
+    // Since we can't use the non-UUID user IDs with Supabase directly,
+    // let's use localStorage to store favorites
+    const favorites = getMockFavorites();
     
-    if (fetchError) {
-      console.error("Error checking for existing favorites:", fetchError);
-      throw fetchError;
-    }
-    
-    if (existingFavorites && existingFavorites.length > 0) {
+    // Check if already favorited
+    if (favorites.some(fav => fav.userId === userId && fav.eventId === eventId)) {
       console.log("Favorite already exists");
-      return true; // Already favorited
+      return true;
     }
     
     // Add to favorites
-    const { error } = await supabase
-      .from("favorites")
-      .insert({
-        event_id: eventId,
-        user_id: userId
-      });
+    favorites.push({
+      userId,
+      eventId,
+      createdAt: new Date().toISOString()
+    });
     
-    if (error) {
-      console.error("Error adding favorite:", error);
-      throw error;
-    }
+    saveMockFavorites(favorites);
     
     toast({
       title: "Evento adicionado aos favoritos!",
@@ -112,16 +119,16 @@ export const removeFromFavorites = async (eventId: number): Promise<boolean> => 
     const userId = user.id;
     console.log("Removing from favorites with user ID:", userId);
     
-    const { error } = await supabase
-      .from("favorites")
-      .delete()
-      .eq("event_id", eventId)
-      .eq("user_id", userId);
+    // Get current favorites
+    const favorites = getMockFavorites();
     
-    if (error) {
-      console.error("Error removing favorite:", error);
-      throw error;
-    }
+    // Filter out the favorite to remove
+    const updatedFavorites = favorites.filter(
+      fav => !(fav.userId === userId && fav.eventId === eventId)
+    );
+    
+    // Save updated favorites
+    saveMockFavorites(updatedFavorites);
     
     toast({
       title: "Evento removido dos favoritos",
@@ -155,19 +162,10 @@ export const isEventFavorited = async (eventId: number): Promise<boolean> => {
     const userId = user.id;
     console.log("Checking favorite status with user ID:", userId);
     
-    // Query to check if event is favorited
-    const { data, error } = await supabase
-      .from("favorites")
-      .select()
-      .eq("event_id", eventId)
-      .eq("user_id", userId);
+    // Check in localStorage
+    const favorites = getMockFavorites();
+    return favorites.some(fav => fav.userId === userId && fav.eventId === eventId);
     
-    if (error) {
-      console.error("Error checking favorite status:", error);
-      return false;
-    }
-    
-    return data && data.length > 0;
   } catch (error) {
     console.error("Error checking favorite status:", error);
     return false;
@@ -177,29 +175,24 @@ export const isEventFavorited = async (eventId: number): Promise<boolean> => {
 // Get all favorites for current user
 export const getUserFavorites = async (): Promise<EventDetails[]> => {
   try {
-    // Get the current user's session
-    const { data: { session } } = await supabase.auth.getSession();
+    // Get user from localStorage
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('authToken');
     
-    if (!session?.user?.id) {
-      console.error("No user session found");
+    if (!storedUser || !token) {
+      console.error("No user found in localStorage");
       return [];
     }
     
-    const userId = session.user.id;
+    const user = JSON.parse(storedUser);
+    const userId = user.id;
     console.log("Getting favorites with user ID:", userId);
     
-    const { data: favorites, error } = await supabase
-      .from("favorites")
-      .select("event_id")
-      .eq("user_id", userId);
+    // Get favorites from localStorage
+    const favorites = getMockFavorites();
+    const userFavorites = favorites.filter(fav => fav.userId === userId);
     
-    if (error) {
-      console.error("Error fetching favorites:", error);
-      throw error;
-    }
-    
-    // For demo purposes, we'll filter the mock events by the favorite IDs
-    // In a real app, you would fetch the actual events from the database
+    // Mock events dataset (same as before)
     const mockEvents: EventDetails[] = [
       {
         id: 1,
@@ -295,7 +288,8 @@ export const getUserFavorites = async (): Promise<EventDetails[]> => {
       },
     ];
     
-    const favoriteEventIds = favorites?.map(fav => fav.event_id) || [];
+    // Return only favorited events
+    const favoriteEventIds = userFavorites.map(fav => fav.eventId);
     console.log("Favorite event IDs:", favoriteEventIds);
     return mockEvents.filter(event => favoriteEventIds.includes(event.id));
   } catch (error) {

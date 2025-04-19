@@ -88,6 +88,11 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
+      toast({
+        title: "Erro ao atualizar favorito",
+        description: "Tente novamente mais tarde",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
