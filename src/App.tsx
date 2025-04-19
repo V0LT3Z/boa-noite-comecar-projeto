@@ -25,7 +25,7 @@ const App = () => (
           <Toaster />
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/evento/:id" element={<EventDetails />} />
+            <Route path="/evento/:eventId" element={<EventDetails />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
             <Route path="/minha-conta" element={<Dashboard />} />

@@ -1,11 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Calendar, MapPin, Clock, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { EventMap } from "@/components/EventMap";
-import { TicketSelector } from "@/components/TicketSelector";
+import EventMap from "@/components/EventMap";
+import TicketSelector from "@/components/TicketSelector";
 import FavoriteButton from "@/components/FavoriteButton";
 import Header from "@/components/Header";
 import { useToast } from "@/hooks/use-toast";
@@ -218,9 +219,10 @@ const EventDetails = () => {
             <TicketSelector eventId={event.id.toString()} tickets={event.tickets} />
             <FavoriteButton eventId={event.id.toString()} />
             <EventMap
-              lat={event.coordinates.lat}
-              lng={event.coordinates.lng}
-              eventName={event.title}
+              coordinates={{
+                lat: event.coordinates.lat,
+                lng: event.coordinates.lng
+              }}
             />
           </div>
         </div>
