@@ -1,12 +1,10 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from "@/components/ui/sonner";
 
 interface User {
   id: string;
+  email: string | null;
   fullName: string;
-  email: string;
-  cpf?: string;
 }
 
 interface AuthContextType {
@@ -118,9 +116,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const newUser = {
         id: `user-${Date.now()}`,
-        fullName: userData.fullName,
         email: userData.email,
-        cpf: userData.cpf,
+        fullName: userData.fullName,
       };
       
       registeredUsers[userData.email] = {
