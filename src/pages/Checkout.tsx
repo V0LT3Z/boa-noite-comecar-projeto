@@ -42,7 +42,6 @@ const paymentSchema = z.object({
   cardNumber: z.string().optional(),
   expiryDate: z.string().optional(),
   cvc: z.string().optional(),
-  pixEmail: z.string().email("Email inválido").optional(),
   couponCode: z.string().optional(),
   notes: z.string().optional(),
   paymentMethod: z.enum(["credit", "debit", "pix"])
@@ -56,6 +55,7 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [discount, setDiscount] = useState(0)
   const [couponApplied, setCouponApplied] = useState(false)
+  const [showPixQR, setShowPixQR] = useState(false)
 
   // Cupons de exemplo
   const validCoupons = {
@@ -72,12 +72,16 @@ const Checkout = () => {
       cardNumber: "",
       expiryDate: "",
       cvc: "",
-      pixEmail: "",
       couponCode: "",
       notes: "",
       paymentMethod: "credit"
     }
   });
+
+  // Atualizar o QR code do PIX quando o método de pagamento mudar
+  useEffect(() => {
+    setShowPixQR(form.watch("paymentMethod") === "pix");
+  }, [form.watch("paymentMethod")]);
 
   useEffect(() => {
     // Verificar se temos dados do evento e ingressos selecionados
@@ -198,6 +202,10 @@ const Checkout = () => {
   const { eventDetails } = checkoutData
   const ticketItems = getTicketCountByType()
   const total = calculateTotal()
+
+  // Gerar uma URL de QR code para simulação
+  // Em produção, você substituiria isso por uma API real de PIX
+  const pixQRCodeURL = `https://chart.googleapis.com/chart?cht=qr&chl=PIX%20Payment%20for%20${encodeURIComponent(eventDetails.title)}%20-%20R$${total.toFixed(2)}&chs=300x300&choe=UTF-8&chld=L|2`;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -413,22 +421,32 @@ const Checkout = () => {
                         </div>
                       ) : form.watch("paymentMethod") === "pix" ? (
                         <div className="border rounded-lg p-4 bg-gray-50">
-                          <FormField
-                            control={form.control}
-                            name="pixEmail"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Email ou Chave Pix</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Digite sua chave pix" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <p className="text-sm text-gray-500 mt-2">
-                            Após confirmar o pagamento, você receberá um QR Code para pagamento.
-                          </p>
+                          <div className="text-center space-y-4">
+                            <p className="font-medium text-lg">QR Code para pagamento PIX</p>
+                            <div className="flex justify-center">
+                              <img 
+                                src={pixQRCodeURL} 
+                                alt="QR Code PIX" 
+                                className="border p-2 bg-white rounded-lg" 
+                                width={200} 
+                                height={200}
+                              />
+                            </div>
+                            <div className="text-sm text-gray-500 mt-2">
+                              <p>Escaneie o QR Code acima com o aplicativo do seu banco</p>
+                              <p>Valor a pagar: <span className="font-semibold">R$ {total.toFixed(2)}</span></p>
+                            </div>
+                            <div className="border-t pt-3 mt-3">
+                              <p className="font-medium">Instruções:</p>
+                              <ol className="text-sm text-left list-decimal pl-5 pt-2">
+                                <li>Abra o aplicativo do seu banco</li>
+                                <li>Selecione a opção PIX</li>
+                                <li>Escaneie o QR Code</li>
+                                <li>Confirme as informações e o valor</li>
+                                <li>Finalize o pagamento</li>
+                              </ol>
+                            </div>
+                          </div>
                         </div>
                       ) : null}
 
