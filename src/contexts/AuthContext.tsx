@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from "@/components/ui/sonner";
 
@@ -55,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return users ? JSON.parse(users) : {};
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const handleLogin = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -82,7 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast({
         title: "Login realizado com sucesso!",
         description: "Redirecionando...",
-        variant: "success"
       });
       
       return true;
@@ -165,7 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
-        login,
+        login: handleLogin,
         register,
         logout
       }}

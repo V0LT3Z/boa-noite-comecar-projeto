@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -44,7 +43,11 @@ export default {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))'
-        }
+        },
+        "dashboard-bg": "#1A1A1A",
+        "dashboard-card": "#2A2A2A",
+        "dashboard-text": "#FFFFFF",
+        "dashboard-muted": "#999999",
       },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(to right, hsl(270 80% 60%), hsl(210 80% 60%))',

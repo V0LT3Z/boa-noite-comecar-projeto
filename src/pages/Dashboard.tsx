@@ -1,33 +1,27 @@
 
 import { useAuth } from "@/contexts/AuthContext"
 import { useProtectedRoute } from "@/hooks/use-protected-route"
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarInset
-} from "@/components/ui/sidebar"
-import { ShoppingCart, UserCog, Heart, Bell, Tags } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import NextEvent from "@/components/dashboard/NextEvent"
+import { Home, Calendar, User, ShoppingCart, Heart } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Link } from "react-router-dom"
+import { cn } from "@/lib/utils"
 
 const menuItems = [
   {
-    title: "Meus ingressos",
-    icon: ShoppingCart,
-    url: "/meus-ingressos"
+    title: "Início",
+    icon: Home,
+    url: "/minha-conta"
   },
   {
-    title: "Editar perfil",
-    icon: UserCog,
-    url: "/editar-perfil"
+    title: "Agenda",
+    icon: Calendar,
+    url: "/agenda"
+  },
+  {
+    title: "Ingressos",
+    icon: ShoppingCart,
+    url: "/meus-ingressos"
   },
   {
     title: "Favoritos",
@@ -35,14 +29,9 @@ const menuItems = [
     url: "/favoritos"
   },
   {
-    title: "Notificações",
-    icon: Bell,
-    url: "/notificacoes"
-  },
-  {
-    title: "Acessar Marketplace",
-    icon: Tags,
-    url: "/marketplace"
+    title: "Perfil",
+    icon: User,
+    url: "/editar-perfil"
   }
 ]
 
@@ -55,44 +44,77 @@ const Dashboard = () => {
   }
   
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <Sidebar>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Menu</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {menuItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild>
-                        <Link to={item.url}>
-                          <item.icon />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
-
-        <SidebarInset>
-          <div className="p-6">
-            <Card>
-              <CardContent className="p-6">
-                <h1 className="text-2xl font-bold mb-6">
-                  Olá, {user?.fullName?.split(' ')[0]}!
-                </h1>
-                <NextEvent />
-              </CardContent>
-            </Card>
-          </div>
-        </SidebarInset>
+    <div className="min-h-screen bg-dashboard-bg text-dashboard-text pb-20">
+      {/* Header */}
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-2">Meus Pedidos</h1>
       </div>
-    </SidebarProvider>
+
+      {/* Content */}
+      <div className="px-4">
+        <Tabs defaultValue="ingressos" className="w-full">
+          <TabsList className="w-full grid grid-cols-2 bg-dashboard-card rounded-xl h-12 p-1">
+            <TabsTrigger 
+              value="ingressos"
+              className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
+            >
+              Ingressos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="produtos"
+              className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
+            >
+              Produtos
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="ingressos" className="mt-4">
+            {/* Lista de ingressos aqui */}
+            <div className="space-y-4">
+              {[1, 2, 3].map((item) => (
+                <Card key={item} className="bg-dashboard-card border-none p-4">
+                  <div className="flex gap-4">
+                    <div className="w-24 h-24 bg-primary/20 rounded-lg" />
+                    <div>
+                      <h3 className="font-semibold">Deu Baile | Sexta {item}4.03</h3>
+                      <p className="text-dashboard-muted">Pacco Club</p>
+                      <span className="inline-block mt-2 px-3 py-1 bg-dashboard-bg rounded-full text-sm">
+                        1 ingresso
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="produtos">
+            <div className="text-center py-8 text-dashboard-muted">
+              Nenhum produto disponível
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Mobile Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-dashboard-card border-t border-white/10">
+        <div className="flex justify-around items-center h-16">
+          {menuItems.map((item) => (
+            <Link
+              key={item.title}
+              to={item.url}
+              className={cn(
+                "flex flex-col items-center text-dashboard-muted transition-colors",
+                window.location.pathname === item.url && "text-primary"
+              )}
+            >
+              <item.icon className="h-6 w-6" />
+              <span className="text-xs mt-1">{item.title}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
+    </div>
   )
 }
 
