@@ -15,7 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { toast } from "@/components/ui/sonner"
 import { useAuth } from "@/contexts/AuthContext"
 
 const loginSchema = z.object({
@@ -50,12 +49,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       const success = await login(data.email, data.password);
       
       if (success) {
-        toast({
-          title: "Login realizado com sucesso!",
-          description: "Redirecionando...",
-          type: "success"
-        });
-        
         // Check if we have a redirect URL saved
         const redirectUrl = localStorage.getItem('redirectAfterLogin');
         if (redirectUrl) {
@@ -63,19 +56,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         }
         
         onSuccess();
-      } else {
-        toast({
-          title: "Erro ao fazer login",
-          description: "Email ou senha incorretos.",
-          variant: "destructive",
-        });
       }
     } catch (error) {
-      toast({
-        title: "Erro ao fazer login",
-        description: "Ocorreu um erro inesperado. Tente novamente.",
-        variant: "destructive",
-      });
+      console.error("Login submission error:", error);
     } finally {
       setIsSubmitting(false);
     }

@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from "@/components/ui/sonner";
 
@@ -78,6 +79,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('user', JSON.stringify(userRecord.user));
       
       setUser(userRecord.user);
+      
+      toast({
+        title: "Login realizado com sucesso!",
+        description: "Redirecionando...",
+        type: "success"
+      });
       
       return true;
     } catch (error) {

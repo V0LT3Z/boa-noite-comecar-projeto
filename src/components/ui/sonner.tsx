@@ -1,6 +1,6 @@
 
 import { useTheme } from "next-themes"
-import { Toaster as Sonner, toast as sonnerToast } from "sonner"
+import { Toaster as Sonner } from "sonner"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
@@ -38,25 +38,25 @@ interface ToastOptions {
 const toast = (options: ToastOptions) => {
   const { title, description, variant, type } = options;
   
-  let className = "";
-  let descriptionClassName = "";
+  // Base style for the toast
+  const baseClassName = "flex flex-col gap-1 p-2";
+  let className = baseClassName;
   
   // Handle destructive (error) toasts
   if (variant === "destructive") {
-    className = "bg-destructive border-destructive text-white";
-    descriptionClassName = "text-white";
+    className = `${baseClassName} bg-destructive border-destructive text-destructive-foreground`;
   } 
   // Handle success toasts 
   else if (type === "success") {
-    className = "bg-[#F2FCE2] border-green-200 text-green-800";
-    descriptionClassName = "text-green-700";
+    className = `${baseClassName} bg-[#F2FCE2] border-green-200 text-green-800`;
   }
   
-  return sonnerToast(title || "", {
-    description,
-    className,
-    descriptionClassName,
-  });
+  return {
+    ...Sonner.toast(title || "", {
+      description,
+      className,
+    })
+  };
 };
 
 export { Toaster, toast }
