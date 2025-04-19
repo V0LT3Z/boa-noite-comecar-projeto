@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { CreditCard, Wallet, Tag, Info } from "lucide-react"
+import { CreditCard, Wallet, Tag, Info, MessageCircleQuestion } from "lucide-react"
 
 import Header from "@/components/Header"
 import { Button } from "@/components/ui/button"
@@ -42,7 +42,6 @@ const paymentSchema = z.object({
   expiryDate: z.string().optional(),
   cvc: z.string().optional(),
   couponCode: z.string().optional(),
-  notes: z.string().optional(),
   paymentMethod: z.enum(["credit", "debit", "pix"])
 })
 
@@ -71,7 +70,6 @@ const Checkout = () => {
       expiryDate: "",
       cvc: "",
       couponCode: "",
-      notes: "",
       paymentMethod: "credit"
     }
   });
@@ -438,23 +436,15 @@ const Checkout = () => {
                         </div>
                       ) : null}
 
-                      <FormField
-                        control={form.control}
-                        name="notes"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Observações (opcional)</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Alguma observação sobre o pedido"
-                                className="resize-none"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center space-x-3">
+                      <MessageCircleQuestion className="h-6 w-6 text-blue-600" />
+                      <div>
+                        <p className="font-medium text-blue-800">Tem algum problema?</p>
+                        <p className="text-sm text-blue-700">Entre em contato conosco para ajudar você</p>
+                      </div>
                     </div>
 
                     <Button 
