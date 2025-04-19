@@ -1,6 +1,6 @@
 
 import { useTheme } from "next-themes"
-import { Toaster as Sonner } from "sonner"
+import { Toaster as Sonner, toast as sonnerToast } from "sonner"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
@@ -35,6 +35,7 @@ interface ToastOptions {
   type?: "success";
 }
 
+// Fix: Use the imported sonnerToast directly
 const toast = (options: ToastOptions) => {
   const { title, description, variant, type } = options;
   
@@ -51,12 +52,11 @@ const toast = (options: ToastOptions) => {
     className = `${baseClassName} bg-[#F2FCE2] border-green-200 text-green-800`;
   }
   
-  return {
-    ...Sonner.toast(title || "", {
-      description,
-      className,
-    })
-  };
+  // Fix: Use the imported sonnerToast function instead of Sonner.toast
+  return sonnerToast(title || "", {
+    description,
+    className,
+  });
 };
 
 export { Toaster, toast }
