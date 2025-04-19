@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { z } from "zod";
 import { User, ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,34 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import FormattedInput from "@/components/FormattedInput";
-
-const formatCPF = (value: string) => {
-  const numbers = value.replace(/[^\d]/g, "");
-  if (numbers.length <= 3) return numbers;
-  if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
-  if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
-  return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
-};
-
-const formatPhone = (value: string) => {
-  const numbers = value.replace(/[^\d]/g, "");
-  if (numbers.length <= 2) return numbers;
-  if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-  return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-};
-
-const formatDate = (value: string) => {
-  const numbers = value.replace(/[^\d]/g, "");
-  if (numbers.length <= 2) return numbers;
-  if (numbers.length <= 4) return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
-  return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
-};
-
-const formatZipCode = (value: string) => {
-  const numbers = value.replace(/[^\d]/g, "");
-  if (numbers.length <= 5) return numbers;
-  return `${numbers.slice(0, 5)}-${numbers.slice(5, 8)}`;
-};
+import { useProtectedRoute } from "@/hooks/use-protected-route";
+import Header from "@/components/Header";
 
 const EditProfile = () => {
   const { isLoading } = useProtectedRoute();
@@ -156,7 +131,7 @@ const EditProfile = () => {
                     <FormattedInput
                       value={formData.phone}
                       onChange={(value) => handleInputChange('phone', value)}
-                      format="(##) #####-####"
+                      format={formatPhone}
                       placeholder="(00) 00000-0000"
                     />
                   </div>
@@ -168,7 +143,7 @@ const EditProfile = () => {
                     <FormattedInput
                       value={formData.cpf}
                       onChange={(value) => handleInputChange('cpf', value)}
-                      format="###.###.###-##"
+                      format={formatCPF}
                       placeholder="000.000.000-00"
                     />
                   </div>
@@ -180,7 +155,7 @@ const EditProfile = () => {
                     <FormattedInput
                       value={formData.birthdate}
                       onChange={(value) => handleInputChange('birthdate', value)}
-                      format="##/##/####"
+                      format={formatDate}
                       placeholder="DD/MM/AAAA"
                     />
                   </div>
@@ -256,7 +231,7 @@ const EditProfile = () => {
                     <FormattedInput
                       value={formData.address.zipCode}
                       onChange={(value) => handleInputChange('address.zipCode', value)}
-                      format="#####-###"
+                      format={formatZipCode}
                       placeholder="00000-000"
                     />
                   </div>
@@ -300,6 +275,35 @@ const EditProfile = () => {
       </main>
     </div>
   );
+};
+
+// Format functions that were previously defined at the top of the file
+const formatCPF = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, "");
+  if (numbers.length <= 3) return numbers;
+  if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+  if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+  return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
+};
+
+const formatPhone = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, "");
+  if (numbers.length <= 2) return numbers;
+  if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+  return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+};
+
+const formatDate = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, "");
+  if (numbers.length <= 2) return numbers;
+  if (numbers.length <= 4) return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+  return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
+};
+
+const formatZipCode = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, "");
+  if (numbers.length <= 5) return numbers;
+  return `${numbers.slice(0, 5)}-${numbers.slice(5, 8)}`;
 };
 
 export default EditProfile;
