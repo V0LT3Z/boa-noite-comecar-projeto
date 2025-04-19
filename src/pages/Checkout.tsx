@@ -140,7 +140,7 @@ const Checkout = () => {
                     (total: number, ticket: any) => total + (ticket.price * ticket.quantity), 
                     0
                   )} 
-                  onConfirm={handleSubmitPix}
+                  onComplete={handleSubmitPix}
                   isSubmitting={isSubmitting}
                 />
               </TabsContent>
