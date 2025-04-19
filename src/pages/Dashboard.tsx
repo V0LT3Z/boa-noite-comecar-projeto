@@ -131,9 +131,9 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation - Fixed to bottom */}
       {isMobile && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-dashboard-card border-t border-gray-200">
+        <nav className="fixed bottom-0 left-0 right-0 bg-dashboard-card border-t border-gray-200 z-10">
           <div className="flex justify-around items-center h-16">
             {menuItems.slice(0, 5).map((item) => (
               <Link

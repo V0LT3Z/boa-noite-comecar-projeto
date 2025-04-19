@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -179,11 +178,6 @@ const NextEvent = () => {
                   </div>
                 )}
                 
-                {currentEvent.tickets.length > 1 && (
-                  <p className="text-xs text-center text-primary">
-                    Toque para ver próximo ingresso
-                  </p>
-                )}
                 <p className="text-xs text-center text-muted-foreground">
                   Apresente este QR Code na entrada do evento
                 </p>
