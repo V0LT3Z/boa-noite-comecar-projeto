@@ -6,6 +6,7 @@ import { z } from "zod"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Form,
   FormControl,
@@ -27,13 +28,14 @@ import {
   SidebarGroup,
   SidebarGroupContent
 } from "@/components/ui/sidebar"
-import { ShoppingCart, Settings, Heart, Bell, Tag } from "lucide-react"
+import { ShoppingCart, Settings, Heart, Bell, Tag, User } from "lucide-react"
 
 const editProfileSchema = z.object({
   email: z.string().email("Email inválido"),
   currentPassword: z.string().min(6, "A senha atual deve ter no mínimo 6 caracteres"),
   newPassword: z.string().min(6, "A nova senha deve ter no mínimo 6 caracteres"),
   confirmPassword: z.string().min(6, "A confirmação de senha deve ter no mínimo 6 caracteres"),
+  bio: z.string().optional(),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "As senhas não coincidem",
   path: ["confirmPassword"],
@@ -81,6 +83,7 @@ const EditProfile = () => {
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
+      bio: "",
     },
   })
 
@@ -109,10 +112,19 @@ const EditProfile = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-dashboard-bg flex">
+      <div className="min-h-screen bg-soft-purple flex">
         {/* Sidebar */}
         <Sidebar>
-          <SidebarContent>
+          <SidebarContent className="bg-gradient-to-b from-primary to-secondary">
+            <div className="p-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                <User className="text-white" size={20} />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold">{user?.fullName}</h3>
+                <p className="text-white/70 text-sm">{user?.email}</p>
+              </div>
+            </div>
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -121,11 +133,15 @@ const EditProfile = () => {
                       <SidebarMenuButton
                         asChild
                         isActive={window.location.pathname === item.url}
-                        tooltip={item.title}
+                        className={`${
+                          window.location.pathname === item.url 
+                            ? "bg-white/20 hover:bg-white/25 text-white" 
+                            : "text-white/90 hover:bg-white/10"
+                        }`}
                       >
-                        <a href={item.url} className="flex items-center gap-2">
-                          <item.icon />
-                          <span>{item.title}</span>
+                        <a href={item.url} className="flex items-center gap-3 py-3">
+                          <item.icon className="h-5 w-5" />
+                          <span className="font-medium">{item.title}</span>
                         </a>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -137,152 +153,212 @@ const EditProfile = () => {
         </Sidebar>
 
         {/* Main Content */}
-        <div className="flex-1 p-6 flex items-center justify-center">
-          <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="flex-1 p-4 md:p-8 flex items-start justify-center">
+          <div className="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-primary p-6 text-white">
+            <div className="bg-gradient-to-r from-primary to-secondary p-6 text-white relative overflow-hidden">
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute -right-10 -bottom-10 w-40 h-40 rounded-full bg-white/20"></div>
+                <div className="absolute right-20 top-5 w-16 h-16 rounded-full bg-white/10"></div>
+                <div className="absolute left-20 bottom-5 w-24 h-24 rounded-full bg-white/15"></div>
+              </div>
               <Button
                 variant="ghost"
-                className="mb-4 text-white hover:bg-white/20"
+                className="mb-4 text-white hover:bg-white/20 relative z-10"
                 onClick={() => navigate("/minha-conta")}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar
               </Button>
-              <h1 className="text-3xl font-bold tracking-tight">Editar Perfil</h1>
+              <h1 className="text-3xl font-bold tracking-tight relative z-10">Editar Perfil</h1>
+              <p className="text-white/80 mt-1 relative z-10">Atualize suas informações pessoais</p>
             </div>
 
             {/* Profile Form Container */}
-            <div className="p-8 space-y-6">
-              {/* Readonly Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nome Completo
-                  </label>
-                  <Input 
-                    value={user?.fullName} 
-                    disabled 
-                    className="bg-gray-50 cursor-not-allowed" 
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    CPF
-                  </label>
-                  <Input 
-                    value="000.000.000-00" 
-                    disabled 
-                    className="bg-gray-50 cursor-not-allowed" 
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Data de Nascimento
-                  </label>
-                  <Input 
-                    value="01/01/2000" 
-                    disabled 
-                    className="bg-gray-50 cursor-not-allowed" 
-                  />
+            <div className="p-6 md:p-8 space-y-8">
+              {/* Personal Info Section */}
+              <div>
+                <h2 className="text-lg font-medium text-gray-800 mb-4 pb-1 border-b border-gray-100">
+                  Informações Pessoais
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-soft-purple rounded-lg p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome Completo
+                    </label>
+                    <Input 
+                      value={user?.fullName} 
+                      disabled 
+                      className="bg-white/80 border-purple-100 cursor-not-allowed font-medium" 
+                    />
+                  </div>
+                  
+                  <div className="bg-soft-blue rounded-lg p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      CPF
+                    </label>
+                    <Input 
+                      value="000.000.000-00" 
+                      disabled 
+                      className="bg-white/80 border-blue-100 cursor-not-allowed font-medium" 
+                    />
+                  </div>
+                  
+                  <div className="bg-soft-peach rounded-lg p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Data de Nascimento
+                    </label>
+                    <Input 
+                      value="01/01/2000" 
+                      disabled 
+                      className="bg-white/80 border-orange-100 cursor-not-allowed font-medium" 
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Editable Form */}
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="email" 
-                            className="focus:ring-primary focus:border-primary" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              {/* Account Settings Section */}
+              <div>
+                <h2 className="text-lg font-medium text-gray-800 mb-4 pb-1 border-b border-gray-100">
+                  Configurações da Conta
+                </h2>
+                
+                {/* Editable Form */}
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    {/* Email field */}
+                    <div className="bg-soft-green/40 rounded-lg p-5">
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700">
+                              Email
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                {...field} 
+                                type="email"
+                                placeholder="seu@email.com" 
+                                className="border-green-100 focus:border-primary bg-white"
+                              />
+                            </FormControl>
+                            <FormMessage className="text-red-500" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    {/* Bio field (optional) */}
+                    <div className="bg-soft-yellow/30 rounded-lg p-5">
+                      <FormField
+                        control={form.control}
+                        name="bio"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700">
+                              Bio (opcional)
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                {...field} 
+                                placeholder="Conte um pouco sobre você..."
+                                className="border-yellow-100 focus:border-secondary bg-white resize-none h-24"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                  <FormField
-                    control={form.control}
-                    name="currentPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Senha Atual</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="password" 
-                            className="focus:ring-primary focus:border-primary" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    {/* Security section */}
+                    <div className="bg-soft-purple/20 rounded-lg p-5 space-y-4">
+                      <h3 className="text-md font-medium text-gray-800">Alterar Senha</h3>
 
-                  <FormField
-                    control={form.control}
-                    name="newPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nova Senha</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="password" 
-                            className="focus:ring-primary focus:border-primary" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="currentPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700">
+                              Senha Atual
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                {...field} 
+                                type="password" 
+                                className="border-primary-light focus:border-primary focus:ring-primary"
+                              />
+                            </FormControl>
+                            <FormMessage className="text-red-500" />
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirmar Nova Senha</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="password" 
-                            className="focus:ring-primary focus:border-primary" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="newPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                Nova Senha
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  type="password" 
+                                  className="border-primary-light focus:border-primary focus:ring-primary" 
+                                />
+                              </FormControl>
+                              <FormMessage className="text-red-500" />
+                            </FormItem>
+                          )}
+                        />
 
-                  <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => navigate("/minha-conta")}
-                      className="hover:bg-gray-50"
-                    >
-                      Cancelar
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      className="bg-primary hover:bg-primary/90"
-                    >
-                      Salvar alterações
-                    </Button>
-                  </div>
-                </form>
-              </Form>
+                        <FormField
+                          control={form.control}
+                          name="confirmPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                Confirmar Nova Senha
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  type="password" 
+                                  className="border-primary-light focus:border-primary focus:ring-primary" 
+                                />
+                              </FormControl>
+                              <FormMessage className="text-red-500" />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end space-x-4 pt-6 border-t border-gray-100">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => navigate("/minha-conta")}
+                        className="border-gray-200 hover:bg-gray-50 text-gray-700"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white"
+                      >
+                        Salvar alterações
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </div>
             </div>
           </div>
         </div>

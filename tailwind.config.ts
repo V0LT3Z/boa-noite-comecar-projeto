@@ -49,6 +49,15 @@ export default {
         "dashboard-card": "#F1F0FB",
         "dashboard-text": "#000000",
         "dashboard-muted": "#666666",
+        // Add pastel / low saturation colors
+        "soft-purple": "#E5DEFF",
+        "soft-pink": "#FFDEE2",
+        "soft-peach": "#FDE1D3", 
+        "soft-blue": "#D3E4FD",
+        "soft-green": "#F2FCE2",
+        "soft-yellow": "#FEF7CD",
+        "soft-orange": "#FEC6A1",
+        "soft-gray": "#F1F0FB",
       },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(to right, hsl(270 80% 60%), hsl(210 80% 60%))',
@@ -60,4 +69,3 @@ export default {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
-
