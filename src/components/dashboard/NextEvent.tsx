@@ -129,18 +129,33 @@ const NextEvent = () => {
           <div>
             <div className="flex justify-between items-center mb-3">
               <h4 className="font-medium text-primary">Seus ingressos</h4>
-              <p className="text-sm text-muted-foreground">
-                {currentTicketIndex + 1} de {currentEvent.tickets.length} {currentEvent.tickets.length === 1 ? "ingresso" : "ingressos"}
-              </p>
+              {currentEvent.tickets.length > 1 && (
+                <div 
+                  className="flex items-center gap-1 text-sm text-primary cursor-pointer"
+                  onClick={handleNextTicket}
+                >
+                  <span>{currentTicketIndex + 1} de {currentEvent.tickets.length}</span>
+                  <ChevronRight className="h-4 w-4" />
+                </div>
+              )}
             </div>
 
             <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex flex-col items-center justify-center gap-4 p-4 bg-white rounded-lg mb-3">
+              {/* QR Code Card - clicável para navegar */}
+              <div 
+                className="flex flex-col items-center justify-center gap-4 p-4 bg-white rounded-lg mb-3 cursor-pointer"
+                onClick={currentEvent.tickets.length > 1 ? handleNextTicket : undefined}
+              >
                 <QRCode
                   value={currentTicket.qrValue}
                   size={150}
                   className="max-w-full h-auto"
                 />
+                {currentEvent.tickets.length > 1 && (
+                  <p className="text-xs text-center text-primary">
+                    Toque para ver próximo ingresso
+                  </p>
+                )}
                 <p className="text-xs text-center text-muted-foreground">
                   Apresente este QR Code na entrada do evento
                 </p>
@@ -152,27 +167,6 @@ const NextEvent = () => {
                   <p className="text-sm text-muted-foreground">{currentTicket.seat}</p>
                 )}
               </div>
-
-              {currentEvent.tickets.length > 1 && (
-                <div className="flex justify-between mt-4 gap-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={handlePreviousTicket}
-                    className="flex-1"
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-2" />
-                    Ingresso anterior
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleNextTicket}
-                    className="flex-1"
-                  >
-                    Próximo ingresso
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
 
