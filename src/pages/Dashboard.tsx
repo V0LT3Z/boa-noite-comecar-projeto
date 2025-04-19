@@ -72,7 +72,9 @@ const Dashboard = () => {
       <div className="flex-1 pb-20 md:pb-0">
         {/* Header */}
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-2">Meus Pedidos</h1>
+          <h1 className="text-2xl font-bold mb-2">
+            Olá, {user?.fullName?.split(' ')[0]}!
+          </h1>
         </div>
 
         {/* Content */}
@@ -147,4 +149,3 @@ const Dashboard = () => {
 }
 
 export default Dashboard
-
