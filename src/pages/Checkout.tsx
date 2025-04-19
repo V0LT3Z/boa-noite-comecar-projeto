@@ -67,7 +67,7 @@ const Checkout = () => {
   const form = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      fullName: user?.email?.split('@')[0] || "", // Temporário até corrigirmos o tipo
+      fullName: user?.fullName || "",
       email: user?.email || "",
       cardNumber: "",
       expiryDate: "",
