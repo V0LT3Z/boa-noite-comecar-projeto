@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -238,7 +237,6 @@ const Header = () => {
                 <SheetTrigger asChild>
                   <Button variant="ghost" className="rounded-full p-2 h-9 w-9">
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={user?.avatar} alt={user?.fullName || 'User'} />
                       <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
                     </Avatar>
                   </Button>
@@ -250,7 +248,6 @@ const Header = () => {
                   <div className="py-4">
                     <div className="flex items-center gap-4 mb-6 pb-6 border-b">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={user?.avatar} alt={user?.fullName || 'User'} />
                         <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
                       </Avatar>
                       <div>
