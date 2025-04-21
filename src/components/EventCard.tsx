@@ -14,8 +14,8 @@ interface EventCardProps {
 }
 
 const EventCard = ({ id, title, date, location, image }: EventCardProps) => {
-  // Adicione verificação para garantir que o id é válido
-  const isValidId = id && !isNaN(id) && id > 0;
+  // Verifique se o ID é válido
+  const isValidId = id && !isNaN(Number(id)) && Number(id) > 0;
   
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow group">

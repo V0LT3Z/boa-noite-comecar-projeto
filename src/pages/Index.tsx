@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
@@ -15,6 +16,7 @@ import { fetchEvents } from "@/services/events"
 import { EventResponse } from "@/types/event"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const mockEvents = [
   {
@@ -114,11 +116,19 @@ const Index = () => {
         setLoading(true);
         const eventData = await fetchEvents();
         console.log("Eventos carregados:", eventData);
-        setEvents(eventData);
+        
+        // Se não houver eventos do banco, usar os mockados
+        if (!eventData || eventData.length === 0) {
+          console.log("Usando eventos mockados pois não há eventos no banco");
+          setEvents(mockEvents as unknown as EventResponse[]);
+        } else {
+          setEvents(eventData);
+        }
       } catch (error) {
         console.error("Erro ao carregar eventos:", error);
         // Usar dados mockados em caso de falha
-        // setEvents(mockEvents);
+        console.log("Usando eventos mockados devido a erro");
+        setEvents(mockEvents as unknown as EventResponse[]);
       } finally {
         setLoading(false);
       }
@@ -128,15 +138,40 @@ const Index = () => {
   }, []);
 
   const formattedEvents = events.map(event => {
-    const eventDate = new Date(event.date);
-    return {
-      id: event.id,
-      title: event.title,
-      date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
-      location: event.location,
-      image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
-      category: "Eventos"
-    };
+    // Se for um evento mockado, use seu formato diretamente
+    if ('category' in event) {
+      return event as unknown as {
+        id: number;
+        title: string;
+        date: string;
+        location: string;
+        image: string;
+        category: string;
+      };
+    }
+    
+    // Se for um evento do banco, formate os dados
+    try {
+      const eventDate = new Date(event.date);
+      return {
+        id: event.id,
+        title: event.title,
+        date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
+        location: event.location,
+        image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
+        category: "Eventos"
+      };
+    } catch (error) {
+      console.error("Erro ao formatar evento:", error, event);
+      return {
+        id: event.id || 0,
+        title: event.title || "Evento sem título",
+        date: "Data não disponível",
+        location: event.location || "Local não informado",
+        image: "https://picsum.photos/seed/fallback/800/500",
+        category: "Eventos"
+      };
+    }
   });
 
   const filteredEvents = selectedCategory 
@@ -220,10 +255,10 @@ const Index = () => {
           {loading ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 w-full bg-gray-100 rounded-lg animate-pulse"></div>
+                <Skeleton key={i} className="h-32 w-full rounded-lg" />
               ))}
             </div>
-          ) : filteredEvents.length > 0 ? (
+          ) : formattedEvents.length > 0 ? (
             <>
               <div className="flex flex-col gap-6">
                 {displayedEvents.map((event) => (
