@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  User as UserIcon, Bell, Heart, Home, Search, Menu, X, LogOut, Ticket, Store, ArrowLeft
+  User as UserIcon, Bell, Heart, Home, Search, Menu, LogOut, Ticket, Store, ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -157,7 +157,6 @@ const MobileNav: React.FC<MobileNavProps> = ({
 };
 
 const Header = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
   const isMobile = useIsMobile();
@@ -195,124 +194,152 @@ const Header = () => {
   ];
 
   return (
-    <header 
-      className={`fixed top-0 left-0 w-full z-50 bg-background transition-all ${
-        isScrolled ? 'shadow-md' : ''
-      }`}
-    >
-      <div className="container flex items-center justify-between h-16 px-4">
-        <div className="flex items-center gap-8">
-          {location.pathname !== '/' && location.pathname !== '/minha-conta' && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleBackButton}
-              className="mr-2"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="sr-only">
-                {isAuthenticated ? 'Voltar para Dashboard' : 'Voltar para início'}
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo and Navigation */}
+          <div className="flex items-center gap-8">
+            {location.pathname !== '/' && location.pathname !== '/minha-conta' && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleBackButton}
+                className="mr-2"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                <span className="sr-only">
+                  {isAuthenticated ? 'Voltar para Dashboard' : 'Voltar para início'}
+                </span>
+              </Button>
+            )}
+            <Link to="/" className="flex items-center gap-2">
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-bold text-xl">
+                EventHub
               </span>
-            </Button>
-          )}
+            </Link>
 
-          <Link to="/" className="flex items-center gap-2">
-            <span className="font-bold text-xl text-primary">EventHub</span>
-          </Link>
-
-          {!isMobile && (
-            <nav className="hidden md:flex items-center gap-4">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.href}
-                  href={item.href}
-                  active={location.pathname === item.href}
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
-          )}
-        </div>
-
-        {!isMobile && (
-          <div className="flex items-center gap-2">
-            {isAuthenticated ? (
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" className="rounded-full p-2 h-9 w-9">
-                    <Avatar className="h-9 w-9">
-                      <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent>
-                  <SheetHeader>
-                    <SheetTitle>Menu</SheetTitle>
-                  </SheetHeader>
-                  <div className="py-4">
-                    <div className="flex items-center gap-4 mb-6 pb-6 border-b">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{user?.fullName || 'Usuário'}</p>
-                        <p className="text-sm text-muted-foreground">{user?.email}</p>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      {authenticatedItems.map((item) => (
-                        <SheetClose asChild key={item.href}>
-                          <Link to={item.href}>
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start gap-2"
-                            >
-                              <item.icon className="h-4 w-4" />
-                              {item.label}
-                            </Button>
-                          </Link>
-                        </SheetClose>
-                      ))}
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start text-destructive hover:text-destructive gap-2"
-                        onClick={logout}
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Sair
-                      </Button>
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            ) : (
-              <>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setIsAuthDialogOpen(true)}
-                >
-                  Entrar
-                </Button>
-                <Button onClick={() => setIsAuthDialogOpen(true)}>
-                  Cadastrar
-                </Button>
-              </>
+            {!isMobile && (
+              <nav className="hidden md:flex items-center gap-6">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={`text-sm font-medium transition-all hover:text-primary ${
+                      location.pathname === item.href 
+                        ? 'text-primary relative after:content-[""] after:absolute after:left-0 after:right-0 after:-bottom-5 after:h-0.5 after:bg-primary after:rounded-full'
+                        : 'text-gray-600'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
             )}
           </div>
-        )}
 
-        {isMobile && (
-          <MobileNav 
-            navItems={navItems} 
-            authenticatedItems={authenticatedItems}
-            isAuthenticated={isAuthenticated}
-            user={user}
-            signOut={logout}
-            setIsAuthDialogOpen={setIsAuthDialogOpen}
-          />
-        )}
+          {/* User Menu */}
+          {!isMobile && (
+            <div className="flex items-center gap-3">
+              {isAuthenticated ? (
+                <div className="flex items-center gap-3">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="hover:bg-gray-100"
+                  >
+                    <Bell className="h-5 w-5 text-gray-600" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="hover:bg-gray-100"
+                  >
+                    <Heart className="h-5 w-5 text-gray-600" />
+                  </Button>
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="ghost" className="rounded-full p-2 h-9 w-9">
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                      <SheetHeader>
+                        <SheetTitle>Menu</SheetTitle>
+                      </SheetHeader>
+                      <div className="py-4">
+                        <div className="flex items-center gap-4 mb-6 pb-6 border-b">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{user?.fullName || 'Usuário'}</p>
+                            <p className="text-sm text-muted-foreground">{user?.email}</p>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          {authenticatedItems.map((item) => (
+                            <SheetClose asChild key={item.href}>
+                              <Link to={item.href}>
+                                <Button 
+                                  variant="ghost" 
+                                  className="w-full justify-start gap-2"
+                                >
+                                  <item.icon className="h-4 w-4" />
+                                  {item.label}
+                                </Button>
+                              </Link>
+                            </SheetClose>
+                          ))}
+                          <Button 
+                            variant="ghost" 
+                            className="w-full justify-start text-destructive hover:text-destructive gap-2"
+                            onClick={logout}
+                          >
+                            <LogOut className="h-4 w-4" />
+                            Sair
+                          </Button>
+                        </div>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </div>
+              ) : (
+                <>
+                  <Button 
+                    variant="ghost"
+                    onClick={() => setIsAuthDialogOpen(true)}
+                    className="text-gray-600 hover:text-primary hover:bg-primary/5"
+                  >
+                    Entrar
+                  </Button>
+                  <Button
+                    onClick={() => setIsAuthDialogOpen(true)}
+                    className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90"
+                  >
+                    Cadastrar
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Mobile Menu */}
+          {isMobile && (
+            <MobileNav 
+              navItems={navItems} 
+              authenticatedItems={authenticatedItems}
+              isAuthenticated={isAuthenticated}
+              user={user}
+              signOut={logout}
+              setIsAuthDialogOpen={setIsAuthDialogOpen}
+            />
+          )}
+        </div>
       </div>
+
+      {/* Auth Dialog */}
       <AuthDialog 
         open={isAuthDialogOpen} 
         onOpenChange={setIsAuthDialogOpen}
