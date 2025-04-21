@@ -97,38 +97,34 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="flex-1 pb-20 md:pb-0 overflow-y-auto">
         {/* Header */}
-        <div className="p-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold mb-2 animate-bounce text-primary">
-              Olá, {user?.fullName?.split(' ')[0]}! 👋
-            </h1>
-            <p className="text-dashboard-muted">Bem-vindo(a) de volta à sua conta</p>
-          </div>
-          
-          {!isMobile && (
-            <Button
-              onClick={handleHomeClick}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Home className="h-4 w-4" />
-              Ir para Home
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          )}
+        <div className="p-6 flex flex-col items-center justify-center bg-gradient-to-r from-primary to-secondary text-white mb-6">
+          <h1 className="text-3xl font-bold animate-bounce">
+            Olá, {user?.fullName?.split(' ')[0]}! 👋
+          </h1>
         </div>
 
         {/* Mobile Home Button */}
         {isMobile && (
           <div className="px-4 mb-4">
             <Button 
-              onClick={handleHomeClick} 
-              variant="outline" 
-              className="w-full flex items-center gap-2"
+              onClick={handleHomeClick}
+              className="w-full bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 flex items-center justify-center gap-2"
             >
               <Home className="h-4 w-4" />
               Ir para Home
-              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* Desktop Home Button */}
+        {!isMobile && (
+          <div className="px-4 mb-4">
+            <Button
+              onClick={handleHomeClick}
+              className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 flex items-center justify-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              Ir para Home
             </Button>
           </div>
         )}
@@ -165,7 +161,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation - Fixed to bottom */}
+      {/* Mobile Navigation */}
       {isMobile && (
         <nav className="fixed bottom-0 left-0 right-0 bg-dashboard-card border-t border-gray-200 z-10">
           <div className="flex justify-around items-center h-16">
