@@ -217,7 +217,6 @@ const Header = () => {
               </span>
             </Link>
             
-            {/* Navigation Menu */}
             {!isMobile && (
               <nav className="flex items-center gap-6">
                 {navItems.map((item) => (
@@ -238,7 +237,6 @@ const Header = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* User action icons */}
             {!isMobile && isAuthenticated && (
               <div className="flex items-center gap-3">
                 <Link to="/notificacoes">
@@ -264,54 +262,52 @@ const Header = () => {
                   <SheetTrigger asChild>
                     <Button variant="ghost" className="rounded-full p-2 h-9 w-9 hover:bg-soft-purple/10">
                       <Avatar className="h-9 w-9">
-                        <AvatarFallback className="hover:bg-soft-purple/20 cursor-pointer transition-colors">
+                        <AvatarFallback className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
                           {getInitials(user?.fullName)}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </SheetTrigger>
-                  <SheetContent>
-                    <SheetHeader>
-                      <SheetTitle>Menu</SheetTitle>
-                    </SheetHeader>
-                    <div className="py-4">
-                      <div className="flex items-center gap-4 mb-6 pb-6 border-b">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback className="hover:bg-soft-purple/20 cursor-pointer transition-colors">
-                            {getInitials(user?.fullName)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium hover:bg-soft-purple/10 px-1 rounded-md transition-colors cursor-pointer">
-                            {user?.fullName || 'Usuário'}
-                          </p>
-                          <p className="text-sm text-muted-foreground hover:bg-soft-purple/10 px-1 rounded-md transition-colors cursor-pointer">
-                            {user?.email}
-                          </p>
+                  <SheetContent className="w-80 sm:w-96 p-0 border-l border-gray-100">
+                    <div className="flex flex-col h-full">
+                      <div className="p-6 bg-gradient-to-r from-primary to-secondary">
+                        <div className="flex items-start gap-4">
+                          <Avatar className="h-16 w-16 border-2 border-white">
+                            <AvatarFallback className="bg-white text-primary text-xl">
+                              {getInitials(user?.fullName)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-white">
+                            <h3 className="font-semibold text-lg">{user?.fullName || 'Usuário'}</h3>
+                            <p className="text-white/90 text-sm mt-1">{user?.email}</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="space-y-1">
-                        {authenticatedItems.map((item) => (
-                          <SheetClose asChild key={item.href}>
-                            <Link to={item.href}>
-                              <Button 
-                                variant="ghost" 
-                                className="w-full justify-start gap-2"
-                              >
-                                <item.icon className="h-4 w-4" />
-                                {item.label}
-                              </Button>
-                            </Link>
-                          </SheetClose>
-                        ))}
-                        <Button 
-                          variant="ghost" 
-                          className="w-full justify-start text-destructive hover:text-destructive gap-2"
-                          onClick={logout}
-                        >
-                          <LogOut className="h-4 w-4" />
-                          Sair
-                        </Button>
+
+                      <div className="flex-1 py-4">
+                        <div className="px-2 space-y-1">
+                          {authenticatedItems.map((item) => (
+                            <SheetClose asChild key={item.href}>
+                              <Link to={item.href}>
+                                <Button 
+                                  variant="ghost" 
+                                  className="w-full justify-start gap-3 h-12 px-4 hover:bg-primary/5 hover:text-primary"
+                                >
+                                  <item.icon className="h-5 w-5" />
+                                  <span className="font-medium">{item.label}</span>
+                                </Button>
+                              </Link>
+                            </SheetClose>
+                          ))}
+                          <Button 
+                            variant="ghost" 
+                            className="w-full justify-start gap-3 h-12 px-4 text-destructive hover:bg-destructive/5 hover:text-destructive"
+                            onClick={logout}
+                          >
+                            <LogOut className="h-5 w-5" />
+                            <span className="font-medium">Sair</span>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </SheetContent>
@@ -319,7 +315,6 @@ const Header = () => {
               </div>
             )}
 
-            {/* Auth buttons or Mobile Menu */}
             {!isMobile && !isAuthenticated ? (
               <div className="flex items-center gap-3">
                 <Button 
