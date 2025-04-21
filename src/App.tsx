@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -25,6 +24,7 @@ import AdminSupport from "./pages/admin/AdminSupport";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminFinancial from "./pages/admin/AdminFinancial";
+import PaymentSuccessConfirmation from "./pages/PaymentSuccessConfirmation";
 
 function App() {
   return (
@@ -39,7 +39,7 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/evento/:id" element={<EventDetails />} />
                 <Route path="/checkout/:eventId" element={<Checkout />} />
-                <Route path="/pagamento-sucesso/:orderId" element={<PaymentSuccess />} />
+                <Route path="/pagamento-sucesso" element={<PaymentSuccessConfirmation />} />
                 <Route path="/marketplace" element={<Marketplace />} />
 
                 {/* Protected user routes */}
