@@ -1,11 +1,10 @@
-
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProtectedAdminRoute } from '@/hooks/use-protected-admin-route';
 import { 
   Home, BarChart2, Calendar, Users, Settings, LogOut, 
-  Menu, ChevronRight, Music, Ticket, DollarSign
+  Menu, ChevronRight, DollarSign, ScanLine, HelpCircle 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -48,15 +47,14 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navigationItems = [
     { path: '/admin', label: 'Painel', icon: Home },
     { path: '/admin/eventos', label: 'Eventos', icon: Calendar },
-    { path: '/admin/ingressos', label: 'Ingressos', icon: Ticket },
-    { path: '/admin/artistas', label: 'Artistas', icon: Music },
     { path: '/admin/usuarios', label: 'Usuários', icon: Users },
+    { path: '/admin/verificacao-qr', label: 'Verificação QR Code', icon: ScanLine },
     { path: '/admin/financeiro', label: 'Financeiro', icon: DollarSign },
     { path: '/admin/relatorios', label: 'Relatórios', icon: BarChart2 },
+    { path: '/admin/suporte', label: 'Suporte', icon: HelpCircle },
     { path: '/admin/configuracoes', label: 'Configurações', icon: Settings },
   ];
 
-  // Função auxiliar para obter as iniciais do nome do usuário
   const getInitials = (name = '') => {
     return name
       .split(' ')
@@ -104,7 +102,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Sidebar para desktop */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
         <div className="h-full flex flex-col border-r bg-card">
           <div className="h-16 flex items-center px-4 border-b">
@@ -143,10 +140,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
         </div>
       </div>
-
-      {/* Conteúdo principal */}
       <div className="flex flex-col flex-1 md:pl-64">
-        {/* Header mobile */}
         <header className="h-16 flex items-center px-4 border-b bg-white md:bg-transparent md:border-none sticky top-0 z-10">
           <div className="flex justify-between items-center w-full">
             <div className="md:hidden flex items-center">
@@ -213,8 +207,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
           </div>
         </header>
-
-        {/* Conteúdo principal */}
         <main className="flex-1 p-6 overflow-y-auto">
           {children}
         </main>
