@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  User as UserIcon, Bell, Heart, Home, Search, Menu, X, LogOut, Ticket, Store
+  User as UserIcon, Bell, Heart, Home, Search, Menu, X, LogOut, Ticket, Store, ArrowLeft, HouseIcon 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -163,6 +162,11 @@ const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const isMobile = useIsMobile();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleBackToHome = () => {
+    navigate('/');
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -209,11 +213,22 @@ const Header = () => {
     >
       <div className="container flex items-center justify-between h-16 px-4">
         <div className="flex items-center gap-8">
+          {location.pathname !== '/' && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleBackToHome}
+              className="mr-2"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Voltar para início</span>
+            </Button>
+          )}
+
           <Link to="/" className="flex items-center gap-2">
             <span className="font-bold text-xl text-primary">EventHub</span>
           </Link>
 
-          {/* Desktop Navigation */}
           {!isMobile && (
             <nav className="hidden md:flex items-center gap-4">
               {navItems.map((item) => (
@@ -229,7 +244,6 @@ const Header = () => {
           )}
         </div>
 
-        {/* Desktop Authentication */}
         {!isMobile && (
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
@@ -297,7 +311,6 @@ const Header = () => {
           </div>
         )}
 
-        {/* Mobile Navigation */}
         {isMobile && (
           <MobileNav 
             navItems={navItems} 
