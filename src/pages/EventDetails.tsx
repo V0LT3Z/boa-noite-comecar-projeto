@@ -7,149 +7,107 @@ import { Separator } from "@/components/ui/separator";
 import EventMap from "@/components/EventMap";
 import TicketSelector from "@/components/TicketSelector";
 import FavoriteButton from "@/components/FavoriteButton";
-import Header from "@/components/Header";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EventDetails as EventDetailsType } from "@/types/event";
+import { fetchEventById } from "@/services/events";
 
 const EventDetails = () => {
-  const { eventId } = useParams<{ eventId: string }>();
+  const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<EventDetailsType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (eventId) {
-      const eventData = eventsMockData[eventId];
-      if (eventData) {
-        setEvent(eventData);
-      } else {
+    async function loadEventDetails() {
+      if (!id) {
         toast({
           title: "Evento não encontrado",
-          description: "Não foi possível encontrar os detalhes para este evento.",
+          description: "Nenhum evento especificado.",
           variant: "destructive",
         });
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        const eventId = parseInt(id);
+        const eventData = await fetchEventById(eventId);
+        if (eventData) {
+          setEvent(eventData);
+        } else {
+          toast({
+            title: "Evento não encontrado",
+            description: "Não foi possível encontrar os detalhes para este evento.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar evento:", error);
+        toast({
+          title: "Erro ao carregar evento",
+          description: "Ocorreu um erro ao carregar os detalhes do evento.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     }
-  }, [eventId, toast]);
 
-  const handlePurchase = (selectedTickets: { ticketId: number, quantity: number }[]) => {
-    if (selectedTickets.length > 0) {
-      toast({
-        title: "Ingressos selecionados",
-        description: `${selectedTickets.reduce((total, item) => total + item.quantity, 0)} ingressos adicionados ao carrinho.`
+    loadEventDetails();
+  }, [id, toast]);
+
+  const handlePurchase = async (selectedTickets: { ticketId: number, quantity: number }[]) => {
+    if (!id || selectedTickets.length === 0) return;
+    
+    try {
+      // Chamar a edge function do Supabase para criar a sessão de checkout
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eventId: parseInt(id),
+          selectedTickets
+        }),
       });
-      navigate("/checkout");
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao criar checkout');
+      }
+      
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error('URL de checkout não disponível');
+      }
+    } catch (error) {
+      console.error('Erro no checkout:', error);
+      toast({
+        title: "Erro no processo de compra",
+        description: "Ocorreu um erro ao processar sua compra. Por favor, tente novamente.",
+        variant: "destructive",
+      });
     }
   };
 
-  const eventsMockData: Record<string, EventDetailsType> = {
-    "1": {
-      id: 1,
-      title: "Festival de Música Eletrônica 2023",
-      date: "2023-05-20",
-      time: "22:00",
-      location: "Arena São Paulo",
-      coordinates: {
-        lat: -23.5505,
-        lng: -46.6333
-      },
-      description: "O maior festival de música eletrônica do Brasil. Uma experiência sensacional com os melhores DJs do mundo.",
-      image: "https://source.unsplash.com/random?electronic,music,festival",
-      minimumAge: 18,
-      tickets: [
-        {
-          id: 1,
-          name: "Pista",
-          price: 120.00,
-          description: "Acesso à pista principal do evento",
-          availableQuantity: 300,
-          maxPerPurchase: 4
-        },
-        {
-          id: 2,
-          name: "VIP",
-          price: 250.00,
-          description: "Acesso à área VIP com open bar",
-          availableQuantity: 100,
-          maxPerPurchase: 2
-        },
-        {
-          id: 3,
-          name: "Backstage",
-          price: 450.00,
-          description: "Acesso à área backstage e meet & greet com os artistas",
-          availableQuantity: 30,
-          maxPerPurchase: 2
-        }
-      ],
-      warnings: [
-        "É proibida a entrada com bebidas e alimentos externos",
-        "É obrigatória a apresentação de documento com foto",
-        "Menores de 16 anos apenas acompanhados dos pais ou responsáveis legais"
-      ],
-      venue: {
-        name: "Arena São Paulo",
-        address: "Av. Exemplo, 1000 - São Paulo, SP",
-        capacity: 5000,
-        map_url: "https://map-url-example.com"
-      },
-      status: "active"
-    },
-    "2": {
-      id: 2,
-      title: "Show de Rock - Bandas Nacionais",
-      date: "2023-06-15",
-      time: "20:00",
-      location: "Estádio Municipal",
-      coordinates: {
-        lat: -23.5458,
-        lng: -46.6358
-      },
-      description: "Um super show de rock com as melhores bandas nacionais. Uma noite épica para os amantes do bom e velho rock n' roll.",
-      image: "https://source.unsplash.com/random?rock,concert",
-      minimumAge: 16,
-      tickets: [
-        {
-          id: 4,
-          name: "Arquibancada",
-          price: 90.00,
-          description: "Acesso à arquibancada geral",
-          availableQuantity: 500,
-          maxPerPurchase: 4
-        },
-        {
-          id: 5,
-          name: "Pista Premium",
-          price: 180.00,
-          description: "Acesso à pista premium próxima ao palco",
-          availableQuantity: 200,
-          maxPerPurchase: 4
-        }
-      ],
-      warnings: [
-        "É proibido fumar em qualquer área do evento",
-        "Sujeito a revista na entrada"
-      ],
-      venue: {
-        name: "Estádio Municipal",
-        address: "R. do Estádio, 500 - São Paulo, SP",
-        capacity: 8000,
-        map_url: "https://map-url-example.com"
-      },
-      status: "active"
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Carregando detalhes do evento...</p>
+      </div>
+    );
+  }
 
   if (!event) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        {eventId ? (
-          <p className="text-gray-600">Carregando detalhes do evento...</p>
-        ) : (
-          <p className="text-red-500">Nenhum evento especificado.</p>
-        )}
+        <p className="text-red-500">Evento não encontrado.</p>
       </div>
     );
   }
@@ -324,12 +282,9 @@ const EventDetails = () => {
   };
 
   return (
-    <>
-      <Header />
-      <div className="container mx-auto px-4 py-8">
-        {renderContent()}
-      </div>
-    </>
+    <div className="container mx-auto px-4 py-8">
+      {renderContent()}
+    </div>
   );
 };
 
