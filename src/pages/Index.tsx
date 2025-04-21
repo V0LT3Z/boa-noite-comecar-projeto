@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
@@ -98,33 +97,25 @@ const Index = () => {
       <Header />
       
       {/* Hero Section with Search */}
-      <section className="relative bg-gradient-to-r from-primary to-secondary pt-24 pb-32">
+      <section className="relative bg-soft-gray pt-20 pb-12">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Encontre seus próximos eventos
+          <div className="max-w-3xl mx-auto">
+            <h1 className="text-3xl md:text-4xl font-bold text-primary mb-3 text-center">
+              Encontre eventos para você
             </h1>
-            <p className="text-white/90 text-lg mb-8">
-              Descubra shows, festivais, workshops e muito mais
+            <p className="text-muted-foreground text-center mb-6">
+              Shows, festivais, workshops e muito mais
             </p>
-          </div>
-          
-          {/* Search positioned for better visibility */}
-          <div className="relative z-10 max-w-4xl mx-auto transform translate-y-16">
             <SearchBar />
-            <CategoryCarousel />
+            <div className="mt-4">
+              <CategoryCarousel />
+            </div>
           </div>
-        </div>
-        
-        {/* Decorative shapes */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
         </div>
       </section>
 
       {/* Featured Events Carousel */}
-      <main className="container mx-auto px-4 space-y-12 mt-24">
+      <main className="container mx-auto px-4 space-y-10 mt-10">
         <Carousel className="relative rounded-2xl overflow-hidden">
           <CarouselContent>
             {featuredEvents.map((event) => (

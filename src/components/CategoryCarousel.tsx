@@ -21,7 +21,7 @@ const categories = [
 
 const CategoryCarousel = () => {
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
+    <div className="w-full max-w-4xl mx-auto">
       <Carousel
         opts={{
           align: "start",
@@ -31,10 +31,10 @@ const CategoryCarousel = () => {
       >
         <CarouselContent>
           {categories.map((category) => (
-            <CarouselItem key={category} className="basis-1/2 md:basis-1/4 lg:basis-1/6">
+            <CarouselItem key={category} className="basis-1/3 md:basis-1/4 lg:basis-1/6">
               <Button
                 variant="outline"
-                className="w-full whitespace-nowrap"
+                className="w-full whitespace-nowrap text-sm bg-white hover:bg-primary hover:text-white"
               >
                 {category}
               </Button>
