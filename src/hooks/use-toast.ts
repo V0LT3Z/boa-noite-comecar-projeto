@@ -7,6 +7,27 @@ type ToastProps = {
   variant?: "default" | "destructive" | "success"
 }
 
+// Criando o hook useToast que retorna a função toast
+export const useToast = () => {
+  return {
+    toast: ({ title, description, variant = "default" }: ToastProps) => {
+      const toastOptions: Partial<ToastT> = {}
+
+      if (variant === "destructive") {
+        toastOptions.className = "bg-destructive text-destructive-foreground"
+      } else if (variant === "success") {
+        toastOptions.className = "bg-green-500 text-white"
+      }
+
+      return sonnerToast(title, {
+        description,
+        ...toastOptions,
+      })
+    }
+  }
+}
+
+// Mantendo a exportação da função toast direta para compatibilidade
 export const toast = ({ title, description, variant = "default" }: ToastProps) => {
   const toastOptions: Partial<ToastT> = {}
 
