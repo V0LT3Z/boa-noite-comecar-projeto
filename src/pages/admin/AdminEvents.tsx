@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -33,8 +32,21 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { toast } from "@/hooks/use-toast";
 
-// Mock data for demonstration
-const mockEvents = [
+// Type definition for EventStatus
+type EventStatus = "active" | "paused" | "cancelled";
+
+// Define the EventItem interface
+interface EventItem {
+  id: number;
+  title: string;
+  date: string;
+  status: EventStatus;
+  ticketsSold: number;
+  totalRevenue: number;
+}
+
+// Mock data for demonstration with proper typing
+const mockEvents: EventItem[] = [
   {
     id: 1,
     title: "Festival de Verão 2025",
@@ -60,17 +72,6 @@ const mockEvents = [
     totalRevenue: 0,
   },
 ];
-
-type EventStatus = "active" | "paused" | "cancelled";
-
-interface EventItem {
-  id: number;
-  title: string;
-  date: string;
-  status: EventStatus;
-  ticketsSold: number;
-  totalRevenue: number;
-}
 
 const AdminEvents = () => {
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
