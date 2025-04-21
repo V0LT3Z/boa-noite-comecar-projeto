@@ -90,15 +90,6 @@ const Dashboard = () => {
                 <span>{item.title}</span>
               </Link>
             ))}
-
-            <Button
-              onClick={handleHomeClick}
-              className="flex w-full items-center gap-3 p-3 rounded-lg transition-colors"
-            >
-              <Home className="h-5 w-5" />
-              <span>Ir para Home</span>
-              <ArrowRight className="h-4 w-4 ml-auto" />
-            </Button>
           </div>
         </div>
       )}
@@ -106,24 +97,41 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="flex-1 pb-20 md:pb-0 overflow-y-auto">
         {/* Header */}
-        <div className="p-6 text-center mb-4">
-          <h1 className="text-3xl font-bold mb-2 animate-bounce text-primary">
-            Olá, {user?.fullName?.split(' ')[0]}! 👋
-          </h1>
-          <p className="text-dashboard-muted">Bem-vindo(a) de volta à sua conta</p>
+        <div className="p-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 animate-bounce text-primary">
+              Olá, {user?.fullName?.split(' ')[0]}! 👋
+            </h1>
+            <p className="text-dashboard-muted">Bem-vindo(a) de volta à sua conta</p>
+          </div>
           
-          <div className="mt-4 flex justify-center md:hidden">
-            <Button 
-              onClick={handleHomeClick} 
-              variant="outline" 
+          {!isMobile && (
+            <Button
+              onClick={handleHomeClick}
+              variant="outline"
               className="flex items-center gap-2"
             >
               <Home className="h-4 w-4" />
               Ir para Home
               <ArrowRight className="h-4 w-4" />
             </Button>
-          </div>
+          )}
         </div>
+
+        {/* Mobile Home Button */}
+        {isMobile && (
+          <div className="px-4 mb-4">
+            <Button 
+              onClick={handleHomeClick} 
+              variant="outline" 
+              className="w-full flex items-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              Ir para Home
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
 
         {/* Next Event Section */}
         <div className="px-4 mb-8">
