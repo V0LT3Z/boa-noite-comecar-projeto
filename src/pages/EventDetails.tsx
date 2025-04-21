@@ -1,13 +1,15 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import EventMap from "@/components/EventMap";
 import TicketSelector from "@/components/TicketSelector";
 import FavoriteButton from "@/components/FavoriteButton";
-import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EventDetails as EventDetailsType } from "@/types/event";
 import { fetchEventById } from "@/services/events";
@@ -16,48 +18,50 @@ const EventDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<EventDetailsType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   useEffect(() => {
     async function loadEventDetails() {
       if (!id) {
-        toast({
-          title: "Evento não encontrado",
+        toast.error("Evento não encontrado", {
           description: "Nenhum evento especificado.",
-          variant: "destructive",
         });
+        navigate("/");
         return;
       }
       
       try {
         setIsLoading(true);
+        
+        // Converter string para número, mas garantindo que temos um valor
         const eventId = parseInt(id);
+        if (isNaN(eventId)) {
+          throw new Error("ID do evento inválido");
+        }
+        
+        console.log("Buscando evento com ID:", eventId);
         const eventData = await fetchEventById(eventId);
+        
         if (eventData) {
+          console.log("Evento encontrado:", eventData);
           setEvent(eventData);
         } else {
-          toast({
-            title: "Evento não encontrado",
-            description: "Não foi possível encontrar os detalhes para este evento.",
-            variant: "destructive",
-          });
+          throw new Error("Evento não encontrado");
         }
       } catch (error) {
         console.error("Erro ao carregar evento:", error);
-        toast({
-          title: "Erro ao carregar evento",
-          description: "Ocorreu um erro ao carregar os detalhes do evento.",
-          variant: "destructive",
+        toast.error("Evento não encontrado", {
+          description: "Não foi possível encontrar os detalhes para este evento.",
         });
+        navigate("/");
       } finally {
         setIsLoading(false);
       }
     }
 
     loadEventDetails();
-  }, [id, toast]);
+  }, [id, navigate]);
 
   const handlePurchase = async (selectedTickets: { ticketId: number, quantity: number }[]) => {
     if (!id || selectedTickets.length === 0) return;
@@ -88,26 +92,27 @@ const EventDetails = () => {
       }
     } catch (error) {
       console.error('Erro no checkout:', error);
-      toast({
-        title: "Erro no processo de compra",
+      toast.error("Erro no processo de compra", {
         description: "Ocorreu um erro ao processar sua compra. Por favor, tente novamente.",
-        variant: "destructive",
       });
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Carregando detalhes do evento...</p>
+      <div className="container mx-auto px-4 py-8">
+        <LoadingSkeletons isMobile={isMobile} />
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-red-500">Evento não encontrado.</p>
+      <div className="min-h-[50vh] bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 text-xl mb-4">Evento não encontrado.</p>
+          <Button onClick={() => navigate('/')}>Voltar para Home</Button>
+        </div>
       </div>
     );
   }
@@ -284,6 +289,77 @@ const EventDetails = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       {renderContent()}
+    </div>
+  );
+};
+
+// Componente para exibir os skeletons durante o carregamento
+const LoadingSkeletons = ({ isMobile }: { isMobile: boolean }) => {
+  if (isMobile) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-48 w-full" />
+        <div>
+          <Skeleton className="h-8 w-3/4 mb-2" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-5 w-1/3" />
+            <Skeleton className="h-5 w-2/3" />
+          </div>
+        </div>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <Skeleton className="h-7 w-32 mb-4" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-3/4" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+  
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div>
+        <Skeleton className="h-64 w-full mb-4" />
+        <Skeleton className="h-10 w-3/4 mb-4" />
+        <div className="mb-6">
+          <Skeleton className="h-6 w-2/3 mb-2" />
+          <Skeleton className="h-6 w-1/2 mb-2" />
+        </div>
+        
+        <Card className="mb-4">
+          <CardContent className="p-6">
+            <Skeleton className="h-7 w-32 mb-4" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div>
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <Skeleton className="h-7 w-40 mb-4" />
+            <div className="space-y-3">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+            <Skeleton className="h-10 w-full mt-4" />
+          </CardContent>
+        </Card>
+        
+        <Skeleton className="h-64 w-full" />
+      </div>
     </div>
   );
 };

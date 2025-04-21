@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails, TicketType } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
@@ -35,6 +34,10 @@ const mapEventResponse = (event: EventResponse, ticketTypes: TicketTypeResponse[
       address: event.location,
       capacity: event.total_tickets,
       map_url: ""
+    },
+    coordinates: {
+      lat: -23.550520,
+      lng: -46.633308
     }
   };
 };
@@ -52,22 +55,42 @@ export const fetchEvents = async () => {
 
 // Função para buscar um evento específico
 export const fetchEventById = async (id: number) => {
-  const { data: event, error: eventError } = await supabase
-    .from("events")
-    .select("*")
-    .eq("id", id)
-    .single();
+  try {
+    console.log("Buscando evento com ID:", id);
+    
+    const { data: event, error: eventError } = await supabase
+      .from("events")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-  if (eventError) throw eventError;
+    if (eventError) {
+      console.error("Erro ao buscar evento:", eventError);
+      return null;
+    }
 
-  const { data: ticketTypes, error: ticketError } = await supabase
-    .from("ticket_types")
-    .select("*")
-    .eq("event_id", id);
+    if (!event) {
+      console.log("Evento não encontrado para o ID:", id);
+      return null;
+    }
 
-  if (ticketError) throw ticketError;
+    console.log("Evento encontrado:", event);
 
-  return mapEventResponse(event as EventResponse, ticketTypes as TicketTypeResponse[]);
+    const { data: ticketTypes, error: ticketError } = await supabase
+      .from("ticket_types")
+      .select("*")
+      .eq("event_id", id);
+
+    if (ticketError) {
+      console.error("Erro ao buscar tipos de ingressos:", ticketError);
+      // Ainda podemos retornar o evento mesmo sem ingressos
+    }
+
+    return mapEventResponse(event as EventResponse, (ticketTypes || []) as TicketTypeResponse[]);
+  } catch (error) {
+    console.error("Erro geral ao buscar evento:", error);
+    return null;
+  }
 };
 
 // Função para criar um evento
