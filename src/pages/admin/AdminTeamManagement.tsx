@@ -1,44 +1,15 @@
 
 import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { 
-  Table, TableBody, TableCell, TableHead, 
-  TableHeader, TableRow 
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  Dialog, DialogContent, DialogDescription, 
-  DialogFooter, DialogHeader, DialogTitle 
-} from "@/components/ui/dialog";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Select, SelectContent, SelectItem, 
-  SelectTrigger, SelectValue
-} from "@/components/ui/select";
-import { 
-  Search, Plus, Edit, Trash2, Check, Mail 
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-
-// Interface for team member
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
-// Role options
-const roleOptions = [
-  { value: "read", label: "Leitura" },
-  { value: "admin", label: "Edição completa" },
-  { value: "checkin", label: "Somente check-in" },
-];
+import { TeamMember } from "@/types/admin";
+import { TeamMembersTable } from "@/components/admin/team/TeamMembersTable";
+import { AddMemberDialog } from "@/components/admin/team/AddMemberDialog";
+import { EditMemberDialog } from "@/components/admin/team/EditMemberDialog";
+import { DeleteMemberDialog } from "@/components/admin/team/DeleteMemberDialog";
+import { TeamSearchBar } from "@/components/admin/team/TeamSearchBar";
 
 // Mock data for demonstration
 const mockTeamMembers: TeamMember[] = [
@@ -146,194 +117,50 @@ const AdminTeamManagement = () => {
           </Button>
         </div>
 
-        <div className="flex items-center space-x-2 mb-4">
-          <Search className="w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome ou e-mail"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-sm"
-          />
-        </div>
+        <TeamSearchBar 
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
 
         <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>E-mail</TableHead>
-                <TableHead>Função</TableHead>
-                <TableHead className="w-[100px]">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredMembers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
-                    Nenhum membro encontrado
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredMembers.map((member) => (
-                  <TableRow key={member.id}>
-                    <TableCell className="font-medium">{member.name}</TableCell>
-                    <TableCell>{member.email}</TableCell>
-                    <TableCell>
-                      {member.role === "admin" && "Edição completa"}
-                      {member.role === "read" && "Leitura"}
-                      {member.role === "checkin" && "Somente check-in"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => {
-                            setSelectedMember(member);
-                            setEditDialogOpen(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => {
-                            setSelectedMember(member);
-                            setDeleteDialogOpen(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <TeamMembersTable 
+            members={filteredMembers}
+            onEdit={(member) => {
+              setSelectedMember(member);
+              setEditDialogOpen(true);
+            }}
+            onDelete={(member) => {
+              setSelectedMember(member);
+              setDeleteDialogOpen(true);
+            }}
+          />
         </div>
       </div>
 
-      {/* Add Member Dialog */}
-      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Adicionar novo membro</DialogTitle>
-            <DialogDescription>
-              Envie um convite por e-mail para adicionar um novo membro à sua equipe.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="E-mail do novo membro"
-                value={newMemberEmail}
-                onChange={(e) => setNewMemberEmail(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Nível de permissão
-              </label>
-              <Select
-                value={newMemberRole}
-                onValueChange={setNewMemberRole}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um nível de permissão" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roleOptions.map((role) => (
-                    <SelectItem key={role.value} value={role.value}>
-                      {role.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="mt-2 text-xs text-muted-foreground">
-                <p><strong>Leitura:</strong> Apenas visualização das informações.</p>
-                <p><strong>Edição completa:</strong> Acesso total para gerenciar eventos.</p>
-                <p><strong>Somente check-in:</strong> Apenas validação de ingressos na entrada.</p>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleAddMember}>
-              Convidar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddMemberDialog 
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        email={newMemberEmail}
+        onEmailChange={setNewMemberEmail}
+        role={newMemberRole}
+        onRoleChange={setNewMemberRole}
+        onSubmit={handleAddMember}
+      />
 
-      {/* Edit Member Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar permissões</DialogTitle>
-            <DialogDescription>
-              Alterar o nível de permissão para {selectedMember?.name}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Nível de permissão
-              </label>
-              <Select
-                value={selectedMember?.role}
-                onValueChange={(value) => setSelectedMember(prev => prev ? { ...prev, role: value } : null)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um nível de permissão" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roleOptions.map((role) => (
-                    <SelectItem key={role.value} value={role.value}>
-                      {role.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleEditMember}>
-              Salvar alterações
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EditMemberDialog 
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        member={selectedMember}
+        onMemberChange={setSelectedMember}
+        onSubmit={handleEditMember}
+      />
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remover membro da equipe</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja remover {selectedMember?.name} da sua equipe? 
-              Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteMember}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Remover
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteMemberDialog 
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        member={selectedMember}
+        onConfirm={handleDeleteMember}
+      />
     </AdminLayout>
   );
 };
