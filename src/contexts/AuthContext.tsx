@@ -6,12 +6,14 @@ interface User {
   id: string;
   email: string | null;
   fullName: string;
+  role?: 'user' | 'producer' | 'admin';
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isProducer: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => void;
@@ -24,6 +26,7 @@ interface RegisterData {
   password: string;
   cpf?: string;
   birthDate?: string;
+  role?: 'user' | 'producer' | 'admin';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -126,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: `user-${Date.now()}`,
         email: userData.email,
         fullName: userData.fullName,
+        role: userData.role || 'user'
       };
       
       registeredUsers[userData.email] = {
@@ -178,12 +182,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     document.dispatchEvent(new CustomEvent('openAuthModal'));
   };
 
+  // Verificar se o usuário é um produtor
+  const isProducer = !!user && (user.role === 'producer' || user.role === 'admin');
+
   return (
     <AuthContext.Provider 
       value={{
         user,
         isAuthenticated: !!user,
         isLoading,
+        isProducer,
         login: handleLogin,
         register,
         logout,

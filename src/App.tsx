@@ -16,6 +16,10 @@ import Favorites from "./pages/Favorites"
 import Notifications from "./pages/Notifications"
 import Marketplace from "./pages/Marketplace"
 
+// Import Admin pages
+import AdminDashboard from "./pages/admin/AdminDashboard"
+import AdminEvents from "./pages/admin/AdminEvents"
+
 const queryClient = new QueryClient()
 
 const App = () => (
@@ -25,6 +29,7 @@ const App = () => (
         <AuthProvider>
           <Toaster />
           <Routes>
+            {/* Rotas de usuário */}
             <Route path="/" element={<Index />} />
             <Route path="/evento/:eventId" element={<EventDetails />} />
             <Route path="/checkout" element={<Checkout />} />
@@ -36,6 +41,12 @@ const App = () => (
             <Route path="/notificacoes" element={<Notifications />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/marketplace/:ticketId" element={<Marketplace />} />
+            
+            {/* Rotas administrativas */}
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/eventos" element={<AdminEvents />} />
+            
+            {/* Rota de fallback */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

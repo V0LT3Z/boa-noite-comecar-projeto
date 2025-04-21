@@ -1,25 +1,28 @@
 
-import { useTheme } from "next-themes"
-import { Toaster as Sonner, toast as sonnerToast } from "sonner"
+"use client"
+
+import * as React from "react"
+import { Toaster as Sonner } from "sonner"
+
+import { cn } from "@/lib/utils"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
-
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
-      className="toaster group"
+      className={cn(
+        "fixed top-0 flex items-center justify-center z-[100] w-full p-4 md:right-0 md:w-auto"
+      )}
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
+            "group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border border-border p-4 pr-6 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-top-full",
+          description: "text-sm",
           actionButton:
-            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
+            "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-secondary focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
           cancelButton:
-            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+            "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-secondary focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
         },
       }}
       {...props}
@@ -27,97 +30,4 @@ const Toaster = ({ ...props }: ToasterProps) => {
   )
 }
 
-// Creating a wrapper around sonner toast to provide proper typing
-interface ToastOptions {
-  title?: string;
-  description?: string;
-  variant?: "default" | "destructive" | "success";
-}
-
-const toast = (options: ToastOptions) => {
-  const { title, description, variant } = options;
-  
-  // Toast de sucesso com fundo verde suave e gradiente
-  if (variant === "success") {
-    return sonnerToast.success(title || "", {
-      description,
-      style: { 
-        backgroundColor: "#FFFFFF",  // White background
-        color: "#2e7d32",  // Dark green text for better readability
-        borderColor: "#E0E0E0",  // Light border
-        borderRadius: "0.5rem",
-        overflow: "hidden",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-      },
-      // Custom component to add gradient header
-      className: "relative pt-1",
-      unstyled: false,
-      // Add a gradient bar at the top of the toast
-      jsx: (
-        <div className="w-full">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#4CAF50] to-[#8BC34A]" />
-          <div className="pt-3 px-4 pb-4">
-            <div className="font-medium text-[15px]">{title}</div>
-            {description && <div className="text-[13px] text-gray-600 mt-1">{description}</div>}
-          </div>
-        </div>
-      ),
-    });
-  }
-  
-  // Toast de erro (destructive) com fundo vermelho suave e gradiente
-  if (variant === "destructive") {
-    return sonnerToast.error(title || "", {
-      description,
-      style: { 
-        backgroundColor: "#FFFFFF",  // White background
-        color: "#c62828",  // Dark red text for better readability
-        borderColor: "#E0E0E0",  // Light border
-        borderRadius: "0.5rem",
-        overflow: "hidden",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-      },
-      // Custom component to add gradient header
-      className: "relative pt-1",
-      unstyled: false,
-      // Add a gradient bar at the top of the toast
-      jsx: (
-        <div className="w-full">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#E53935] to-[#EF5350]" />
-          <div className="pt-3 px-4 pb-4">
-            <div className="font-medium text-[15px]">{title}</div>
-            {description && <div className="text-[13px] text-gray-600 mt-1">{description}</div>}
-          </div>
-        </div>
-      ),
-    });
-  }
-  
-  // Toast default com gradiente roxo para azul (como o tema principal)
-  return sonnerToast(title || "", {
-    description,
-    style: { 
-      backgroundColor: "#FFFFFF",  // White background
-      color: "#333333",  // Dark text for better readability
-      borderColor: "#E0E0E0",  // Light border
-      borderRadius: "0.5rem",
-      overflow: "hidden",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-    },
-    // Custom component to add gradient header
-    className: "relative pt-1",
-    unstyled: false,
-    // Add a gradient bar at the top of the toast
-    jsx: (
-      <div className="w-full">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary" />
-        <div className="pt-3 px-4 pb-4">
-          <div className="font-medium text-[15px]">{title}</div>
-          {description && <div className="text-[13px] text-gray-600 mt-1">{description}</div>}
-        </div>
-      </div>
-    ),
-  });
-};
-
-export { Toaster, toast }
+export { Toaster }

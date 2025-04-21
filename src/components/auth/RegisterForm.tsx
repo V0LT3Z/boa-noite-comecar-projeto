@@ -1,4 +1,3 @@
-
 import { FormEvent, useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -8,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import FormattedInput from "@/components/FormattedInput";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
 
@@ -42,7 +48,6 @@ const validateCPF = (cpf: string) => {
   return true;
 };
 
-// Function to validate date format DD/MM/YYYY
 const isValidDateFormat = (dateString: string) => {
   // Check the format first
   if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return false;
@@ -72,6 +77,7 @@ const registerSchema = z.object({
   confirmPassword: z.string(),
   cpf: z.string().regex(cpfRegex, "CPF inválido").refine(validateCPF, "CPF inválido ou inexistente"),
   birthDate: z.string().refine(isValidDateFormat, "Data inválida. Use o formato DD/MM/YYYY"),
+  role: z.enum(['user', 'producer']).optional(),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Senhas não coincidem",
   path: ["confirmPassword"],
@@ -92,11 +98,11 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     confirmPassword: "",
     cpf: "",
     birthDate: "",
+    role: "user",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isCPFValid, setIsCPFValid] = useState<boolean | null>(null);
 
-  // Password validation helpers
   const hasMinLength = useMemo(() => 
     (formData.password?.length || 0) >= 8, [formData.password]
   );
@@ -133,9 +139,7 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
   };
 
-  // Function to validate CPF that will be called during input
   const validateCPFInput = (value: string): boolean => {
-    // Only validate if we have a complete CPF
     if (value.length === 14) {
       const isValid = validateCPF(value);
       setIsCPFValid(isValid);
@@ -151,7 +155,6 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       }
       return isValid;
     } else {
-      // If not complete, don't show validation yet
       setIsCPFValid(null);
       setFormErrors(prev => {
         const newErrors = { ...prev };
@@ -168,6 +171,13 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     if (field !== "cpf" && formErrors[field]) {
       setFormErrors({ ...formErrors, [field]: "" });
     }
+  };
+
+  const handleRoleChange = (value: string) => {
+    setFormData({ 
+      ...formData, 
+      role: value as 'user' | 'producer' 
+    });
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -191,7 +201,6 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       
       setFormErrors({});
       
-      // Parse the date from DD/MM/YYYY to ISO format
       const [day, month, year] = (formData.birthDate as string).split('/').map(Number);
       const birthDateISO = new Date(year, month - 1, day).toISOString();
       
@@ -201,6 +210,7 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
         password: formData.password || "",
         cpf: formData.cpf,
         birthDate: birthDateISO,
+        role: formData.role,
       });
 
       toast({
@@ -209,7 +219,12 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
         variant: "success",
       });
       
-      navigate("/minha-conta");
+      if (formData.role === 'producer') {
+        navigate("/admin");
+      } else {
+        navigate("/minha-conta");
+      }
+      
       onSuccess();
     } catch (error) {
       console.error("Registration error:", error);
@@ -285,6 +300,22 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
           maxLength={10}
         />
         {formErrors.birthDate && <p className="text-destructive text-sm">{formErrors.birthDate}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Select 
+          value={formData.role || 'user'}
+          onValueChange={handleRoleChange}
+          disabled={isLoading}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Tipo de conta" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="user">Usuário</SelectItem>
+            <SelectItem value="producer">Produtor de Eventos</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">

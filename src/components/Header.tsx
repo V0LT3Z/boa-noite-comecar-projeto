@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  User as UserIcon, Bell, Heart, Home, Search, Menu, LogOut, Ticket, Store, ArrowLeft
+  User as UserIcon, Bell, Heart, Home, Search, Menu, LogOut, Ticket, Store, ArrowLeft,
+  LayoutDashboard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -158,7 +159,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
 
 const Header = () => {
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, isProducer } = useAuth();
   const isMobile = useIsMobile();
   const location = useLocation();
   const navigate = useNavigate();
@@ -191,6 +192,10 @@ const Header = () => {
     { label: 'Notificações', href: '/notificacoes', icon: Bell },
     { label: 'Minha Conta', href: '/minha-conta', icon: UserIcon },
   ];
+
+  const producerItems = isProducer ? [
+    { label: 'Painel Administrativo', href: '/admin', icon: LayoutDashboard },
+  ] : [];
 
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-gray-100">
@@ -286,6 +291,19 @@ const Header = () => {
 
                       <div className="flex-1 py-4">
                         <div className="px-2 space-y-1">
+                          {producerItems.map((item) => (
+                            <SheetClose asChild key={item.href}>
+                              <Link to={item.href}>
+                                <Button 
+                                  variant="ghost" 
+                                  className="w-full justify-start gap-3 h-12 px-4 hover:bg-primary/5 hover:text-primary"
+                                >
+                                  <item.icon className="h-5 w-5" />
+                                  <span className="font-medium">{item.label}</span>
+                                </Button>
+                              </Link>
+                            </SheetClose>
+                          ))}
                           {authenticatedItems.map((item) => (
                             <SheetClose asChild key={item.href}>
                               <Link to={item.href}>
@@ -334,7 +352,7 @@ const Header = () => {
             ) : isMobile && (
               <MobileNav 
                 navItems={navItems} 
-                authenticatedItems={authenticatedItems}
+                authenticatedItems={[...producerItems, ...authenticatedItems]}
                 isAuthenticated={isAuthenticated}
                 user={user}
                 signOut={logout}
