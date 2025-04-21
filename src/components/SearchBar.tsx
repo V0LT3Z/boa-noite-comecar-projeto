@@ -15,8 +15,7 @@ const SearchBar = () => {
       console.log(`Searching for: ${searchQuery}`)
       // navigate(`/search?q=${encodeURIComponent(searchQuery)}`)
       
-      // For now, we'll just log the search since the search page isn't implemented
-      alert(`Busca por: ${searchQuery}`)
+      // For now, we'll just log the search and reset the query
       setSearchQuery("")
     }
   }

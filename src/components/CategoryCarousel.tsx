@@ -1,5 +1,4 @@
 
-import { useState } from "react"
 import {
   Carousel,
   CarouselContent,
@@ -20,14 +19,14 @@ const categories = [
   "Congressos"
 ]
 
-const CategoryCarousel = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+interface CategoryCarouselProps {
+  selectedCategory: string | null;
+  onCategorySelect: (category: string | null) => void;
+}
 
+const CategoryCarousel = ({ selectedCategory, onCategorySelect }: CategoryCarouselProps) => {
   const handleCategoryClick = (category: string) => {
-    setSelectedCategory(category === selectedCategory ? null : category)
-    // In a real application, this would filter events by category
-    console.log(`Filtering by category: ${category}`)
-    alert(`Categoria selecionada: ${category}`)
+    onCategorySelect(category === selectedCategory ? null : category);
   }
 
   return (
