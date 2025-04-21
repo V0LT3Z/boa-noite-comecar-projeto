@@ -22,6 +22,9 @@ import AdminEvents from "./pages/admin/AdminEvents";
 import AdminTeamManagement from "./pages/admin/AdminTeamManagement";
 import AdminQRVerification from "./pages/admin/AdminQRVerification";
 import AdminSupport from "./pages/admin/AdminSupport";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminFinancial from "./pages/admin/AdminFinancial";
 
 function App() {
   return (
@@ -51,10 +54,10 @@ function App() {
                 <Route path="/admin/eventos" element={<AdminEvents />} />
                 <Route path="/admin/usuarios" element={<AdminTeamManagement />} />
                 <Route path="/admin/verificacao-qr" element={<AdminQRVerification />} />
-                <Route path="/admin/financeiro" element={<div>Financeiro - Em breve</div>} />
-                <Route path="/admin/relatorios" element={<div>Relatórios - Em breve</div>} />
+                <Route path="/admin/financeiro" element={<AdminFinancial />} />
+                <Route path="/admin/relatorios" element={<AdminReports />} />
                 <Route path="/admin/suporte" element={<AdminSupport />} />
-                <Route path="/admin/configuracoes" element={<div>Configurações - Em breve</div>} />
+                <Route path="/admin/configuracoes" element={<AdminSettings />} />
 
                 {/* Redirects and Not Found */}
                 <Route path="/admin/team" element={<Navigate to="/admin/usuarios" />} />
