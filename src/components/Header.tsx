@@ -211,16 +211,38 @@ const Header = () => {
               </span>
             </Button>
           )}
-          <div className="flex items-center">
+
+          <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2">
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-bold text-xl">
                 EventHub
               </span>
             </Link>
             
+            {/* Navigation Menu */}
+            {!isMobile && (
+              <nav className="flex items-center gap-6">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={`text-sm font-medium transition-all hover:text-primary ${
+                      location.pathname === item.href 
+                        ? 'text-primary relative after:content-[""] after:absolute after:left-0 after:right-0 after:-bottom-5 after:h-0.5 after:bg-primary after:rounded-full'
+                        : 'text-gray-600'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
             {/* User action icons */}
             {!isMobile && isAuthenticated && (
-              <div className="flex items-center gap-3 ml-6">
+              <div className="flex items-center gap-3">
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -293,27 +315,6 @@ const Header = () => {
                   </SheetContent>
                 </Sheet>
               </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4">
-            {/* Navigation Menu */}
-            {!isMobile && (
-              <nav className="flex items-center gap-6">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={`text-sm font-medium transition-all hover:text-primary ${
-                      location.pathname === item.href 
-                        ? 'text-primary relative after:content-[""] after:absolute after:left-0 after:right-0 after:-bottom-5 after:h-0.5 after:bg-primary after:rounded-full'
-                        : 'text-gray-600'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
             )}
 
             {/* Auth buttons or Mobile Menu */}
