@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import CardForm from "@/components/checkout/CardForm";
 import PixQRCode from "@/components/checkout/PixQRCode";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 import { useProtectedRoute } from "@/hooks/use-protected-route";
 
 const Checkout = () => {

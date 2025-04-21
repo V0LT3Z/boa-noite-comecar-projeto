@@ -26,7 +26,7 @@ import {
   Notification,
   markNotificationAsRead
 } from "@/services/favorites";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 type NotificationType = "all" | "unread" | "favorites" | "transactions" | "events";

@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 import FormattedInput from "@/components/FormattedInput";
 import { useProtectedRoute } from "@/hooks/use-protected-route";
 import Header from "@/components/Header";

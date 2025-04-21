@@ -1,7 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EventDetails, TicketType } from "@/types/event";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 
 export interface Notification {
   id: string;
@@ -16,7 +15,6 @@ export interface Notification {
 // Add an event to favorites
 export const addToFavorites = async (eventId: number): Promise<boolean> => {
   try {
-    // Get current user
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
@@ -110,8 +108,6 @@ export const isEventFavorited = async (eventId: number): Promise<boolean> => {
 // Get all user favorites
 export const getUserFavorites = async (): Promise<EventDetails[]> => {
   try {
-    // In a real app, we would join with an events table
-    // For now, let's return mock data
     return [
       {
         id: 1,
@@ -200,8 +196,6 @@ export const getUserFavorites = async (): Promise<EventDetails[]> => {
 
 // Subscribe to realtime notifications
 export const subscribeToNotifications = (callback: (notification: Notification) => void) => {
-  // In a real app, this would use Supabase realtime
-  // For now, we'll just return an empty unsubscribe function
   return {
     unsubscribe: () => {},
   };
@@ -210,8 +204,6 @@ export const subscribeToNotifications = (callback: (notification: Notification) 
 // Get all user notifications
 export const getUserNotifications = async (): Promise<Notification[]> => {
   try {
-    // In a real app, this would fetch from the notifications table
-    // For now, let's return mock data
     return [
       {
         id: "notif-1",
@@ -268,7 +260,6 @@ export const getUserNotifications = async (): Promise<Notification[]> => {
 // Mark all notifications as read
 export const markAllNotificationsAsRead = async (): Promise<boolean> => {
   try {
-    // In a real app, this would update notifications in database
     return true;
   } catch (error) {
     console.error("Error marking notifications as read:", error);
@@ -279,7 +270,6 @@ export const markAllNotificationsAsRead = async (): Promise<boolean> => {
 // Mark a specific notification as read
 export const markNotificationAsRead = async (notificationId: string): Promise<boolean> => {
   try {
-    // In a real app, this would update a specific notification
     return true;
   } catch (error) {
     console.error("Error marking notification as read:", error);
@@ -290,7 +280,6 @@ export const markNotificationAsRead = async (notificationId: string): Promise<bo
 // Clear all notifications
 export const clearAllNotifications = async (): Promise<boolean> => {
   try {
-    // In a real app, this would delete notifications from database
     return true;
   } catch (error) {
     console.error("Error clearing notifications:", error);

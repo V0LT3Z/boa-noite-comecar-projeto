@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bookmark, AlertCircle, Bell } from "lucide-react";
@@ -8,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useProtectedRoute } from "@/hooks/use-protected-route";
 import { EventDetails } from "@/types/event";
 import { getUserFavorites, removeFromFavorites, subscribeToNotifications, Notification, getUserNotifications } from "@/services/favorites";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 
 const Favorites = () => {
   const { isLoading } = useProtectedRoute();
