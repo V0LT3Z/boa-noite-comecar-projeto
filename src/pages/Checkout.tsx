@@ -1,7 +1,7 @@
-
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -17,7 +17,6 @@ const Checkout = () => {
   const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Get order data from location state or use default
   const orderData = location.state?.orderData || {
     event: {
       id: 1,
@@ -33,71 +32,43 @@ const Checkout = () => {
     ]
   };
 
-  const handleSubmitCard = async (cardData: any) => {
+  const createStripeCheckout = async (paymentMethod: string) => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      console.log("Card payment data:", cardData);
-      console.log("Order data:", orderData);
-      
-      toast({
-        title: "Pagamento aprovado!",
-        description: "Seus ingressos foram enviados para seu email.",
-        variant: "success"
+      const selectedTickets = orderData.tickets.map((ticket: any) => ({
+        ticketId: ticket.id,
+        quantity: ticket.quantity,
+      }));
+
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
+          eventId: orderData.event.id,
+          selectedTickets,
+        },
       });
-      
-      navigate("/pagamento-sucesso", { 
-        state: { 
-          orderData,
-          paymentMethod: "card"
-        } 
-      });
+
+      if (error) throw error;
+      if (!data?.url) throw new Error("URL de checkout não recebida");
+
+      window.location.href = data.url;
     } catch (error) {
-      console.error("Payment error:", error);
+      console.error("Erro ao criar checkout:", error);
       toast({
         title: "Erro no pagamento",
         description: "Não foi possível processar o pagamento. Tente novamente.",
         variant: "destructive"
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleSubmitCard = async () => {
+    await createStripeCheckout("card");
+  };
   
   const handleSubmitPix = async () => {
-    setIsSubmitting(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      console.log("PIX payment for order:", orderData);
-      
-      toast({
-        title: "Pagamento via PIX aprovado!",
-        description: "Seus ingressos foram enviados para seu email.",
-        variant: "success"
-      });
-      
-      navigate("/pagamento-sucesso", { 
-        state: { 
-          orderData, 
-          paymentMethod: "pix" 
-        } 
-      });
-    } catch (error) {
-      console.error("Payment error:", error);
-      toast({
-        title: "Erro no pagamento",
-        description: "Não foi possível processar o pagamento. Tente novamente.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await createStripeCheckout("pix");
   };
 
   if (isLoading) {
