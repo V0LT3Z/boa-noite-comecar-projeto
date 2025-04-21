@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -121,9 +120,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
         <Button 
           type="submit" 
-          className="w-full bg-gradient-primary text-white hover:opacity-90 
-            bg-soft-purple/20 border border-primary/10 
-            hover:bg-soft-purple/30 transition-colors duration-300"
+          className="w-full bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90" 
           disabled={isSubmitting}
         >
           {isSubmitting ? "Entrando..." : "Entrar"}

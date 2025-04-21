@@ -325,7 +325,7 @@ const Header = () => {
                 <Button 
                   variant="ghost"
                   onClick={() => setIsAuthDialogOpen(true)}
-                  className="text-gray-600 hover:text-primary hover:bg-primary/5"
+                  className="text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-200"
                 >
                   Entrar
                 </Button>
