@@ -1,288 +1,179 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { EventDetails, TicketType } from "@/types/event";
-import { toast } from "@/hooks/use-toast";
+import { EventDetails } from "@/types/event";
 
-export interface Notification {
-  id: string;
-  user_id: string;
-  event_id: number;
-  message: string;
-  type: "ticket_running_out" | "event_update" | "favorite_update" | "transaction_update";
-  is_read: boolean;
-  created_at: string;
-}
-
-// Add an event to favorites
-export const addToFavorites = async (eventId: number): Promise<boolean> => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      console.error("No authenticated user");
-      return false;
-    }
-    
-    const { error } = await supabase.from('favorites').insert({
-      event_id: eventId,
-      user_id: user.id
-    });
-    
-    if (error) {
-      console.error("Error adding to favorites:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível adicionar aos favoritos. Tente novamente.",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    toast({
-      title: "Sucesso",
-      description: "Evento adicionado aos favoritos!",
-      variant: "success",
-    });
-    return true;
-  } catch (error) {
-    console.error("Error adding to favorites:", error);
-    toast({
-      title: "Erro",
-      description: "Não foi possível adicionar aos favoritos. Tente novamente.",
-      variant: "destructive",
-    });
-    return false;
+// Função para adicionar um evento aos favoritos
+export const addToFavorites = async (eventId: number) => {
+  // Verificar se o usuário está logado
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    throw new Error("Você precisa estar logado para adicionar favoritos");
   }
+
+  const userId = session.user.id;
+
+  // Verificar se já está nos favoritos
+  const { data: existing, error: checkError } = await supabase
+    .from("favorites")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("event_id", eventId)
+    .maybeSingle();
+
+  if (checkError) {
+    throw checkError;
+  }
+
+  if (existing) {
+    // Se já existe, não faz nada
+    return existing;
+  }
+
+  // Se não existe, adiciona aos favoritos
+  const { data, error } = await supabase
+    .from("favorites")
+    .insert({
+      user_id: userId,
+      event_id: eventId
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
 };
 
-// Remove an event from favorites
-export const removeFromFavorites = async (eventId: number): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('favorites')
-      .delete()
-      .eq('event_id', eventId);
-    
-    if (error) {
-      console.error("Error removing from favorites:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível remover dos favoritos. Tente novamente.",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    toast({
-      title: "Removido",
-      description: "Evento removido dos favoritos.",
-      variant: "destructive",
-    });
-    return true;
-  } catch (error) {
-    console.error("Error removing from favorites:", error);
-    toast({
-      title: "Erro",
-      description: "Não foi possível remover dos favoritos. Tente novamente.",
-      variant: "destructive",
-    });
-    return false;
+// Função para remover um evento dos favoritos
+export const removeFromFavorites = async (eventId: number) => {
+  // Verificar se o usuário está logado
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    throw new Error("Você precisa estar logado para remover favoritos");
   }
+
+  const userId = session.user.id;
+
+  // Remover dos favoritos
+  const { error } = await supabase
+    .from("favorites")
+    .delete()
+    .eq("user_id", userId)
+    .eq("event_id", eventId);
+
+  if (error) {
+    throw error;
+  }
+
+  return true;
 };
 
-// Check if an event is in favorites
+// Função para verificar se um evento está nos favoritos
 export const isEventFavorited = async (eventId: number): Promise<boolean> => {
-  try {
-    const { data } = await supabase
-      .from('favorites')
-      .select()
-      .eq('event_id', eventId)
-      .single();
-    
-    return !!data;
-  } catch (error) {
-    console.error("Error checking favorite status:", error);
+  // Verificar se o usuário está logado
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
     return false;
   }
+
+  const userId = session.user.id;
+
+  // Verificar nos favoritos
+  const { data, error } = await supabase
+    .from("favorites")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("event_id", eventId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erro ao verificar favoritos:", error);
+    return false;
+  }
+
+  return !!data;
 };
 
-// Get all user favorites
-export const getUserFavorites = async (): Promise<EventDetails[]> => {
-  try {
-    return [
-      {
-        id: 1,
-        title: "Festival de Música",
-        description: "Um grande festival com os melhores artistas nacionais.",
-        date: "20/05/2025",
-        time: "16:00",
-        location: "Parque da Cidade, São Paulo",
-        image: "https://picsum.photos/seed/event1/800/500",
-        tickets: [
-          { 
-            id: 1, 
-            name: "Ingresso Comum", 
-            price: 150.0,
-            availableQuantity: 100,
-            maxPerPurchase: 4,
-            description: "Acesso a todas as áreas comuns"
-          },
-          { 
-            id: 2, 
-            name: "Ingresso VIP", 
-            price: 300.0,
-            availableQuantity: 50,
-            maxPerPurchase: 2,
-            description: "Acesso a todas as áreas + open bar"
-          },
-        ],
-        venue: {
-          name: "Parque da Cidade",
-          address: "Av. Principal, 1000, São Paulo",
-          capacity: 10000,
-          map_url: "https://maps.google.com",
-        },
-        minimumAge: 18,
-        warnings: ["Proibido entrada de bebidas", "Obrigatório apresentar documento com foto"],
-        coordinates: {
-          lat: -23.550520,
-          lng: -46.633308
-        }
-      },
-      {
-        id: 2,
-        title: "Peça de Teatro: O Fantasma da Ópera",
-        description: "A famosa peça de teatro chega à cidade.",
-        date: "15/06/2025",
-        time: "20:00",
-        location: "Teatro Municipal, Rio de Janeiro",
-        image: "https://picsum.photos/seed/event2/800/500",
-        tickets: [
-          { 
-            id: 3, 
-            name: "Plateia", 
-            price: 120.0,
-            availableQuantity: 300,
-            maxPerPurchase: 4,
-            description: "Assentos na plateia principal"
-          },
-          { 
-            id: 4, 
-            name: "Camarote", 
-            price: 240.0,
-            availableQuantity: 50,
-            maxPerPurchase: 2,
-            description: "Assentos VIP com visão privilegiada"
-          },
-        ],
-        venue: {
-          name: "Teatro Municipal",
-          address: "Praça Central, 500, Rio de Janeiro",
-          capacity: 800,
-          map_url: "https://maps.google.com",
-        },
-        minimumAge: 12,
-        warnings: ["Não é permitido fotografar ou filmar", "Portas fecham após o início"],
-        coordinates: {
-          lat: -22.908333,
-          lng: -43.176388
-        }
-      },
-    ];
-  } catch (error) {
-    console.error("Error getting user favorites:", error);
+// Função para obter todos os eventos favoritos do usuário
+export const getFavorites = async (): Promise<EventDetails[]> => {
+  // Verificar se o usuário está logado
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
     return [];
   }
-};
 
-// Subscribe to realtime notifications
-export const subscribeToNotifications = (callback: (notification: Notification) => void) => {
-  return {
-    unsubscribe: () => {},
-  };
-};
+  const userId = session.user.id;
 
-// Get all user notifications
-export const getUserNotifications = async (): Promise<Notification[]> => {
-  try {
-    return [
-      {
-        id: "notif-1",
-        user_id: "demo-user-id",
-        event_id: 1,
-        message: "Últimos ingressos para Festival de Música! Não perca essa oportunidade!",
-        type: "ticket_running_out",
-        is_read: false,
-        created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString() // 30 minutes ago
-      },
-      {
-        id: "notif-2",
-        user_id: "demo-user-id",
-        event_id: 2,
-        message: "A peça O Fantasma da Ópera mudou de horário para 21h00.",
-        type: "event_update",
-        is_read: true,
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() // 2 hours ago
-      },
-      {
-        id: "notif-3",
-        user_id: "demo-user-id",
-        event_id: 1,
-        message: "Festival de Música adicionado aos seus favoritos.",
-        type: "favorite_update",
-        is_read: true,
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() // 1 day ago
-      },
-      {
-        id: "notif-4",
-        user_id: "demo-user-id",
-        event_id: 2,
-        message: "Sua compra de ingressos para O Fantasma da Ópera foi confirmada.",
-        type: "transaction_update",
-        is_read: true,
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString() // 2 days ago
-      },
-      {
-        id: "notif-5",
-        user_id: "demo-user-id",
-        event_id: 1,
-        message: "Festival de Música anunciou uma nova atração: Banda Demo!",
-        type: "event_update",
-        is_read: false,
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString() // 3 hours ago
-      }
-    ];
-  } catch (error) {
-    console.error("Error getting user notifications:", error);
+  // Buscar favoritos
+  const { data: favorites, error: favoritesError } = await supabase
+    .from("favorites")
+    .select("event_id")
+    .eq("user_id", userId);
+
+  if (favoritesError || !favorites || favorites.length === 0) {
     return [];
   }
+
+  // Mock de dados para eventos favoritos
+  // Em uma aplicação real, buscaríamos estes dados do backend
+  const mockFavorites: EventDetails[] = favorites.map(fav => ({
+    id: fav.event_id,
+    title: `Evento ${fav.event_id}`,
+    description: "Descrição do evento favorito",
+    date: "2023-12-15",
+    time: "20:00",
+    location: "São Paulo, SP",
+    image: "https://picsum.photos/seed/event3/800/500",
+    tickets: [
+      { id: 1, name: "Ingresso Comum", price: 150.0, availableQuantity: 100, maxPerPurchase: 4, description: "Acesso à área comum" },
+      { id: 2, name: "Ingresso VIP", price: 300.0, availableQuantity: 50, maxPerPurchase: 2, description: "Acesso à área VIP" }
+    ],
+    venue: {
+      name: "Arena XYZ",
+      address: "Av. Principal, 1000",
+      capacity: 5000,
+      map_url: "https://maps.google.com"
+    },
+    minimumAge: 18,
+    warnings: ["Proibido fumar", "Entrada de menores apenas com acompanhante"],
+    coordinates: { lat: -23.55, lng: -46.64 },
+    status: "active" // Adiciona o campo status que faltava
+  }));
+
+  return mockFavorites;
 };
 
-// Mark all notifications as read
-export const markAllNotificationsAsRead = async (): Promise<boolean> => {
-  try {
-    return true;
-  } catch (error) {
-    console.error("Error marking notifications as read:", error);
-    return false;
-  }
-};
+// Função para obter eventos recomendados com base nos favoritos
+export const getRecommended = async (): Promise<EventDetails[]> => {
+  // Mock de dados para eventos recomendados
+  // Em uma aplicação real, usaríamos um algoritmo de recomendação
+  const mockRecommended: EventDetails[] = [
+    {
+      id: 101,
+      title: "Evento Recomendado 1",
+      description: "Este evento combina com seus gostos",
+      date: "2023-11-25",
+      time: "19:00",
+      location: "Rio de Janeiro, RJ",
+      image: "https://picsum.photos/seed/rec1/800/500",
+      tickets: [
+        { id: 1, name: "Ingresso Comum", price: 120.0, availableQuantity: 80, maxPerPurchase: 4, description: "Acesso à área comum" },
+        { id: 2, name: "Ingresso VIP", price: 240.0, availableQuantity: 40, maxPerPurchase: 2, description: "Acesso à área VIP" }
+      ],
+      venue: {
+        name: "Centro de Eventos ABC",
+        address: "Rua das Flores, 500",
+        capacity: 3000,
+        map_url: "https://maps.google.com"
+      },
+      minimumAge: 16,
+      warnings: ["Proibido fumar"],
+      coordinates: { lat: -22.91, lng: -43.21 },
+      status: "active" // Adiciona o campo status que faltava
+    }
+  ];
 
-// Mark a specific notification as read
-export const markNotificationAsRead = async (notificationId: string): Promise<boolean> => {
-  try {
-    return true;
-  } catch (error) {
-    console.error("Error marking notification as read:", error);
-    return false;
-  }
-};
-
-// Clear all notifications
-export const clearAllNotifications = async (): Promise<boolean> => {
-  try {
-    return true;
-  } catch (error) {
-    console.error("Error clearing notifications:", error);
-    return false;
-  }
+  return mockRecommended;
 };

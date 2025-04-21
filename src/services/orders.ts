@@ -88,13 +88,20 @@ export const createOrder = async (
     if (updateError) throw updateError;
 
     // Atualizar o contador de tickets vendidos no evento
-    const { error: eventUpdateError } = await supabase
-      .rpc("increment_tickets_sold", {
-        event_id: eventId,
-        amount: selected.quantity
-      });
+    try {
+      const { error: eventUpdateError } = await supabase
+        .functions
+        .invoke("increment_tickets_sold", {
+          body: { 
+            event_id: eventId,
+            amount: selected.quantity
+          }
+        });
 
-    if (eventUpdateError) {
+      if (eventUpdateError) {
+        throw eventUpdateError;
+      }
+    } catch (error) {
       // Fallback sem usar RPC
       const { data: event } = await supabase
         .from("events")

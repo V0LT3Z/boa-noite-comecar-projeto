@@ -28,18 +28,31 @@ serve(async (req) => {
       );
     }
     
-    // Atualizar o contador de ingressos vendidos
-    const { data, error } = await supabaseClient.rpc(
-      "increment_tickets_sold",
-      { event_id, amount }
-    );
-
+    // Atualizar o contador de ingressos vendidos diretamente na tabela
+    const { data, error } = await supabaseClient
+      .from('events')
+      .select('tickets_sold')
+      .eq('id', event_id)
+      .single();
+    
     if (error) {
       throw error;
     }
+    
+    const currentSold = data.tickets_sold || 0;
+    const newSold = currentSold + amount;
+    
+    const { error: updateError } = await supabaseClient
+      .from('events')
+      .update({ tickets_sold: newSold })
+      .eq('id', event_id);
+    
+    if (updateError) {
+      throw updateError;
+    }
 
     return new Response(
-      JSON.stringify({ success: true, data }),
+      JSON.stringify({ success: true, tickets_sold: newSold }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
