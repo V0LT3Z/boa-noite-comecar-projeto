@@ -37,7 +37,7 @@ const AdminSettings = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   // In a real application, these values would be fetched from the backend
-  const defaultValues = {
+  const defaultValues: SettingsFormData = {
     organizationName: 'EventHub Produções',
     contactEmail: 'contato@eventhub.com.br',
     saleAlert: true,
