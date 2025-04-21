@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -210,35 +211,16 @@ const Header = () => {
               </span>
             </Button>
           )}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-bold text-xl">
-              EventHub
-            </span>
-          </Link>
-
-          {!isMobile && (
-            <nav className="hidden md:flex items-center gap-6">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={`text-sm font-medium transition-all hover:text-primary ${
-                    location.pathname === item.href 
-                      ? 'text-primary relative after:content-[""] after:absolute after:left-0 after:right-0 after:-bottom-5 after:h-0.5 after:bg-primary after:rounded-full'
-                      : 'text-gray-600'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          )}
-        </div>
-
-        {!isMobile && (
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-3">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center gap-2">
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-bold text-xl">
+                EventHub
+              </span>
+            </Link>
+            
+            {/* User action icons */}
+            {!isMobile && isAuthenticated && (
+              <div className="flex items-center gap-3 ml-6">
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -311,8 +293,32 @@ const Header = () => {
                   </SheetContent>
                 </Sheet>
               </div>
-            ) : (
-              <>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Navigation Menu */}
+            {!isMobile && (
+              <nav className="flex items-center gap-6">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={`text-sm font-medium transition-all hover:text-primary ${
+                      location.pathname === item.href 
+                        ? 'text-primary relative after:content-[""] after:absolute after:left-0 after:right-0 after:-bottom-5 after:h-0.5 after:bg-primary after:rounded-full'
+                        : 'text-gray-600'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            )}
+
+            {/* Auth buttons or Mobile Menu */}
+            {!isMobile && !isAuthenticated ? (
+              <div className="flex items-center gap-3">
                 <Button 
                   variant="ghost"
                   onClick={() => setIsAuthDialogOpen(true)}
@@ -326,21 +332,19 @@ const Header = () => {
                 >
                   Cadastrar
                 </Button>
-              </>
+              </div>
+            ) : isMobile && (
+              <MobileNav 
+                navItems={navItems} 
+                authenticatedItems={authenticatedItems}
+                isAuthenticated={isAuthenticated}
+                user={user}
+                signOut={logout}
+                setIsAuthDialogOpen={setIsAuthDialogOpen}
+              />
             )}
           </div>
-        )}
-
-        {isMobile && (
-          <MobileNav 
-            navItems={navItems} 
-            authenticatedItems={authenticatedItems}
-            isAuthenticated={isAuthenticated}
-            user={user}
-            signOut={logout}
-            setIsAuthDialogOpen={setIsAuthDialogOpen}
-          />
-        )}
+        </div>
       </div>
 
       <AuthDialog 
