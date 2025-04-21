@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast({
         title: "Conta criada com sucesso!",
         description: "Bem-vindo ao Lovue Tickets!",
-        variant: "default",
+        variant: "success",
       });
       
       return true;
@@ -184,7 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     document.dispatchEvent(new CustomEvent('openAuthModal'));
   };
 
-  const isProducer = !!user && (user.role === 'producer' || user.role === 'admin');
+  const isProducer = user?.role === 'producer' || user?.role === 'admin';
 
   return (
     <AuthContext.Provider 

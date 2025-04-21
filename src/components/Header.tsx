@@ -197,6 +197,9 @@ const Header = () => {
     { label: 'Painel Administrativo', href: '/admin', icon: LayoutDashboard },
   ] : [];
 
+  console.log("User role:", user?.role);
+  console.log("Is producer?", isProducer);
+
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-gray-100">
       <div className="container mx-auto px-4">
