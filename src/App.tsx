@@ -1,7 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider } from "./components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import Header from "./components/Header";
 import Index from "./pages/Index";
@@ -57,7 +57,7 @@ function App() {
                 <Route path="/admin/configuracoes" element={<div>Configurações - Em breve</div>} />
 
                 {/* Redirects and Not Found */}
-                <Route path="/admin/usuarios" element={<Navigate to="/admin/team" />} />
+                <Route path="/admin/team" element={<Navigate to="/admin/usuarios" />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
