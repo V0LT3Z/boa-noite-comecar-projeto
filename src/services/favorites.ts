@@ -2,6 +2,17 @@
 import { supabase } from "@/integrations/supabase/client";
 import { EventDetails } from "@/types/event";
 
+// Definição do tipo de notificação
+export interface Notification {
+  id: string;
+  user_id: string;
+  event_id: number;
+  message: string;
+  type: "ticket_running_out" | "event_update" | "favorite_update" | "transaction_update";
+  is_read: boolean;
+  created_at: string;
+}
+
 // Função para adicionar um evento aos favoritos
 export const addToFavorites = async (eventId: number) => {
   // Verificar se o usuário está logado
@@ -139,11 +150,14 @@ export const getFavorites = async (): Promise<EventDetails[]> => {
     minimumAge: 18,
     warnings: ["Proibido fumar", "Entrada de menores apenas com acompanhante"],
     coordinates: { lat: -23.55, lng: -46.64 },
-    status: "active" // Adiciona o campo status que faltava
+    status: "active" 
   }));
 
   return mockFavorites;
 };
+
+// Alias para compatibilidade com o código existente
+export const getUserFavorites = getFavorites;
 
 // Função para obter eventos recomendados com base nos favoritos
 export const getRecommended = async (): Promise<EventDetails[]> => {
@@ -171,9 +185,75 @@ export const getRecommended = async (): Promise<EventDetails[]> => {
       minimumAge: 16,
       warnings: ["Proibido fumar"],
       coordinates: { lat: -22.91, lng: -43.21 },
-      status: "active" // Adiciona o campo status que faltava
+      status: "active"
     }
   ];
 
   return mockRecommended;
+};
+
+// Funções para gerenciamento de notificações
+export const getUserNotifications = async (): Promise<Notification[]> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    return [];
+  }
+
+  const userId = session.user.id;
+
+  // Em uma implementação real, buscaríamos do Supabase
+  // Por enquanto, retornamos dados de exemplo
+  const mockNotifications: Notification[] = [
+    {
+      id: "notif-1",
+      user_id: userId,
+      event_id: 1,
+      message: "O evento Festival de Música Eletrônica 2023 está quase esgotando!",
+      type: "ticket_running_out",
+      is_read: false,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: "notif-2",
+      user_id: userId,
+      event_id: 2,
+      message: "O evento Show de Rock - Bandas Nacionais teve uma mudança de horário.",
+      type: "event_update",
+      is_read: true,
+      created_at: new Date(Date.now() - 86400000).toISOString() // Ontem
+    }
+  ];
+
+  return mockNotifications;
+};
+
+export const markNotificationAsRead = async (notificationId: string): Promise<boolean> => {
+  // Em uma implementação real, atualizaríamos no Supabase
+  console.log(`Marcando notificação ${notificationId} como lida`);
+  return true;
+};
+
+export const markAllNotificationsAsRead = async (): Promise<boolean> => {
+  // Em uma implementação real, atualizaríamos no Supabase
+  console.log("Marcando todas as notificações como lidas");
+  return true;
+};
+
+export const clearAllNotifications = async (): Promise<boolean> => {
+  // Em uma implementação real, excluiríamos do Supabase
+  console.log("Limpando todas as notificações");
+  return true;
+};
+
+// Função para inscrever nas notificações em tempo real
+export const subscribeToNotifications = (callback: (notification: Notification) => void) => {
+  // Em uma implementação real, usaríamos o Supabase Realtime
+  console.log("Inscrito para receber notificações em tempo real");
+  
+  // Retorna um objeto com método unsubscribe para desinscrever
+  return {
+    unsubscribe: () => {
+      console.log("Desinscrito das notificações em tempo real");
+    }
+  };
 };

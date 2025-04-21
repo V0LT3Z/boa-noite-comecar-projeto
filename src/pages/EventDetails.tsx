@@ -94,7 +94,8 @@ const EventDetails = () => {
         address: "Av. Exemplo, 1000 - São Paulo, SP",
         capacity: 5000,
         map_url: "https://map-url-example.com"
-      }
+      },
+      status: "active"
     },
     "2": {
       id: 2,
@@ -136,7 +137,8 @@ const EventDetails = () => {
         address: "R. do Estádio, 500 - São Paulo, SP",
         capacity: 8000,
         map_url: "https://map-url-example.com"
-      }
+      },
+      status: "active"
     }
   };
 
