@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  User as UserIcon, Bell, Heart, Home, Search, Menu, X, LogOut, Ticket, Store, ArrowLeft, HouseIcon 
+  User as UserIcon, Bell, Heart, Home, Search, Menu, X, LogOut, Ticket, Store, ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -164,24 +164,13 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleBackToHome = () => {
-    navigate('/');
+  const handleBackButton = () => {
+    if (isAuthenticated && location.pathname !== '/minha-conta') {
+      navigate('/minha-conta');
+    } else {
+      navigate('/');
+    }
   };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
 
   const getInitials = (name = '') => {
     return name
@@ -213,15 +202,17 @@ const Header = () => {
     >
       <div className="container flex items-center justify-between h-16 px-4">
         <div className="flex items-center gap-8">
-          {location.pathname !== '/' && (
+          {location.pathname !== '/' && location.pathname !== '/minha-conta' && (
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={handleBackToHome}
+              onClick={handleBackButton}
               className="mr-2"
             >
               <ArrowLeft className="h-5 w-5" />
-              <span className="sr-only">Voltar para início</span>
+              <span className="sr-only">
+                {isAuthenticated ? 'Voltar para Dashboard' : 'Voltar para início'}
+              </span>
             </Button>
           )}
 

@@ -1,12 +1,12 @@
-
 import { useAuth } from "@/contexts/AuthContext"
 import { useProtectedRoute } from "@/hooks/use-protected-route"
-import { ShoppingCart, Settings, Heart, Bell, Tag, ArrowLeft } from "lucide-react"
-import { Link } from "react-router-dom"
+import { ShoppingCart, Settings, Heart, Bell, Tag, ArrowRight, Home } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Card } from "@/components/ui/card"
 import NextEvent from "@/components/dashboard/NextEvent"
+import { Button } from "@/components/ui/button"
 
 const menuItems = [
   {
@@ -61,6 +61,11 @@ const Dashboard = () => {
   const { user } = useAuth()
   const { isLoading } = useProtectedRoute()
   const isMobile = useIsMobile()
+  const navigate = useNavigate()
+  
+  const handleHomeClick = () => {
+    navigate('/')
+  }
   
   if (isLoading) {
     return <div className="p-6">Carregando...</div>
@@ -85,6 +90,15 @@ const Dashboard = () => {
                 <span>{item.title}</span>
               </Link>
             ))}
+
+            <Button
+              onClick={handleHomeClick}
+              className="flex w-full items-center gap-3 p-3 rounded-lg transition-colors"
+            >
+              <Home className="h-5 w-5" />
+              <span>Ir para Home</span>
+              <ArrowRight className="h-4 w-4 ml-auto" />
+            </Button>
           </div>
         </div>
       )}
@@ -97,6 +111,18 @@ const Dashboard = () => {
             Olá, {user?.fullName?.split(' ')[0]}! 👋
           </h1>
           <p className="text-dashboard-muted">Bem-vindo(a) de volta à sua conta</p>
+          
+          <div className="mt-4 flex justify-center md:hidden">
+            <Button 
+              onClick={handleHomeClick} 
+              variant="outline" 
+              className="flex items-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              Ir para Home
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Next Event Section */}
@@ -135,7 +161,7 @@ const Dashboard = () => {
       {isMobile && (
         <nav className="fixed bottom-0 left-0 right-0 bg-dashboard-card border-t border-gray-200 z-10">
           <div className="flex justify-around items-center h-16">
-            {menuItems.slice(0, 5).map((item) => (
+            {menuItems.slice(0, 4).map((item) => (
               <Link
                 key={item.title}
                 to={item.url}
@@ -148,6 +174,13 @@ const Dashboard = () => {
                 <span className="text-xs mt-1">{item.title.split(' ')[0]}</span>
               </Link>
             ))}
+            <Link
+              to="/"
+              className="flex flex-col items-center text-dashboard-muted transition-colors"
+            >
+              <Home className="h-6 w-6" />
+              <span className="text-xs mt-1">Home</span>
+            </Link>
           </div>
         </nav>
       )}
