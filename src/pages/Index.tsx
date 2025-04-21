@@ -1,8 +1,10 @@
+
 import { useState } from "react"
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
 import EventCard from "@/components/EventCard"
 import { Button } from "@/components/ui/button"
+import CategoryCarousel from "@/components/CategoryCarousel"
 import {
   Carousel,
   CarouselContent,
@@ -92,11 +94,37 @@ const Index = () => {
   const displayedEvents = showAllEvents ? mockEvents : mockEvents.slice(0, 3)
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-white">
       <Header />
-      <main className="container mx-auto px-4 space-y-8 py-8">
-        <SearchBar />
+      
+      {/* Hero Section with Search */}
+      <section className="relative bg-gradient-to-r from-primary to-secondary pt-24 pb-32">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Encontre seus próximos eventos
+            </h1>
+            <p className="text-white/90 text-lg mb-8">
+              Descubra shows, festivais, workshops e muito mais
+            </p>
+          </div>
+          
+          {/* Search positioned for better visibility */}
+          <div className="relative z-10 max-w-4xl mx-auto transform translate-y-16">
+            <SearchBar />
+            <CategoryCarousel />
+          </div>
+        </div>
         
+        {/* Decorative shapes */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+      </section>
+
+      {/* Featured Events Carousel */}
+      <main className="container mx-auto px-4 space-y-12 mt-24">
         <Carousel className="relative rounded-2xl overflow-hidden">
           <CarouselContent>
             {featuredEvents.map((event) => (
@@ -124,6 +152,7 @@ const Index = () => {
           <CarouselNext className="right-4" />
         </Carousel>
 
+        {/* Events List Section */}
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold text-primary">Eventos</h2>
           <div className="flex flex-col gap-6">
