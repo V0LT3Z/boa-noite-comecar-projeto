@@ -1,1 +1,7 @@
+
+# This file configures Supabase Functions.
+
 project_id = "tesvdaqrpynsrvkmfapw"
+
+[functions.increment_tickets_sold]
+verify_jwt = true

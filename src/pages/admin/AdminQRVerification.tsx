@@ -6,20 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Check, X, Scan } from "lucide-react";
+import { verifyTicketQR } from "@/services/orders";
+import { QRVerification } from "@/types/admin";
 
 const AdminQRVerification = () => {
   const [manualCode, setManualCode] = useState("");
-  const [scanResult, setScanResult] = useState<null | {
-    valid: boolean;
-    message: string;
-    ticketInfo?: {
-      eventName: string;
-      ticketType: string;
-      userName: string;
-    };
-  }>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [scanResult, setScanResult] = useState<QRVerification | null>(null);
 
-  const handleManualCheck = () => {
+  const handleManualCheck = async () => {
     if (!manualCode) {
       toast({
         title: "Código vazio",
@@ -29,50 +24,33 @@ const AdminQRVerification = () => {
       return;
     }
 
-    // Simulate verification - in a real app this would check against a database
-    if (manualCode === "VALID123") {
-      setScanResult({
-        valid: true,
-        message: "Ingresso válido!",
-        ticketInfo: {
-          eventName: "Festival de Verão 2025",
-          ticketType: "VIP",
-          userName: "Maria Silva",
-        },
-      });
+    setIsVerifying(true);
+    
+    try {
+      const result = await verifyTicketQR(manualCode);
+      setScanResult(result);
       
+      if (result.valid) {
+        toast({
+          title: "Ingresso válido",
+          description: "O ingresso foi verificado com sucesso.",
+        });
+      } else {
+        toast({
+          title: result.message,
+          description: "Por favor, verifique o código informado.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao verificar ingresso:", error);
       toast({
-        title: "Ingresso válido",
-        description: "O ingresso foi verificado com sucesso.",
-        variant: "default",
-      });
-    } else if (manualCode === "USED123") {
-      setScanResult({
-        valid: false,
-        message: "Ingresso já utilizado!",
-        ticketInfo: {
-          eventName: "Festival de Verão 2025",
-          ticketType: "VIP",
-          userName: "João Santos",
-        },
-      });
-      
-      toast({
-        title: "Ingresso já utilizado",
-        description: "Este ingresso já foi utilizado anteriormente.",
+        title: "Erro na verificação",
+        description: "Ocorreu um erro ao verificar o ingresso.",
         variant: "destructive",
       });
-    } else {
-      setScanResult({
-        valid: false,
-        message: "Ingresso inválido!",
-      });
-      
-      toast({
-        title: "Ingresso inválido",
-        description: "O código informado não corresponde a um ingresso válido.",
-        variant: "destructive",
-      });
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -126,17 +104,16 @@ const AdminQRVerification = () => {
                 onChange={(e) => setManualCode(e.target.value.toUpperCase())}
               />
               <div className="text-xs text-muted-foreground">
-                <p>Para teste, utilize os códigos:</p>
-                <ul className="list-disc pl-4 mt-1">
-                  <li>VALID123 (válido)</li>
-                  <li>USED123 (já utilizado)</li>
-                  <li>Qualquer outro (inválido)</li>
-                </ul>
+                <p>Digite o código QR do ingresso para verificação.</p>
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleManualCheck} className="w-full">
-                Verificar
+              <Button 
+                onClick={handleManualCheck} 
+                className="w-full"
+                disabled={isVerifying || !manualCode}
+              >
+                {isVerifying ? "Verificando..." : "Verificar"}
               </Button>
             </CardFooter>
           </Card>

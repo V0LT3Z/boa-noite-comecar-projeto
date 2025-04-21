@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      events: {
+        Row: {
+          created_at: string | null
+          date: string
+          description: string | null
+          id: number
+          image_url: string | null
+          location: string
+          minimum_age: number | null
+          status: string | null
+          tickets_sold: number | null
+          title: string
+          total_tickets: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          description?: string | null
+          id?: number
+          image_url?: string | null
+          location: string
+          minimum_age?: number | null
+          status?: string | null
+          tickets_sold?: number | null
+          title: string
+          total_tickets: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          id?: number
+          image_url?: string | null
+          location?: string
+          minimum_age?: number | null
+          status?: string | null
+          tickets_sold?: number | null
+          title?: string
+          total_tickets?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -59,6 +104,153 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string | null
+          event_id: number | null
+          id: number
+          payment_method: string | null
+          payment_status: string | null
+          quantity: number
+          ticket_type_id: number | null
+          total_price: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: number | null
+          id?: number
+          payment_method?: string | null
+          payment_status?: string | null
+          quantity: number
+          ticket_type_id?: number | null
+          total_price: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: number | null
+          id?: number
+          payment_method?: string | null
+          payment_status?: string | null
+          quantity?: number
+          ticket_type_id?: number | null
+          total_price?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_ticket_type_id_fkey"
+            columns: ["ticket_type_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_types: {
+        Row: {
+          available_quantity: number
+          description: string | null
+          event_id: number | null
+          id: number
+          max_per_purchase: number
+          name: string
+          price: number
+        }
+        Insert: {
+          available_quantity: number
+          description?: string | null
+          event_id?: number | null
+          id?: number
+          max_per_purchase: number
+          name: string
+          price: number
+        }
+        Update: {
+          available_quantity?: number
+          description?: string | null
+          event_id?: number | null
+          id?: number
+          max_per_purchase?: number
+          name?: string
+          price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_types_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          created_at: string | null
+          event_id: number | null
+          id: number
+          is_used: boolean | null
+          order_id: number | null
+          qr_code: string
+          ticket_type_id: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: number | null
+          id?: number
+          is_used?: boolean | null
+          order_id?: number | null
+          qr_code: string
+          ticket_type_id?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: number | null
+          id?: number
+          is_used?: boolean | null
+          order_id?: number | null
+          qr_code?: string
+          ticket_type_id?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_ticket_type_id_fkey"
+            columns: ["ticket_type_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
