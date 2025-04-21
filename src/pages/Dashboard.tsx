@@ -1,7 +1,8 @@
+
 import { useAuth } from "@/contexts/AuthContext"
 import { useProtectedRoute } from "@/hooks/use-protected-route"
 import { ShoppingCart, Settings, Heart, Bell, Tag, Home } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Card } from "@/components/ui/card"
@@ -95,15 +96,27 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 pb-20 md:pb-0 overflow-y-auto">
-        {/* Header */}
-        <div className="p-6 flex flex-col items-center justify-center bg-gradient-to-r from-primary to-secondary text-white mb-6">
-          <h1 className="text-3xl font-bold animate-bounce">
-            Olá, {user?.fullName?.split(' ')[0]}! 👋
-          </h1>
+        {/* Modern Header with Gradient */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('/lovable-uploads/7b4e3f1a-a268-405e-a83f-6869b87e4b6f.png')] bg-cover bg-center opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-secondary/90" />
+          
+          <div className="relative px-6 py-12 flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 mx-auto rounded-full bg-soft-purple ring-4 ring-white/20 flex items-center justify-center shadow-lg">
+                <span className="text-2xl font-bold text-primary">
+                  {user?.fullName?.[0]?.toUpperCase() || 'U'}
+                </span>
+              </div>
+              <h1 className="text-3xl font-bold text-white">
+                Olá, {user?.fullName?.split(' ')[0]}! 👋
+              </h1>
+            </div>
+          </div>
         </div>
 
         {/* Next Event Section */}
-        <div className="px-4 mb-8">
+        <div className="px-4 mb-8 -mt-6 relative z-10">
           <NextEvent />
         </div>
 
