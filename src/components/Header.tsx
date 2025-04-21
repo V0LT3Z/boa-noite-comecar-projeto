@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -183,7 +182,7 @@ const Header = () => {
 
   const navItems = [
     { label: 'Início', href: '/', icon: Home },
-    { label: 'Buscar', href: '/buscar', icon: Search },
+    // { label: 'Buscar', href: '/buscar', icon: Search },
     { label: 'Marketplace', href: '/marketplace', icon: Store },
   ];
 
@@ -243,20 +242,24 @@ const Header = () => {
             {/* User action icons */}
             {!isMobile && isAuthenticated && (
               <div className="flex items-center gap-3">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="hover:bg-gray-100"
-                >
-                  <Bell className="h-5 w-5 text-gray-600" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="hover:bg-gray-100"
-                >
-                  <Heart className="h-5 w-5 text-gray-600" />
-                </Button>
+                <Link to="/notificacoes">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="hover:bg-gray-100"
+                  >
+                    <Bell className="h-5 w-5 text-gray-600" />
+                  </Button>
+                </Link>
+                <Link to="/favoritos">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="hover:bg-gray-100"
+                  >
+                    <Heart className="h-5 w-5 text-gray-600" />
+                  </Button>
+                </Link>
                 
                 <Sheet>
                   <SheetTrigger asChild>
