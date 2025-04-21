@@ -1,14 +1,18 @@
 import { useAuth } from "@/contexts/AuthContext"
 import { useProtectedRoute } from "@/hooks/use-protected-route"
-import { ShoppingCart, Settings, Heart, Bell, Tag, ArrowRight, Home } from "lucide-react"
+import { ShoppingCart, Settings, Heart, Bell, Tag, Home } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Card } from "@/components/ui/card"
 import NextEvent from "@/components/dashboard/NextEvent"
-import { Button } from "@/components/ui/button"
 
 const menuItems = [
+  {
+    title: "Ir para Home",
+    icon: Home,
+    url: "/"
+  },
   {
     title: "Meus ingressos",
     icon: ShoppingCart,
@@ -61,11 +65,6 @@ const Dashboard = () => {
   const { user } = useAuth()
   const { isLoading } = useProtectedRoute()
   const isMobile = useIsMobile()
-  const navigate = useNavigate()
-  
-  const handleHomeClick = () => {
-    navigate('/')
-  }
   
   if (isLoading) {
     return <div className="p-6">Carregando...</div>
@@ -102,32 +101,6 @@ const Dashboard = () => {
             Olá, {user?.fullName?.split(' ')[0]}! 👋
           </h1>
         </div>
-
-        {/* Mobile Home Button */}
-        {isMobile && (
-          <div className="px-4 mb-4">
-            <Button 
-              onClick={handleHomeClick}
-              className="w-full bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 flex items-center justify-center gap-2"
-            >
-              <Home className="h-4 w-4" />
-              Ir para Home
-            </Button>
-          </div>
-        )}
-
-        {/* Desktop Home Button */}
-        {!isMobile && (
-          <div className="px-4 mb-4">
-            <Button
-              onClick={handleHomeClick}
-              className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 flex items-center justify-center gap-2"
-            >
-              <Home className="h-4 w-4" />
-              Ir para Home
-            </Button>
-          </div>
-        )}
 
         {/* Next Event Section */}
         <div className="px-4 mb-8">
@@ -178,13 +151,6 @@ const Dashboard = () => {
                 <span className="text-xs mt-1">{item.title.split(' ')[0]}</span>
               </Link>
             ))}
-            <Link
-              to="/"
-              className="flex flex-col items-center text-dashboard-muted transition-colors"
-            >
-              <Home className="h-6 w-6" />
-              <span className="text-xs mt-1">Home</span>
-            </Link>
           </div>
         </nav>
       )}
