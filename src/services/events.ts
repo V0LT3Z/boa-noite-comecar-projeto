@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails, TicketType } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
@@ -44,13 +45,24 @@ const mapEventResponse = (event: EventResponse, ticketTypes: TicketTypeResponse[
 
 // Função para buscar eventos
 export const fetchEvents = async () => {
-  const { data: events, error } = await supabase
-    .from("events")
-    .select("*")
-    .order("date", { ascending: true });
+  try {
+    console.log("Buscando todos os eventos");
+    const { data: events, error } = await supabase
+      .from("events")
+      .select("*")
+      .order("date", { ascending: true });
 
-  if (error) throw error;
-  return events as EventResponse[];
+    if (error) {
+      console.error("Erro ao buscar eventos:", error);
+      throw error;
+    }
+    
+    console.log(`Eventos encontrados: ${events?.length || 0}`);
+    return events as EventResponse[];
+  } catch (error) {
+    console.error("Erro ao buscar eventos:", error);
+    throw error;
+  }
 };
 
 // Função para buscar um evento específico
@@ -58,22 +70,24 @@ export const fetchEventById = async (id: number) => {
   try {
     console.log("Buscando evento com ID:", id);
     
-    const { data: event, error: eventError } = await supabase
+    // CORREÇÃO: Não use .single() quando há risco de não encontrar resultados
+    const { data: eventData, error: eventError } = await supabase
       .from("events")
       .select("*")
-      .eq("id", id)
-      .single();
+      .eq("id", id);
 
     if (eventError) {
       console.error("Erro ao buscar evento:", eventError);
       return null;
     }
 
-    if (!event) {
+    // Verificar se retornou algum evento
+    if (!eventData || eventData.length === 0) {
       console.log("Evento não encontrado para o ID:", id);
       return null;
     }
 
+    const event = eventData[0] as EventResponse;
     console.log("Evento encontrado:", event);
 
     const { data: ticketTypes, error: ticketError } = await supabase
@@ -86,7 +100,7 @@ export const fetchEventById = async (id: number) => {
       // Ainda podemos retornar o evento mesmo sem ingressos
     }
 
-    return mapEventResponse(event as EventResponse, (ticketTypes || []) as TicketTypeResponse[]);
+    return mapEventResponse(event, (ticketTypes || []) as TicketTypeResponse[]);
   } catch (error) {
     console.error("Erro geral ao buscar evento:", error);
     return null;

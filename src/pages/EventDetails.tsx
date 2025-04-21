@@ -18,6 +18,7 @@ const EventDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<EventDetailsType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -33,6 +34,7 @@ const EventDetails = () => {
       
       try {
         setIsLoading(true);
+        setError(null);
         
         // Converter string para número, mas garantindo que temos um valor
         const eventId = parseInt(id);
@@ -51,10 +53,10 @@ const EventDetails = () => {
         }
       } catch (error) {
         console.error("Erro ao carregar evento:", error);
+        setError("Não foi possível encontrar os detalhes para este evento.");
         toast.error("Evento não encontrado", {
           description: "Não foi possível encontrar os detalhes para este evento.",
         });
-        navigate("/");
       } finally {
         setIsLoading(false);
       }
@@ -106,12 +108,24 @@ const EventDetails = () => {
     );
   }
 
-  if (!event) {
+  if (error || !event) {
     return (
-      <div className="min-h-[50vh] bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-500 text-xl mb-4">Evento não encontrado.</p>
-          <Button onClick={() => navigate('/')}>Voltar para Home</Button>
+      <div className="container mx-auto px-4 py-8">
+        <div className="min-h-[50vh] bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex items-center max-w-md mx-auto">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="text-left">
+                <p className="font-semibold">Evento não encontrado</p>
+                <p className="text-sm text-gray-500">Não foi possível encontrar os detalhes para este evento.</p>
+              </div>
+            </div>
+            <Button onClick={() => navigate('/')} className="mt-6">
+              Voltar para Home
+            </Button>
+          </div>
         </div>
       </div>
     );

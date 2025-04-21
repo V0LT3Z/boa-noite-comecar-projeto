@@ -14,6 +14,9 @@ interface EventCardProps {
 }
 
 const EventCard = ({ id, title, date, location, image }: EventCardProps) => {
+  // Adicione verificação para garantir que o id é válido
+  const isValidId = id && !isNaN(id) && id > 0;
+  
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow group">
       <div className="flex">
@@ -46,11 +49,17 @@ const EventCard = ({ id, title, date, location, image }: EventCardProps) => {
             </div>
           </div>
           
-          <Link to={`/evento/${id}`}>
-            <Button className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap">
+          {isValidId ? (
+            <Link to={`/evento/${id}`}>
+              <Button className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap">
+                Ver ingressos
+              </Button>
+            </Link>
+          ) : (
+            <Button disabled className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap">
               Ver ingressos
             </Button>
-          </Link>
+          )}
         </div>
       </div>
     </Card>

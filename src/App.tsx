@@ -33,7 +33,6 @@ function App() {
       <AuthProvider>
         <Router>
           <div className="min-h-screen flex flex-col">
-            <Header />
             <div className="flex-1">
               <Routes>
                 {/* Public routes */}

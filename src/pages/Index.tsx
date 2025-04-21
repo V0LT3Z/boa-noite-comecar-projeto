@@ -1,5 +1,4 @@
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
 import EventCard from "@/components/EventCard"
@@ -12,6 +11,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import { fetchEvents } from "@/services/events"
+import { EventResponse } from "@/types/event"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 const mockEvents = [
   {
@@ -102,16 +105,46 @@ const featuredEvents = [
 const Index = () => {
   const [showAllEvents, setShowAllEvents] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-
-  // Filter events based on selected category
-  const filteredEvents = selectedCategory 
-    ? mockEvents.filter(event => event.category === selectedCategory)
-    : mockEvents;
+  const [events, setEvents] = useState<EventResponse[]>([])
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setLoading(true);
+        const eventData = await fetchEvents();
+        console.log("Eventos carregados:", eventData);
+        setEvents(eventData);
+      } catch (error) {
+        console.error("Erro ao carregar eventos:", error);
+        // Usar dados mockados em caso de falha
+        // setEvents(mockEvents);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-  // Display either all filtered events or just the first 3
+    loadEvents();
+  }, []);
+
+  const formattedEvents = events.map(event => {
+    const eventDate = new Date(event.date);
+    return {
+      id: event.id,
+      title: event.title,
+      date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
+      location: event.location,
+      image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
+      category: "Eventos"
+    };
+  });
+
+  const filteredEvents = selectedCategory 
+    ? formattedEvents.filter(event => event.category === selectedCategory)
+    : formattedEvents;
+    
   const displayedEvents = showAllEvents ? filteredEvents : filteredEvents.slice(0, 3)
 
-  // Filter featured events based on selected category
   const filteredFeaturedEvents = selectedCategory 
     ? featuredEvents.filter(event => event.category === selectedCategory)
     : featuredEvents;
@@ -120,7 +153,6 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Hero Section with Search */}
       <section className="relative bg-soft-gray pt-20 pb-12">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
@@ -141,7 +173,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured Events Carousel */}
       <main className="container mx-auto px-4 space-y-10 mt-10">
         <Carousel className="relative rounded-2xl overflow-hidden">
           <CarouselContent>
@@ -170,7 +201,6 @@ const Index = () => {
           <CarouselNext className="right-4" />
         </Carousel>
 
-        {/* Events List Section */}
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold text-primary">
@@ -187,7 +217,13 @@ const Index = () => {
             )}
           </div>
           
-          {filteredEvents.length > 0 ? (
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-32 w-full bg-gray-100 rounded-lg animate-pulse"></div>
+              ))}
+            </div>
+          ) : filteredEvents.length > 0 ? (
             <>
               <div className="flex flex-col gap-6">
                 {displayedEvents.map((event) => (
