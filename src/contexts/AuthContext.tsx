@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       toast({
         title: "Login realizado com sucesso!",
-        description: "Redirecionando...",
+        description: "Bem-vindo de volta!",
       });
       
       return true;

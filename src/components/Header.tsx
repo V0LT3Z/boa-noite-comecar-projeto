@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -10,7 +11,7 @@ import {
 } from '@/components/ui/sheet';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface NavLinkProps {
   href: string;
@@ -75,11 +76,10 @@ const MobileNav: React.FC<MobileNavProps> = ({
           {isAuthenticated ? (
             <div className="flex items-center gap-4 mb-6 pb-6 border-b">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={user?.avatar} alt={user?.name || 'User'} />
-                <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
+                <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{user?.name || 'Usuário'}</p>
+                <p className="font-medium">{user?.fullName || 'Usuário'}</p>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
               </div>
             </div>
@@ -312,7 +312,7 @@ const Header = () => {
       <AuthDialog 
         open={isAuthDialogOpen} 
         onOpenChange={setIsAuthDialogOpen}
-        onSuccess={() => {}}
+        onSuccess={() => setIsAuthDialogOpen(false)}
       />
     </header>
   );

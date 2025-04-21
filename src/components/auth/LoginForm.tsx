@@ -53,6 +53,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         const redirectUrl = localStorage.getItem('redirectAfterLogin');
         if (redirectUrl) {
           localStorage.removeItem('redirectAfterLogin');
+          window.location.href = redirectUrl;
         }
         
         onSuccess();

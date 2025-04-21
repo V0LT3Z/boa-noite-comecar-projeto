@@ -20,6 +20,11 @@ interface AuthDialogProps {
 export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login")
 
+  const handleSuccess = () => {
+    onSuccess();
+    onOpenChange(false); // Close the dialog on success
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
@@ -41,11 +46,11 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
           </TabsList>
 
           <TabsContent value="login" className="mt-4">
-            <LoginForm onSuccess={onSuccess} />
+            <LoginForm onSuccess={handleSuccess} />
           </TabsContent>
 
           <TabsContent value="register" className="mt-4">
-            <RegisterForm onSuccess={onSuccess} />
+            <RegisterForm onSuccess={handleSuccess} />
           </TabsContent>
         </Tabs>
       </DialogContent>
