@@ -92,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo de volta!",
+        variant: "default",
       });
       
       return true;
@@ -149,6 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast({
         title: "Conta criada com sucesso!",
         description: "Bem-vindo ao Lovue Tickets!",
+        variant: "default",
       });
       
       return true;
@@ -173,6 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     toast({
       title: "Logout realizado",
       description: "Você saiu da sua conta com sucesso.",
+      variant: "default",
     });
   };
 
@@ -181,7 +184,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     document.dispatchEvent(new CustomEvent('openAuthModal'));
   };
 
-  // Verificar se o usuário é um produtor
   const isProducer = !!user && (user.role === 'producer' || user.role === 'admin');
 
   return (
