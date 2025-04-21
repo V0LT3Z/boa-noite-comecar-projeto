@@ -42,8 +42,8 @@ const toast = (options: ToastOptions) => {
     return sonnerToast.success(title || "", {
       description,
       style: { 
-        backgroundColor: "#F2FCE2",  // Soft green background 
-        color: "#2e7d32",  // Dark green text
+        backgroundColor: "#F2FCE2",  // Soft green background from the color palette
+        color: "#2e7d32",  // Dark green text for better readability
         borderColor: "#81c784"  // Light green border
       },
     });
@@ -55,7 +55,7 @@ const toast = (options: ToastOptions) => {
       description,
       style: { 
         backgroundColor: "#FFDEE2",  // Soft red background
-        color: "#c62828",  // Dark red text
+        color: "#c62828",  // Dark red text for better readability
         borderColor: "#ef5350"  // Light red border
       },
     });
