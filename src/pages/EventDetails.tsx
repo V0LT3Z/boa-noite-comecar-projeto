@@ -164,11 +164,11 @@ const EventDetails = () => {
                   <Calendar className="h-3.5 w-3.5 text-secondary-purple" />
                   <span>{new Date(event.date).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}</span>
                 </div>
-                <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/30 rounded-full text-xs font-medium text-charcoal-gray">
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/30 rounded-full text-xs font-medium text-charcoal-gray">
                   <Clock className="h-3.5 w-3.5 text-tertiary-purple" />
                   <span>{event.time}</span>
                 </div>
-                <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/30 rounded-full text-xs font-medium text-charcoal-gray">
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/30 rounded-full text-xs font-medium text-charcoal-gray">
                   <MapPin className="h-3.5 w-3.5 text-dark-purple" />
                   <span className="line-clamp-1">{event.location}</span>
                 </div>
@@ -250,11 +250,11 @@ const EventDetails = () => {
                   <Calendar className="h-3.5 w-3.5 text-secondary-purple" />
                   <span>{new Date(event.date).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}</span>
                 </div>
-                <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/30 rounded-full text-xs font-medium text-charcoal-gray">
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/30 rounded-full text-xs font-medium text-charcoal-gray">
                   <Clock className="h-3.5 w-3.5 text-tertiary-purple" />
                   <span>{event.time}</span>
                 </div>
-                <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/30 rounded-full text-xs font-medium text-charcoal-gray">
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/30 rounded-full text-xs font-medium text-charcoal-gray">
                   <MapPin className="h-3.5 w-3.5 text-dark-purple" />
                   <span className="line-clamp-1">{event.location}</span>
                 </div>
