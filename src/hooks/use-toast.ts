@@ -11,7 +11,9 @@ type ToastProps = {
 export const useToast = () => {
   return {
     toast: ({ title, description, variant = "default" }: ToastProps) => {
-      const toastOptions: Partial<ToastT> = {}
+      const toastOptions: Partial<ToastT> = {
+        position: "bottom-right",
+      }
 
       if (variant === "destructive") {
         toastOptions.className = "bg-destructive text-destructive-foreground"
@@ -29,7 +31,9 @@ export const useToast = () => {
 
 // Mantendo a exportação da função toast direta para compatibilidade
 export const toast = ({ title, description, variant = "default" }: ToastProps) => {
-  const toastOptions: Partial<ToastT> = {}
+  const toastOptions: Partial<ToastT> = {
+    position: "bottom-right",
+  }
 
   if (variant === "destructive") {
     toastOptions.className = "bg-destructive text-destructive-foreground"

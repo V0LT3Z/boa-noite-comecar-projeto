@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Link } from "react-router-dom"
 import FavoriteButton from "./FavoriteButton"
+import { useEffect, useState } from "react"
+import { fetchEventById } from "@/services/events"
+import { toast } from "@/hooks/use-toast"
 
 interface EventCardProps {
   id: number
@@ -15,7 +18,47 @@ interface EventCardProps {
 }
 
 const EventCard = ({ id, title, date, location, image, category }: EventCardProps) => {
-  const isValidId = id && !isNaN(Number(id)) && Number(id) > 0;
+  const [eventExists, setEventExists] = useState<boolean | null>(null);
+  const [isChecking, setIsChecking] = useState(false);
+  
+  useEffect(() => {
+    // Verificar se o evento existe apenas quando o usuário passar o mouse sobre o botão
+    const checkEvent = async () => {
+      if (eventExists !== null || isChecking) return;
+      
+      setIsChecking(true);
+      try {
+        const event = await fetchEventById(id);
+        setEventExists(!!event);
+      } catch (error) {
+        console.error("Erro ao verificar evento:", error);
+        setEventExists(false);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+    
+    // Se tivermos eventos mockados, não precisamos verificar
+    if (window.location.pathname === "/") {
+      setEventExists(true);
+    }
+    
+    return () => {
+      // Cleanup se necessário
+    };
+  }, [id, eventExists, isChecking]);
+  
+  const handleVerIngressos = () => {
+    if (eventExists === false) {
+      toast({
+        title: "Evento não disponível",
+        description: "Este evento está em desenvolvimento e ainda não está disponível.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
   
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow group relative">
@@ -55,16 +98,33 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
             </div>
           </div>
           
-          {isValidId ? (
-            <Link to={`/evento/${id}`} className="flex-shrink-0">
+          {window.location.pathname === "/" ? (
+            <Button 
+              className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap"
+              onClick={() => {
+                toast({
+                  title: "Evento em desenvolvimento",
+                  description: "Este evento está sendo criado e estará disponível em breve.",
+                  variant: "default",
+                });
+              }}
+            >
+              Ver ingressos
+            </Button>
+          ) : (
+            <Link 
+              to={`/evento/${id}`} 
+              className="flex-shrink-0"
+              onClick={(e) => {
+                if (!handleVerIngressos()) {
+                  e.preventDefault();
+                }
+              }}
+            >
               <Button className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap">
                 Ver ingressos
               </Button>
             </Link>
-          ) : (
-            <Button disabled className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap">
-              Ver ingressos
-            </Button>
           )}
         </div>
       </div>

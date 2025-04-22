@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/AuthContext"
+import { Link } from "react-router-dom"
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -25,9 +27,10 @@ type LoginFormValues = z.infer<typeof loginSchema>
 
 interface LoginFormProps {
   onSuccess: () => void
+  onForgotPassword: () => void
 }
 
-export function LoginForm({ onSuccess }: LoginFormProps) {
+export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -117,6 +120,17 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             </FormItem>
           )}
         />
+
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="link"
+            className="p-0 h-auto text-xs text-secondary hover:text-primary"
+            onClick={onForgotPassword}
+          >
+            Esqueceu a senha?
+          </Button>
+        </div>
 
         <Button 
           type="submit" 
