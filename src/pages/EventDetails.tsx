@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { EventDetails as EventDetailsType } from "@/types/event";
 import { fetchEventById } from "@/services/events";
 import GradientCard from "@/components/GradientCard";
+import { supabase } from "@/integrations/supabase/client";
 
 const EventDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -63,29 +64,24 @@ const EventDetails = () => {
     if (!id || selectedTickets.length === 0) return;
 
     try {
-      const response = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
           eventId: parseInt(id),
           selectedTickets
-        }),
+        },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao criar checkout');
+      if (error) {
+        throw error;
       }
 
-      const { url } = await response.json();
-      if (url) {
-        window.location.href = url;
+      if (data?.url) {
+        window.location.href = data.url;
       } else {
         throw new Error('URL de checkout não disponível');
       }
     } catch (error) {
+      console.error("Erro ao criar checkout:", error);
       toast.error("Erro no processo de compra", {
         description: "Ocorreu um erro ao processar sua compra. Por favor, tente novamente.",
       });
