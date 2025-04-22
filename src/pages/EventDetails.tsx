@@ -160,16 +160,16 @@ const EventDetails = () => {
                 {event.title}
               </h1>
               <div className="flex flex-wrap gap-2 mt-0">
-                <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/30 rounded-full text-xs font-medium text-gray-700">
-                  <Calendar className="h-3.5 w-3.5 text-primary" />
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/30 rounded-full text-xs font-medium text-charcoal-gray">
+                  <Calendar className="h-3.5 w-3.5 text-secondary-purple" />
                   <span>{new Date(event.date).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}</span>
                 </div>
-                <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/30 rounded-full text-xs font-medium text-gray-700">
-                  <Clock className="h-3.5 w-3.5 text-secondary" />
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/30 rounded-full text-xs font-medium text-charcoal-gray">
+                  <Clock className="h-3.5 w-3.5 text-tertiary-purple" />
                   <span>{event.time}</span>
                 </div>
-                <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/30 rounded-full text-xs font-medium text-gray-700">
-                  <MapPin className="h-3.5 w-3.5 text-pink-500" />
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/30 rounded-full text-xs font-medium text-charcoal-gray">
+                  <MapPin className="h-3.5 w-3.5 text-dark-purple" />
                   <span className="line-clamp-1">{event.location}</span>
                 </div>
               </div>
@@ -246,16 +246,16 @@ const EventDetails = () => {
                 {event.title}
               </h1>
               <div className="flex flex-wrap gap-2">
-                <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/30 rounded-full text-xs font-medium text-gray-700">
-                  <Calendar className="h-3.5 w-3.5 text-primary" />
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/30 rounded-full text-xs font-medium text-charcoal-gray">
+                  <Calendar className="h-3.5 w-3.5 text-secondary-purple" />
                   <span>{new Date(event.date).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}</span>
                 </div>
-                <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/30 rounded-full text-xs font-medium text-gray-700">
-                  <Clock className="h-3.5 w-3.5 text-secondary" />
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/30 rounded-full text-xs font-medium text-charcoal-gray">
+                  <Clock className="h-3.5 w-3.5 text-tertiary-purple" />
                   <span>{event.time}</span>
                 </div>
-                <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/30 rounded-full text-xs font-medium text-gray-700">
-                  <MapPin className="h-3.5 w-3.5 text-pink-500" />
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/30 rounded-full text-xs font-medium text-charcoal-gray">
+                  <MapPin className="h-3.5 w-3.5 text-dark-purple" />
                   <span className="line-clamp-1">{event.location}</span>
                 </div>
               </div>
