@@ -1,6 +1,6 @@
 
 import { useState } from "react"
-import { Minus, Plus } from "lucide-react"
+import { Minus, Plus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TicketType } from "@/types/event"
 import { useAuth } from "@/contexts/AuthContext"
@@ -9,7 +9,7 @@ import { AuthDialog } from "@/components/auth/AuthDialog"
 interface TicketSelectorProps {
   tickets: TicketType[]
   onPurchase?: (selectedTickets: { ticketId: number, quantity: number }[]) => void
-  isPurchasing?: boolean // Add prop for purchase loading state
+  isPurchasing?: boolean
 }
 
 const TicketSelector = ({ tickets, onPurchase, isPurchasing = false }: TicketSelectorProps) => {
@@ -117,7 +117,7 @@ const TicketSelector = ({ tickets, onPurchase, isPurchasing = false }: TicketSel
           >
             {isPurchasing ? (
               <>
-                <span className="animate-spin mr-2">⭘</span>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Processando...
               </>
             ) : (

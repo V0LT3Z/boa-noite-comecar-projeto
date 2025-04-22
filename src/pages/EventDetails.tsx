@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock, ArrowLeft } from "lucide-react";
@@ -62,7 +63,12 @@ const EventDetails = () => {
   }, [id, navigate]);
 
   const handlePurchase = async (selectedTickets: { ticketId: number, quantity: number }[]) => {
-    if (!id || selectedTickets.length === 0) return;
+    if (!id || selectedTickets.length === 0) {
+      toast.error("Dados inválidos", { 
+        description: "Por favor, selecione pelo menos um ingresso." 
+      });
+      return;
+    }
 
     try {
       setIsPurchasing(true);
@@ -90,6 +96,9 @@ const EventDetails = () => {
       if (data?.url) {
         console.log("Checkout URL received, redirecting to:", data.url);
         window.location.href = data.url;
+      } else if (data?.error) {
+        console.error("Error received from create-checkout:", data.error);
+        throw new Error(data.error);
       } else {
         console.error("No checkout URL received:", data);
         throw new Error('URL de checkout não disponível');

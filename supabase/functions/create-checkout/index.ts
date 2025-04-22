@@ -9,6 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders })
   }
@@ -18,86 +19,127 @@ serve(async (req) => {
     const { eventId, selectedTickets } = await req.json()
     console.log(`Request data: eventId=${eventId}, tickets=${JSON.stringify(selectedTickets)}`);
 
-    // Initialize Stripe
+    if (!eventId || !selectedTickets || selectedTickets.length === 0) {
+      console.error("Invalid request data:", { eventId, selectedTickets });
+      return new Response(
+        JSON.stringify({ error: "Dados inválidos. Evento ou ingressos não especificados." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      );
+    }
+
+    // Initialize Stripe with direct key access
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       console.error("STRIPE_SECRET_KEY is not set or not accessible");
-      throw new Error("Stripe key not configured");
+      return new Response(
+        JSON.stringify({ error: "Configuração do Stripe não encontrada." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      );
     }
     
+    console.log("Stripe key found, length:", stripeKey.length);
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     })
-    console.log("Stripe client initialized with key length:", stripeKey.length);
+    console.log("Stripe client initialized successfully");
 
     // Create a Supabase client to access the database
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-    )
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY");
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Supabase credentials not found");
+      return new Response(
+        JSON.stringify({ error: "Configuração do Supabase não encontrada." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      );
+    }
+    
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
     console.log("Supabase client initialized");
 
     // Fetch information about the selected tickets
+    console.log("Fetching ticket types...");
     const { data: ticketTypes, error: ticketError } = await supabaseClient
       .from("ticket_types")
       .select("*")
       .in(
         "id",
         selectedTickets.map((t: any) => t.ticketId)
-      )
+      );
 
     if (ticketError) {
       console.error("Error fetching ticket types:", ticketError);
-      throw ticketError;
+      return new Response(
+        JSON.stringify({ error: `Erro ao buscar ingressos: ${ticketError.message}` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      );
     }
-    if (!ticketTypes) {
-      console.error("No ticket types found");
-      throw new Error("Nenhum tipo de ingresso encontrado");
+    
+    if (!ticketTypes || ticketTypes.length === 0) {
+      console.error("No ticket types found for IDs:", selectedTickets.map((t: any) => t.ticketId));
+      return new Response(
+        JSON.stringify({ error: "Nenhum tipo de ingresso encontrado" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
+      );
     }
     console.log(`Found ${ticketTypes.length} ticket types`);
 
     // Create line items for Stripe
-    const lineItems = selectedTickets.map((selected: any) => {
-      const ticketType = ticketTypes.find((t) => t.id === selected.ticketId)
-      if (!ticketType) throw new Error(`Tipo de ingresso não encontrado: ${selected.ticketId}`)
+    try {
+      console.log("Creating line items...");
+      const lineItems = selectedTickets.map((selected: any) => {
+        const ticketType = ticketTypes.find((t) => t.id === selected.ticketId);
+        if (!ticketType) {
+          throw new Error(`Tipo de ingresso não encontrado: ${selected.ticketId}`);
+        }
 
-      return {
-        price_data: {
-          currency: "brl",
-          product_data: {
-            name: ticketType.name,
-            description: ticketType.description || undefined,
+        return {
+          price_data: {
+            currency: "brl",
+            product_data: {
+              name: ticketType.name,
+              description: ticketType.description || undefined,
+            },
+            unit_amount: Math.round(ticketType.price * 100), // Convert to cents
           },
-          unit_amount: Math.round(ticketType.price * 100), // Convert to cents
+          quantity: selected.quantity,
+        };
+      });
+      console.log("Line items created successfully");
+
+      // Create checkout session
+      console.log("Creating Stripe checkout session...");
+      const origin = req.headers.get("origin") || "http://localhost:3000";
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: lineItems,
+        mode: "payment",
+        success_url: `${origin}/pagamento-sucesso?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/pagamento-cancelado`,
+        metadata: {
+          eventId,
+          tickets: JSON.stringify(selectedTickets),
         },
-        quantity: selected.quantity,
-      }
-    })
-    console.log("Line items created:", JSON.stringify(lineItems));
+      });
+      console.log("Checkout session created:", session.id);
 
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: lineItems,
-      mode: "payment",
-      success_url: `${req.headers.get("origin")}/pagamento-sucesso?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/pagamento-cancelado`,
-      metadata: {
-        eventId,
-        tickets: JSON.stringify(selectedTickets),
-      },
-    })
-    console.log("Checkout session created:", session.id);
-
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    })
+      return new Response(JSON.stringify({ url: session.url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    } catch (error) {
+      console.error("Error in checkout session creation:", error.message);
+      return new Response(
+        JSON.stringify({ error: `Erro ao criar sessão de pagamento: ${error.message}` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      );
+    }
   } catch (error) {
-    console.error("Error creating checkout session:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("Unexpected error in create-checkout:", error.message, error.stack);
+    return new Response(JSON.stringify({ error: `Erro inesperado: ${error.message}` }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
-    })
+    });
   }
 })
