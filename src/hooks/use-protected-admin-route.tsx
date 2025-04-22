@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 export function useProtectedAdminRoute() {
-  const { isAuthenticated, isLoading, isProducer } = useAuth();
+  const { isAuthenticated, isLoading, isProducer, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,8 +27,11 @@ export function useProtectedAdminRoute() {
         });
         navigate('/');
       }
-    }
-  }, [isAuthenticated, isLoading, isProducer, navigate]);
 
-  return { isLoading, isAuthenticated, isProducer };
+      // Log user information for debugging
+      console.log("Current user:", user);
+    }
+  }, [isAuthenticated, isLoading, isProducer, navigate, user]);
+
+  return { isLoading, isAuthenticated, isProducer, user };
 }

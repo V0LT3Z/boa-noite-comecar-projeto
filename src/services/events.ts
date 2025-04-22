@@ -113,6 +113,13 @@ export const createEvent = async (eventData: AdminEventForm) => {
     const dateTime = `${eventData.date}T${eventData.time || "19:00"}`;
     const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error("Usuário não autenticado");
+    }
+
     // Calcular total de tickets
     const totalTickets = eventData.tickets.reduce(
       (sum, ticket) => sum + (parseInt(ticket.availableQuantity) || 0),
@@ -128,7 +135,8 @@ export const createEvent = async (eventData: AdminEventForm) => {
       image_url: eventData.bannerUrl || null,
       minimum_age: parseInt(eventData.minimumAge) || 0,
       status: eventData.status || "active",
-      total_tickets: totalTickets
+      total_tickets: totalTickets,
+      user_id: user.id // Add the user ID to associate the event with the authenticated user
     };
     
     console.log("Dados do evento para inserção:", eventInsertData);
@@ -155,7 +163,8 @@ export const createEvent = async (eventData: AdminEventForm) => {
         price: parseFloat(ticket.price) || 0,
         description: ticket.description,
         available_quantity: parseInt(ticket.availableQuantity) || 0,
-        max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
+        max_per_purchase: parseInt(ticket.maxPerPurchase) || 4,
+        user_id: user.id // Add the user ID to associate the ticket type with the authenticated user
       }));
 
       console.log("Inserindo tipos de ingresso:", ticketTypesData);
