@@ -59,7 +59,7 @@ export default {
         "soft-green": "#F2FCE2",
         "soft-yellow": "#FEF7CD",
         "soft-orange": "#FEC6A1",
-        "soft-gray": "#FFFFFF",
+        "soft-gray": "#f3f3f3",
       },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(to right, hsl(270 80% 60%), hsl(210 80% 60%))',
