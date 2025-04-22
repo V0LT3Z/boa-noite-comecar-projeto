@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -25,9 +24,9 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { createEvent } from "@/services/events";
+import { AdminEventForm } from "@/types/admin";
 
 // Form schema for ticket type validation
 const ticketTypeSchema = z.object({
@@ -52,6 +51,7 @@ const eventSchema = z.object({
   price: z.coerce.number().min(0, "O preço não pode ser negativo"),
   capacity: z.coerce.number().min(1, "A capacidade deve ser pelo menos 1"),
   bannerUrl: z.string().optional(),
+  venue: z.string().default(""), // Added venue field to match AdminEventForm type
   status: z.enum(["active", "paused", "cancelled"]).default("active"),
   warnings: z.array(z.string()).default([]),
   tickets: z.array(ticketTypeSchema).min(1, "Adicione pelo menos um tipo de ingresso"),
@@ -64,7 +64,7 @@ type EventFormProps = {
   onSuccess: () => void; // Callback on successful submission
 };
 
-export function EventForm({ event, onSuccess }: EventFormProps) {
+export default function EventForm({ event, onSuccess }: EventFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(event?.bannerUrl || null);
   
@@ -81,6 +81,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       price: event?.price || 0,
       capacity: event?.capacity || 100,
       bannerUrl: event?.bannerUrl || "",
+      venue: event?.venue || "",
       status: event?.status || "active",
       warnings: event?.warnings || [],
       tickets: event?.tickets?.length > 0 
@@ -131,7 +132,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       toast({
         title: "Não é possível remover",
         description: "Deve haver pelo menos um tipo de ingresso.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
@@ -145,13 +146,28 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     try {
       console.log("Submitting event data:", data);
       
+      // Convert form data to AdminEventForm format
+      const adminEventData: AdminEventForm = {
+        title: data.title,
+        description: data.description,
+        location: data.location,
+        date: format(data.date, "yyyy-MM-dd"),
+        time: data.time,
+        minimumAge: data.minimumAge,
+        bannerUrl: data.bannerUrl || "",
+        venue: data.location, // Using location as venue
+        status: data.status,
+        warnings: data.warnings,
+        tickets: data.tickets
+      };
+      
       try {
         if (event?.id) {
           // Update existing event logic will be here
           console.log("Updating event:", event.id);
         } else {
           // Create new event
-          await createEvent(data);
+          await createEvent(adminEventData);
         }
         
         toast({
@@ -159,7 +175,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
           description: event?.id 
             ? "O evento foi atualizado com sucesso." 
             : "O evento foi criado com sucesso.",
-          className: "bg-gradient-to-r from-primary to-secondary text-white",
+          variant: "success"
         });
         
         // Call success callback
@@ -173,7 +189,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       toast({
         title: "Erro ao salvar",
         description: `Não foi possível salvar o evento: ${error.message || "Erro desconhecido"}`,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
@@ -514,5 +530,3 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     </Form>
   );
 }
-
-export default EventForm;

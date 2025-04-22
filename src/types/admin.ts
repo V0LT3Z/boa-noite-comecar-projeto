@@ -35,6 +35,8 @@ export interface AdminEventForm {
   bannerUrl: string;
   minimumAge: string;
   status: "active" | "paused" | "cancelled";
+  capacity?: number; // Added capacity as optional property
+  price?: number; // Added price as optional property
   warnings: string[];
   tickets: AdminTicketType[];
 }

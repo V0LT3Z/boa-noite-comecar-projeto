@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,7 @@ const AdminEvents = () => {
       toast({
         title: "Erro ao carregar eventos",
         description: "Não foi possível carregar a lista de eventos. Tente novamente.",
-        className: "bg-gradient-to-r from-primary to-secondary text-white",
+        variant: "destructive"
       });
     } finally {
       setLoadingEvents(false);
@@ -76,7 +77,7 @@ const AdminEvents = () => {
     toast({
       title: `Evento ${action}`,
       description: `O evento foi ${action} com sucesso.`,
-      className: "bg-gradient-to-r from-primary to-secondary text-white",
+      variant: "success"
     });
   };
 

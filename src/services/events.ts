@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails, TicketType } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
@@ -50,7 +49,6 @@ export const fetchEvents = async () => {
     const { data: events, error } = await supabase
       .from("events")
       .select("*")
-      .eq("status", "active")
       .order("date", { ascending: true });
 
     if (error) {
@@ -71,7 +69,6 @@ export const fetchEventById = async (id: number) => {
   try {
     console.log("Buscando evento com ID:", id);
     
-    // CORREÇÃO: Não use .single() quando há risco de não encontrar resultados
     const { data: eventData, error: eventError } = await supabase
       .from("events")
       .select("*")
@@ -113,7 +110,7 @@ export const createEvent = async (eventData: AdminEventForm) => {
   try {
     console.log("Criando novo evento:", eventData);
     // Combinar data e hora em um único timestamp
-    const dateTime = `${format(eventData.date, "yyyy-MM-dd")}T${eventData.time || "19:00"}`;
+    const dateTime = `${eventData.date}T${eventData.time || "19:00"}`;
     const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
     // Calcular total de tickets
@@ -131,7 +128,7 @@ export const createEvent = async (eventData: AdminEventForm) => {
       image_url: eventData.bannerUrl || null,
       minimum_age: parseInt(eventData.minimumAge) || 0,
       status: eventData.status || "active",
-      total_tickets: totalTickets || eventData.capacity || 0
+      total_tickets: totalTickets
     };
     
     console.log("Dados do evento para inserção:", eventInsertData);
