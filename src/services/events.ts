@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
@@ -106,19 +107,23 @@ export const fetchEventById = async (id: number) => {
 };
 
 // Função para criar um evento
-export const createEvent = async (eventData: AdminEventForm) => {
+export const createEvent = async (eventData: AdminEventForm, userId?: string) => {
   try {
     console.log("Criando novo evento:", eventData);
     // Combinar data e hora em um único timestamp
     const dateTime = `${eventData.date}T${eventData.time || "19:00"}`;
     const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
-    // Get the current user
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      throw new Error("Usuário não autenticado");
+    // Verificar se temos o ID do usuário
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Usuário não autenticado");
+      }
+      userId = user.id;
     }
+    
+    console.log("Criando evento para o usuário com ID:", userId);
 
     // Calcular total de tickets
     const totalTickets = eventData.tickets.reduce(
@@ -136,7 +141,7 @@ export const createEvent = async (eventData: AdminEventForm) => {
       minimum_age: parseInt(eventData.minimumAge) || 0,
       status: eventData.status || "active",
       total_tickets: totalTickets,
-      user_id: user.id // Add the user ID to associate the event with the authenticated user
+      user_id: userId // Add the user ID to associate the event with the authenticated user
     };
     
     console.log("Dados do evento para inserção:", eventInsertData);
@@ -164,7 +169,7 @@ export const createEvent = async (eventData: AdminEventForm) => {
         description: ticket.description,
         available_quantity: parseInt(ticket.availableQuantity) || 0,
         max_per_purchase: parseInt(ticket.maxPerPurchase) || 4,
-        user_id: user.id // Add the user ID to associate the ticket type with the authenticated user
+        user_id: userId // Use the same user ID
       }));
 
       console.log("Inserindo tipos de ingresso:", ticketTypesData);

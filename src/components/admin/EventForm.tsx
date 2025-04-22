@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +27,7 @@ import { toast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { createEvent } from "@/services/events";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Form schema for ticket type validation
 const ticketTypeSchema = z.object({
@@ -68,6 +68,7 @@ type EventFormProps = {
 export default function EventForm({ event, onSuccess }: EventFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(event?.bannerUrl || null);
+  const { user } = useAuth();
   
   // Initialize form with default or existing values
   const form = useForm<EventFormValues>({
@@ -174,8 +175,12 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
           // Update existing event logic will be here
           console.log("Updating event:", event.id);
         } else {
-          // Create new event
-          await createEvent(adminEventData);
+          // Create new event with user ID from auth context
+          if (!user) {
+            throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
+          }
+          console.log("Creating event with user ID:", user.id);
+          await createEvent(adminEventData, user.id);
         }
         
         toast({
