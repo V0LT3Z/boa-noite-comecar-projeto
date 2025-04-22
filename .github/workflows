@@ -1,0 +1,19 @@
+name: Clonar para Bilheteria 2
+
+on:
+  push:
+    branches:
+      - main  # Ou a branch de sua escolha
+
+jobs:
+  clone_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do repositório atual
+      uses: actions/checkout@v2
+
+    - name: Clonar e forçar push para o repositório bilheteria 2
+      run: |
+        git remote set-url origin https://$GITHUB_ACTOR:${{ secrets.GH_TOKEN }}https://github.com/V0LT3Z/BILHETERIA2.git
+        git push origin main --force
