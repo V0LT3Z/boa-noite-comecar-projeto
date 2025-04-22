@@ -31,8 +31,9 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       console.error("STRIPE_SECRET_KEY is not set or not accessible");
+      console.error("Environment variables:", Object.keys(Deno.env.toObject()));
       return new Response(
-        JSON.stringify({ error: "Configuração do Stripe não encontrada." }),
+        JSON.stringify({ error: "Configuração do Stripe não encontrada. Verifique os logs da função." }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
       );
     }
@@ -49,6 +50,7 @@ serve(async (req) => {
     
     if (!supabaseUrl || !supabaseKey) {
       console.error("Supabase credentials not found");
+      console.error("Environment variables:", Object.keys(Deno.env.toObject()));
       return new Response(
         JSON.stringify({ error: "Configuração do Supabase não encontrada." }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
@@ -129,7 +131,7 @@ serve(async (req) => {
         status: 200,
       });
     } catch (error) {
-      console.error("Error in checkout session creation:", error.message);
+      console.error("Error in checkout session creation:", error.message, error.stack);
       return new Response(
         JSON.stringify({ error: `Erro ao criar sessão de pagamento: ${error.message}` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
