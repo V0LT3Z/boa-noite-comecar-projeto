@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -53,7 +52,6 @@ export default {
         "dashboard-card": "#F1F0FB",
         "dashboard-text": "#000000",
         "dashboard-muted": "#666666",
-        // Pastel / low saturation colors matching the project theme
         "soft-purple": "#E5DEFF",
         "soft-pink": "#FFDEE2",
         "soft-peach": "#FDE1D3", 
@@ -61,7 +59,7 @@ export default {
         "soft-green": "#F2FCE2",
         "soft-yellow": "#FEF7CD",
         "soft-orange": "#FEC6A1",
-        "soft-gray": "#F1F0FB",
+        "soft-gray": "#FFFFFF",
       },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(to right, hsl(270 80% 60%), hsl(210 80% 60%))',
