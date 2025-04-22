@@ -2,11 +2,11 @@
 import { useState, useEffect } from 'react';
 import { Camera, CameraResultType } from '@capacitor/camera';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { isPlatform } from '@capacitor/core';
+import { Capacitor } from '@capacitor/core';
 
 export const useQRScanner = (onScanSuccess: (text: string) => void) => {
   const [isScanning, setIsScanning] = useState(false);
-  const isMobileApp = isPlatform('ios') || isPlatform('android');
+  const isMobileApp = Capacitor.getPlatform() === 'ios' || Capacitor.getPlatform() === 'android';
 
   useEffect(() => {
     let scanner: Html5QrcodeScanner | null = null;
