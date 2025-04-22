@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@1.1.0";
 import React from "npm:react@18.2.0";
-import { renderToString } from "npm:react-dom/server@18.2.0";
+import { renderToString } from "npm:react-dom@18.2.0/server";
 
 // Templates
 import WelcomeEmail from "./templates/welcome-email.tsx";
