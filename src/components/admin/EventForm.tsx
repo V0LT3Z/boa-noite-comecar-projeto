@@ -89,10 +89,9 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
         description: data.description,
         location: data.location,
         date: format(data.date, "yyyy-MM-dd"),
-        price: data.price,
-        capacity: data.capacity,
-        banner_url: data.bannerUrl || null,
+        image_url: data.bannerUrl || null,
         status: "active",
+        total_tickets: data.capacity // Added this field to match the required schema
       };
 
       if (event?.id) {
@@ -111,7 +110,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
         // Create new event
         const { error } = await supabase
           .from("events")
-          .insert([eventData]);
+          .insert(eventData); // Fixed: Changed from array to single object
           
         if (error) throw error;
         toast({
