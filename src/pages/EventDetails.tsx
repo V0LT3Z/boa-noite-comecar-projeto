@@ -313,7 +313,7 @@ const EventDetails = () => {
   };
 
   return (
-    <div className="min-h-[90vh] w-full px-2 sm:px-0 lg:px-0 py-5 max-w-[1800px] mx-auto bg-[#f5f6fb]">
+    <div className="min-h-[90vh] w-full px-2 sm:px-0 lg:px-0 py-5 max-w-[1800px] mx-auto bg-soft-gray">
       {renderContent()}
     </div>
   );
