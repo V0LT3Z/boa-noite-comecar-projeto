@@ -7,13 +7,15 @@ interface GradientCardProps {
   className?: string;
   gradientHeight?: string;
   gradientClassName?: string;
+  gradientColors?: string;
 }
 
 export default function GradientCard({
   children,
   className,
-  gradientHeight = "h-2.5",
-  gradientClassName
+  gradientHeight = "h-1", // Reduced default height
+  gradientClassName,
+  gradientColors = "from-primary to-secondary" // Allow custom gradient colors
 }: GradientCardProps) {
   return (
     <div
@@ -27,7 +29,7 @@ export default function GradientCard({
         className={cn(
           "w-full",
           gradientHeight,
-          "bg-gradient-to-r from-primary to-secondary",
+          `bg-gradient-to-r ${gradientColors}`,
           gradientClassName
         )}
       />
