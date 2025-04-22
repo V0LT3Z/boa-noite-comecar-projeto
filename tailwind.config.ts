@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -36,10 +37,10 @@ export default {
           light: 'hsl(210 70% 75%)',
           dark: 'hsl(210 80% 45%)'
         },
-        secondary-purple: "#7E69AB",
-        tertiary-purple: "#6E59A5",
-        dark-purple: "#1A1F2C",
-        charcoal-gray: "#403E43",
+        "secondary-purple": "#7E69AB",
+        "tertiary-purple": "#6E59A5",
+        "dark-purple": "#1A1F2C",
+        "charcoal-gray": "#403E43",
         destructive: {
           DEFAULT: '#ea384c', 
           foreground: '#ffffff', 
