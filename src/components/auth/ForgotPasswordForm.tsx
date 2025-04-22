@@ -1,12 +1,12 @@
 
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Mail } from "lucide-react"
-import { useState } from "react"
-import { supabase } from "@/integrations/supabase/client"
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Mail } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -14,20 +14,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
-import { EmailService } from "@/services/email"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Email inválido"),
-})
+});
 
-type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 interface ForgotPasswordFormProps {
-  onSuccess: () => void
-  onCancel: () => void
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
 export default function ForgotPasswordForm({ onSuccess, onCancel }: ForgotPasswordFormProps) {
@@ -39,7 +38,7 @@ export default function ForgotPasswordForm({ onSuccess, onCancel }: ForgotPasswo
     defaultValues: {
       email: "",
     },
-  })
+  });
 
   async function onSubmit(data: ForgotPasswordFormValues) {
     setIsSubmitting(true);
@@ -56,6 +55,7 @@ export default function ForgotPasswordForm({ onSuccess, onCancel }: ForgotPasswo
       });
       
       if (error) {
+        console.error("Erro Supabase Auth:", error);
         throw error;
       }
       
@@ -64,7 +64,6 @@ export default function ForgotPasswordForm({ onSuccess, onCancel }: ForgotPasswo
       toast({
         title: "Email enviado com sucesso",
         description: "Verifique sua caixa de entrada para instruções de recuperação de senha.",
-        variant: "success",
       });
       
       onSuccess();
@@ -120,5 +119,5 @@ export default function ForgotPasswordForm({ onSuccess, onCancel }: ForgotPasswo
         </div>
       </form>
     </Form>
-  )
+  );
 }
