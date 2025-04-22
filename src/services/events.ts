@@ -131,7 +131,8 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
       0
     );
 
-    // Preparar dados do evento
+    // Preparar dados do evento - removendo user_id para evitar o erro de UUID inválido
+    // Já que ainda não temos integração completa com o Supabase Auth
     const eventInsertData = {
       title: eventData.title,
       description: eventData.description,
@@ -140,8 +141,8 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
       image_url: eventData.bannerUrl || null,
       minimum_age: parseInt(eventData.minimumAge) || 0,
       status: eventData.status || "active",
-      total_tickets: totalTickets,
-      user_id: userId // Add the user ID to associate the event with the authenticated user
+      total_tickets: totalTickets
+      // Removemos user_id temporariamente - será adicionado quando tivermos autenticação real com Supabase
     };
     
     console.log("Dados do evento para inserção:", eventInsertData);
@@ -168,8 +169,8 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
         price: parseFloat(ticket.price) || 0,
         description: ticket.description,
         available_quantity: parseInt(ticket.availableQuantity) || 0,
-        max_per_purchase: parseInt(ticket.maxPerPurchase) || 4,
-        user_id: userId // Use the same user ID
+        max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
+        // Removemos user_id temporariamente - será adicionado quando tivermos autenticação real com Supabase
       }));
 
       console.log("Inserindo tipos de ingresso:", ticketTypesData);

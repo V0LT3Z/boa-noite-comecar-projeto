@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -175,7 +176,9 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
           // Update existing event logic will be here
           console.log("Updating event:", event.id);
         } else {
-          // Create new event with user ID from auth context
+          // Create new event
+          // Passamos o ID do usuário, mas o serviço foi modificado para não usá-lo
+          // com o Supabase até termos autenticação real
           if (!user) {
             throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
           }

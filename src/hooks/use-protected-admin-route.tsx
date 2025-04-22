@@ -30,6 +30,8 @@ export function useProtectedAdminRoute() {
 
       // Log user information for debugging
       console.log("Current user:", user);
+      console.log("User role:", user?.role);
+      console.log("Is producer?", isProducer);
     }
   }, [isAuthenticated, isLoading, isProducer, navigate, user]);
 
