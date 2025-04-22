@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -26,16 +25,14 @@ export default {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         primary: {
-          DEFAULT: 'hsl(270 80% 60%)', 
-          foreground: 'hsl(var(--primary-foreground))',
-          light: 'hsl(270 70% 75%)',
-          dark: 'hsl(270 80% 45%)'
+          DEFAULT: '#6E59A5', // Deep purple
+          foreground: '#ffffff',
+          light: '#9b87f5', // Lighter purple
+          dark: '#1A1F2C', // Dark purple, almost black
         },
         secondary: {
-          DEFAULT: 'hsl(210 80% 60%)', 
-          foreground: 'hsl(var(--secondary-foreground))',
-          light: 'hsl(210 70% 75%)',
-          dark: 'hsl(210 80% 45%)'
+          DEFAULT: '#000000e6', // Black with slight transparency
+          foreground: '#ffffff',
         },
         destructive: {
           DEFAULT: '#ea384c', 
@@ -49,7 +46,6 @@ export default {
         "dashboard-card": "#F1F0FB",
         "dashboard-text": "#000000",
         "dashboard-muted": "#666666",
-        // Pastel / low saturation colors matching the project theme
         "soft-purple": "#E5DEFF",
         "soft-pink": "#FFDEE2",
         "soft-peach": "#FDE1D3", 
@@ -60,7 +56,7 @@ export default {
         "soft-gray": "#F1F0FB",
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(to right, hsl(270 80% 60%), hsl(210 80% 60%))',
+        'gradient-primary': 'linear-gradient(to right, #6E59A5, #1A1F2C)',
       },
       boxShadow: {
         'event-card': '0 4px 15px rgba(126, 87, 194, 0.2)'

@@ -8,15 +8,15 @@ interface GradientCardProps {
   gradientHeight?: string;
   gradientClassName?: string;
   gradientColors?: string;
-  noGradient?: boolean; // Option to disable gradient completely
+  noGradient?: boolean;
 }
 
 export default function GradientCard({
   children,
   className,
-  gradientHeight = "h-1", // Thin default height
+  gradientHeight = "h-1", 
   gradientClassName,
-  gradientColors = "from-primary to-secondary", // Allow custom gradient colors
+  gradientColors = "from-primary to-primary/80", // Updated to use purple shades
   noGradient = false
 }: GradientCardProps) {
   return (
@@ -26,7 +26,6 @@ export default function GradientCard({
         className
       )}
     >
-      {/* Top gradient bar - only if not disabled */}
       {!noGradient && (
         <div
           className={cn(
