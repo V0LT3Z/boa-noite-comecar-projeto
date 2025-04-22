@@ -45,7 +45,9 @@ export default function ForgotPasswordForm({ onSuccess, onCancel }: ForgotPasswo
     setIsSubmitting(true);
     
     try {
-      // Gerar um token de recuperação e enviar o email
+      console.log("Iniciando processo de recuperação de senha para:", data.email);
+      
+      // Gerar um token de recuperação e enviar o email diretamente pelo Supabase
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
@@ -54,11 +56,14 @@ export default function ForgotPasswordForm({ onSuccess, onCancel }: ForgotPasswo
         throw error;
       }
       
-      // Enviar email personalizado através do nosso serviço de email
+      // URL de recuperação de senha que será enviada por email
+      const resetLink = `${window.location.origin}/reset-password`;
+      
+      // Tenta enviar email personalizado através do nosso serviço de email
       try {
-        // URL de recuperação de senha que será enviada por email
-        const resetLink = `${window.location.origin}/reset-password`;
+        console.log("Enviando email personalizado de recuperação");
         await EmailService.sendPasswordReset(data.email, data.email.split('@')[0], resetLink);
+        console.log("Email personalizado enviado com sucesso");
       } catch (emailError) {
         console.error("Erro ao enviar email personalizado:", emailError);
         // Mesmo que falhe o email personalizado, o Supabase já enviou um email padrão

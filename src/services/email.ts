@@ -82,7 +82,15 @@ export const EmailService = {
    * @param resetLink Link de recuperação de senha
    */
   sendPasswordReset: (email: string, name: string, resetLink: string) => {
-    return EmailService.sendEmail("password-reset", { email, name, resetLink });
+    console.log(`Enviando email de recuperação de senha para ${email} com link ${resetLink}`);
+    // Usar diretamente o supabase.auth.resetPasswordForEmail como fallback
+    return EmailService.sendEmail("password-reset", { email, name, resetLink })
+      .catch(error => {
+        console.log("Tentando fallback para recuperação de senha via Supabase");
+        return supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: resetLink
+        });
+      });
   },
   
   /**

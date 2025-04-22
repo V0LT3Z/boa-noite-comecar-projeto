@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
 import EventCard from "@/components/EventCard"
@@ -110,46 +110,51 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [events, setEvents] = useState<EventResponse[]>([])
   const [loading, setLoading] = useState(true)
+  const [eventsLoaded, setEventsLoaded] = useState(false)
   const { toast } = useToast()
   
-  useEffect(() => {
-    const loadEvents = async () => {
-      try {
-        setLoading(true);
-        const eventData = await fetchEvents();
-        console.log("Eventos carregados:", eventData);
-        
-        // Se não houver eventos do banco ou o número for muito baixo, adicionar os mockados
-        if (!eventData || eventData.length < 2) {
-          console.log("Usando eventos mockados para complementar");
-          // Combinar eventos do banco com os mockados, evitando duplicações por id
-          const existingIds = eventData?.map(e => e.id) || [];
-          const mocksToAdd = mockEvents
-            .filter(mock => !existingIds.includes(mock.id as number))
-            .map(mock => ({ ...mock, is_mock: true }));
-          
-          setEvents([...(eventData || []), ...mocksToAdd] as EventResponse[]);
-        } else {
-          setEvents(eventData);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar eventos:", error);
-        // Usar dados mockados em caso de falha
-        console.log("Usando eventos mockados devido a erro");
-        setEvents(mockEvents as unknown as EventResponse[]);
-        
-        toast({
-          title: "Falha ao carregar eventos",
-          description: "Estamos exibindo eventos mockados enquanto tentamos resolver o problema.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadEvents = useCallback(async () => {
+    if (eventsLoaded) return; // Evita múltiplas chamadas se os eventos já foram carregados
     
+    try {
+      setLoading(true);
+      const eventData = await fetchEvents();
+      console.log("Eventos carregados:", eventData);
+      
+      // Se não houver eventos do banco ou o número for muito baixo, adicionar os mockados
+      if (!eventData || eventData.length < 2) {
+        console.log("Usando eventos mockados para complementar");
+        // Combinar eventos do banco com os mockados, evitando duplicações por id
+        const existingIds = eventData?.map(e => e.id) || [];
+        const mocksToAdd = mockEvents
+          .filter(mock => !existingIds.includes(mock.id as number))
+          .map(mock => ({ ...mock, is_mock: true }));
+        
+        setEvents([...(eventData || []), ...mocksToAdd] as EventResponse[]);
+      } else {
+        setEvents(eventData);
+      }
+      
+      setEventsLoaded(true);
+    } catch (error) {
+      console.error("Erro ao carregar eventos:", error);
+      // Usar dados mockados em caso de falha
+      console.log("Usando eventos mockados devido a erro");
+      setEvents(mockEvents as unknown as EventResponse[]);
+      
+      toast({
+        title: "Falha ao carregar eventos",
+        description: "Estamos exibindo eventos mockados enquanto tentamos resolver o problema.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [eventsLoaded, toast]);
+
+  useEffect(() => {
     loadEvents();
-  }, [toast]);
+  }, [loadEvents]);
 
   const formattedEvents = events.map(event => {
     // Se for um evento mockado, use seu formato diretamente

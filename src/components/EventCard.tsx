@@ -100,7 +100,7 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
           
           {window.location.pathname === "/" ? (
             <Button 
-              className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap"
+              className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 whitespace-nowrap"
               onClick={() => {
                 toast({
                   title: "Evento em Desenvolvimento",
@@ -121,7 +121,7 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
                 }
               }}
             >
-              <Button className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap">
+              <Button className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 whitespace-nowrap">
                 Ver ingressos
               </Button>
             </Link>
