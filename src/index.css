@@ -7,9 +7,9 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
-    --primary: 270 50% 40%; /* Deep Purple */
+    --primary: 270 80% 60%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 270 40% 20%; /* Dark Purple */
+    --secondary: 210 80% 60%;
     --secondary-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -18,9 +18,9 @@
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-    --primary: 270 50% 40%; /* Deep Purple */
+    --primary: 270 80% 60%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 270 40% 20%; /* Dark Purple */
+    --secondary: 210 80% 60%;
     --secondary-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
