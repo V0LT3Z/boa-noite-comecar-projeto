@@ -3,12 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import EventMap from "@/components/EventMap";
 import TicketSelector from "@/components/TicketSelector";
-import FavoriteButton from "@/components/FavoriteButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EventDetails as EventDetailsType } from "@/types/event";
 import { fetchEventById } from "@/services/events";
@@ -99,32 +97,30 @@ const EventDetails = () => {
 
   const ModernBackButton = ({ onClick }: { onClick: () => void }) => (
     <Button
-      variant="ghost"
-      className="group relative overflow-hidden flex items-center gap-2 mb-4 px-5 py-2 rounded-full bg-white/70 glass shadow-xl
-                hover:bg-gradient-to-r hover:from-primary hover:to-secondary transition-all duration-200 border-2 border-soft-purple
-                font-bold text-primary hover:text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary before:to-secondary before:opacity-0 group-hover:before:opacity-100 before:transition-opacity before:duration-300"
+      variant="outline"
       onClick={onClick}
+      className="group flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-tr from-primary to-secondary shadow-lg border-0 hover:scale-105 transition-all duration-200 font-bold text-white text-lg relative overflow-hidden"
       style={{
-        backdropFilter: 'blur(12px)',
+        boxShadow: "0 6px 30px 0 rgba(140, 82, 255, 0.12)",
+        minWidth: 0,
       }}
     >
-      <ArrowLeft className="h-5 w-5 group-hover:animate-slide-in-right transition-transform" />
-      <span className="relative z-10">Voltar para Home</span>
+      <span className="relative flex items-center">
+        <ArrowLeft className="h-6 w-6 stroke-2 group-hover:-translate-x-1 transition-transform" />
+        <span className="ml-2 tracking-wide drop-shadow max-sm:text-base">Voltar para Home</span>
+      </span>
+      <span className="absolute inset-0 opacity-0 group-hover:opacity-20 transition bg-white pointer-events-none"></span>
     </Button>
   );
 
   const ModernErrorText = () => (
-    <div className="text-center">
-      <div className="bg-white/80 rounded-xl shadow-lg border-2 border-soft-pink px-6 py-8 flex items-center max-w-md mx-auto animate-fade-in glass">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-destructive mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="text-center w-full flex flex-col justify-center items-center px-2">
+      <div className="rounded-xl bg-white/80 shadow-lg px-6 py-7 max-w-md mx-auto mb-6 glass border-0">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-destructive mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <div className="text-left">
-          <p className="font-extrabold text-2xl text-primary drop-shadow text-gradient-primary mb-1">
-            Evento não encontrado
-          </p>
-          <p className="text-gray-500 text-base">Não foi possível encontrar os detalhes para este evento.</p>
-        </div>
+        <p className="font-semibold text-xl md:text-2xl text-primary mb-1">Evento não encontrado</p>
+        <p className="text-gray-500 text-base">Não foi possível encontrar os detalhes para este evento.</p>
       </div>
       <ModernBackButton onClick={() => window.location.href = '/'} />
     </div>
@@ -132,7 +128,7 @@ const EventDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="w-full mx-auto py-8 sm:px-2 md:px-6 max-w-screen-xl">
         <LoadingSkeletons isMobile={isMobile} />
       </div>
     );
@@ -140,10 +136,8 @@ const EventDetails = () => {
 
   if (error || !event) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="min-h-[50vh] bg-gray-50 flex items-center justify-center">
-          <ModernErrorText />
-        </div>
+      <div className="w-full mx-auto py-8 flex justify-center items-center min-h-[50vh] bg-white/60">
+        <ModernErrorText />
       </div>
     );
   }
@@ -151,59 +145,54 @@ const EventDetails = () => {
   const renderContent = () => {
     if (isMobile) {
       return (
-        <div className="space-y-6">
+        <div className="flex flex-col max-w-full gap-5">
           <ModernBackButton onClick={handleBackToHome} />
-          <div className="relative w-full rounded-2xl overflow-hidden h-52 shadow-xl border glass">
+          <div className="relative w-full rounded-2xl overflow-hidden h-48 shadow-lg glass">
             <img
               src={event.image}
               alt={event.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover animate-fade-in"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"/>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-10"/>
           </div>
-          <h1 className="text-3xl font-extrabold mb-3 mt-2 text-gradient-primary drop-shadow-lg">
+          <h1 className="text-2xl font-bold mb-1 text-gradient-primary tracking-tight leading-snug">
             {event.title}
           </h1>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/80 rounded-full text-sm font-semibold text-primary shadow">
+          <div className="flex flex-wrap gap-2 mb-2">
+            <div className="flex items-center gap-1 px-2 py-1 bg-soft-purple/70 rounded-full text-xs font-medium text-primary shadow-sm">
               <Calendar className="h-4 w-4" />
-              <span className="font-medium">{new Date(event.date).toLocaleDateString("pt-BR", { year: "numeric", month: "long", day: "numeric" })}</span>
+              <span>{new Date(event.date).toLocaleDateString("pt-BR", { year: "numeric", month: "short", day: "numeric" })}</span>
             </div>
-            <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/80 rounded-full text-sm font-semibold text-primary shadow">
+            <div className="flex items-center gap-1 px-2 py-1 bg-soft-blue/70 rounded-full text-xs font-medium text-primary shadow-sm">
               <Clock className="h-4 w-4" />
               <span>{event.time}</span>
             </div>
-            <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/80 rounded-full text-sm font-semibold text-primary shadow">
+            <div className="flex items-center gap-1 px-2 py-1 bg-soft-pink/70 rounded-full text-xs font-medium text-primary shadow-sm">
               <MapPin className="h-4 w-4" />
               <span>{event.location}</span>
             </div>
           </div>
-          <TicketSelector 
-            tickets={event.tickets} 
-            onPurchase={handlePurchase}
-          />
+          <TicketSelector tickets={event.tickets} onPurchase={handlePurchase} />
 
-          <Card className="mb-3 bg-white/80 backdrop-blur-lg shadow-lg border border-soft-purple">
-            <CardContent className="pt-6">
-              <h2 className="text-lg font-bold mb-2 text-gradient-primary drop-shadow">
-                Descrição
-              </h2>
-              <p className="text-gray-700 leading-relaxed">{event.description}</p>
+          <Card className="mb-1 bg-white/70 shadow-lg glass border-0">
+            <CardContent className="pt-4">
+              <h2 className="text-base font-semibold mb-1 text-gradient-primary">Descrição</h2>
+              <p className="text-gray-700 text-sm leading-relaxed">{event.description}</p>
             </CardContent>
           </Card>
 
-          <Card className="mb-3 bg-white/80 backdrop-blur-lg shadow-lg border border-soft-blue">
-            <CardContent className="pt-6">
-              <h2 className="text-lg font-bold mb-1 text-secondary drop-shadow">Local do Evento</h2>
-              <p className="text-gray-700 space-y-1">
-                <span className="font-bold">{event.venue.name}</span><br/>
+          <Card className="mb-1 bg-white/70 shadow-lg glass border-0">
+            <CardContent className="pt-4">
+              <h2 className="text-base font-semibold mb-0 text-secondary">Local do Evento</h2>
+              <p className="text-gray-700 text-sm space-y-1">
+                <span className="font-semibold">{event.venue.name}</span><br/>
                 {event.venue.address}<br/>
-                Capacidade: <span className="font-semibold">{event.venue.capacity}</span>
+                Capacidade: <span className="font-medium">{event.venue.capacity}</span>
               </p>
               <Button
                 variant="link"
                 asChild
-                className="mt-2 p-0 text-primary hover:text-secondary"
+                className="mt-1 p-0 text-primary hover:text-secondary"
               >
                 <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
                   Ver no Mapa
@@ -212,21 +201,21 @@ const EventDetails = () => {
             </CardContent>
           </Card>
 
-          <Card className="mb-4 bg-white/80 backdrop-blur-lg shadow-lg border border-soft-pink">
-            <CardContent className="pt-6">
-              <h2 className="text-lg font-bold mb-1 text-pink-600 drop-shadow">Avisos</h2>
+          <Card className="mb-2 bg-white/70 shadow-lg glass border-0">
+            <CardContent className="pt-4">
+              <h2 className="text-base font-semibold mb-1 text-pink-600">Avisos</h2>
               {event.warnings && event.warnings.length > 0 ? (
-                <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                <ul className="list-disc pl-5 text-gray-700 text-sm space-y-0.5">
                   {event.warnings.map((warning, index) => (
                     <li key={index}>{warning}</li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-700">Nenhum aviso especial para este evento.</p>
+                <p className="text-gray-700 text-sm">Nenhum aviso especial para este evento.</p>
               )}
             </CardContent>
           </Card>
-          <div className="mt-6">
+          <div className="mt-3">
             <EventMap coordinates={event.coordinates} />
           </div>
         </div>
@@ -234,56 +223,54 @@ const EventDetails = () => {
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
+      <div className="w-full grid grid-cols-1 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] gap-10 md:gap-14">
+        <div className="flex flex-col max-w-full">
           <ModernBackButton onClick={handleBackToHome} />
-          <div className="relative w-full rounded-3xl overflow-hidden h-64 shadow-2xl border glass mb-5">
+          <div className="relative w-full rounded-3xl overflow-hidden h-72 shadow-xl glass mb-5">
             <img
               src={event.image}
               alt={event.title}
-              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              className="w-full h-full object-cover animate-fade-in"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-10"/>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent z-10"/>
           </div>
-          <h1 className="text-4xl font-extrabold text-gradient-primary mb-4 leading-tight drop-shadow-lg">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gradient-primary mb-1 leading-snug tracking-tight">
             {event.title}
           </h1>
-          <div className="flex flex-wrap gap-3 mb-7">
-            <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/80 rounded-full text-base font-semibold text-primary shadow">
+          <div className="flex flex-wrap gap-3 mb-4">
+            <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/60 rounded-full text-sm font-medium text-primary shadow">
               <Calendar className="h-4 w-4" />
-              <span className="font-medium">{new Date(event.date).toLocaleDateString("pt-BR", { year: "numeric", month: "long", day: "numeric" })}</span>
+              <span>{new Date(event.date).toLocaleDateString("pt-BR", { year: "numeric", month: "short", day: "numeric" })}</span>
             </div>
-            <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/80 rounded-full text-base font-semibold text-primary shadow">
+            <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/60 rounded-full text-sm font-medium text-primary shadow">
               <Clock className="h-4 w-4" />
               <span>{event.time}</span>
             </div>
-            <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/80 rounded-full text-base font-semibold text-primary shadow">
+            <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/60 rounded-full text-sm font-medium text-primary shadow">
               <MapPin className="h-4 w-4" />
               <span>{event.location}</span>
             </div>
           </div>
         
-          <Card className="mb-4 bg-white/90 backdrop-blur-lg shadow-xl border-2 border-soft-purple">
-            <CardContent className="pt-6">
-              <h2 className="text-xl font-bold mb-2 text-gradient-primary drop-shadow">
-                Descrição
-              </h2>
-              <p className="text-gray-700 leading-relaxed">{event.description}</p>
+          <Card className="mb-2 bg-white/65 shadow-lg glass border-0">
+            <CardContent className="pt-5">
+              <h2 className="text-base font-semibold mb-1 text-gradient-primary">Descrição</h2>
+              <p className="text-gray-700 text-[15px] leading-relaxed">{event.description}</p>
             </CardContent>
           </Card>
 
-          <Card className="mb-4 bg-white/90 backdrop-blur-lg shadow-xl border-2 border-soft-blue">
-            <CardContent className="pt-6">
-              <h2 className="text-xl font-bold mb-2 text-secondary drop-shadow">Local do Evento</h2>
-              <p className="text-gray-700 space-y-1">
-                <span className="font-bold">{event.venue.name}</span><br/>
+          <Card className="mb-2 bg-white/65 shadow-lg glass border-0">
+            <CardContent className="pt-5">
+              <h2 className="text-base font-semibold mb-1 text-secondary">Local do Evento</h2>
+              <p className="text-gray-700 text-[15px] space-y-1">
+                <span className="font-semibold">{event.venue.name}</span><br/>
                 {event.venue.address}<br/>
-                Capacidade: <span className="font-semibold">{event.venue.capacity}</span>
+                Capacidade: <span className="font-medium">{event.venue.capacity}</span>
               </p>
               <Button
                 variant="link"
                 asChild
-                className="mt-2 p-0 text-primary hover:text-secondary"
+                className="mt-1 p-0 text-primary hover:text-secondary"
               >
                 <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
                   Ver no Mapa
@@ -292,24 +279,24 @@ const EventDetails = () => {
             </CardContent>
           </Card>
 
-          <Card className="mb-4 bg-white/90 backdrop-blur-lg shadow-xl border-2 border-soft-pink">
-            <CardContent className="pt-6">
-              <h2 className="text-xl font-bold mb-2 text-pink-600 drop-shadow">Avisos</h2>
+          <Card className="mb-2 bg-white/65 shadow-lg glass border-0">
+            <CardContent className="pt-5">
+              <h2 className="text-base font-semibold mb-1 text-pink-600">Avisos</h2>
               {event.warnings && event.warnings.length > 0 ? (
-                <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                <ul className="list-disc pl-5 text-gray-700 text-[15px] space-y-0.5">
                   {event.warnings.map((warning, index) => (
                     <li key={index}>{warning}</li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-700">Nenhum aviso especial para este evento.</p>
+                <p className="text-gray-700 text-[15px]">Nenhum aviso especial para este evento.</p>
               )}
             </CardContent>
           </Card>
         </div>
-        <div>
-          <div className="mb-8">
-            <Card className="bg-white/90 shadow-2xl border-2 border-soft-purple px-3 pt-3 pb-5 glass">
+        <div className="flex flex-col justify-start max-w-full">
+          <div className="mb-6">
+            <Card className="bg-white/70 shadow-2xl glass border-0 p-3 pt-3 pb-6">
               <CardContent className="p-0">
                 <TicketSelector 
                   tickets={event.tickets} 
@@ -318,8 +305,8 @@ const EventDetails = () => {
               </CardContent>
             </Card>
           </div>
-          <div className="mt-8">
-            <Card className="bg-soft-blue/40 backdrop-blur-lg border-0 shadow-xl rounded-2xl">
+          <div className="mt-5">
+            <Card className="bg-soft-blue/40 backdrop-blur-lg border-0 shadow-xl rounded-2xl glass">
               <CardContent className="p-0">
                 <EventMap coordinates={event.coordinates} />
               </CardContent>
@@ -331,7 +318,7 @@ const EventDetails = () => {
   };
 
   return (
-    <div className="container mx-auto px-2 md:px-10 py-8 max-w-6xl">
+    <div className="min-h-[90vh] w-full px-2 md:px-[3vw] py-6 md:py-8" style={{ maxWidth: "1280px", margin: "0 auto" }}>
       {renderContent()}
     </div>
   );
@@ -340,46 +327,45 @@ const EventDetails = () => {
 const LoadingSkeletons = ({ isMobile }: { isMobile: boolean }) => {
   if (isMobile) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-48 w-full rounded-lg" />
+      <div className="space-y-5">
+        <Skeleton className="h-40 w-full rounded-xl" />
         <div>
-          <Skeleton className="h-8 w-3/4 mb-2" />
+          <Skeleton className="h-7 w-3/5 mb-2" />
           <div className="space-y-2">
-            <Skeleton className="h-5 w-1/2" />
-            <Skeleton className="h-5 w-1/3" />
-            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-4 w-2/3" />
           </div>
         </div>
 
-        <Card className="bg-white/80 backdrop-blur-lg border-soft-purple">
-          <CardContent className="pt-6">
-            <Skeleton className="h-7 w-32 mb-4" />
+        <Card className="bg-white/60 glass border-0">
+          <CardContent className="pt-4">
+            <Skeleton className="h-6 w-32 mb-3" />
             <div className="space-y-2">
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-3/4" />
             </div>
           </CardContent>
         </Card>
 
-        <Skeleton className="h-64 w-full rounded-lg" />
+        <Skeleton className="h-44 w-full rounded-xl" />
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
       <div>
-        <Skeleton className="h-64 w-full mb-4 rounded-2xl" />
-        <Skeleton className="h-10 w-3/4 mb-4" />
-        <div className="mb-6">
-          <Skeleton className="h-6 w-2/3 mb-2" />
-          <Skeleton className="h-6 w-1/2 mb-2" />
+        <Skeleton className="h-60 w-full mb-3 rounded-2xl" />
+        <Skeleton className="h-8 w-3/4 mb-3" />
+        <div className="mb-4">
+          <Skeleton className="h-5 w-2/3 mb-2" />
+          <Skeleton className="h-5 w-1/2 mb-2" />
         </div>
-
-        <Card className="bg-white/80 backdrop-blur-lg border-soft-purple">
-          <CardContent className="p-6">
-            <Skeleton className="h-7 w-32 mb-4" />
+        <Card className="bg-white/60 glass border-0">
+          <CardContent className="p-4">
+            <Skeleton className="h-6 w-32 mb-3" />
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-full" />
@@ -388,20 +374,18 @@ const LoadingSkeletons = ({ isMobile }: { isMobile: boolean }) => {
           </CardContent>
         </Card>
       </div>
-
       <div>
-        <Card className="bg-white/90 border-none shadow-xl">
-          <CardContent className="p-6">
-            <Skeleton className="h-7 w-40 mb-4" />
+        <Card className="bg-white/70 glass border-0">
+          <CardContent className="p-4">
+            <Skeleton className="h-6 w-40 mb-3" />
             <div className="space-y-3">
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
             </div>
-            <Skeleton className="h-10 w-full mt-4" />
+            <Skeleton className="h-9 w-full mt-3" />
           </CardContent>
         </Card>
-
-        <Skeleton className="h-64 w-full mt-6 rounded-lg" />
+        <Skeleton className="h-44 w-full mt-5 rounded-xl" />
       </div>
     </div>
   );
