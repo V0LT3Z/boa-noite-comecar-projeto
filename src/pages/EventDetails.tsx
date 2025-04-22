@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Clock } from "lucide-react";
+import { Calendar, MapPin, Clock, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -36,7 +35,6 @@ const EventDetails = () => {
         setIsLoading(true);
         setError(null);
         
-        // Converter string para número, mas garantindo que temos um valor
         const eventId = parseInt(id);
         if (isNaN(eventId)) {
           throw new Error("ID do evento inválido");
@@ -69,7 +67,6 @@ const EventDetails = () => {
     if (!id || selectedTickets.length === 0) return;
     
     try {
-      // Chamar a edge function do Supabase para criar a sessão de checkout
       const response = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: {
@@ -98,6 +95,10 @@ const EventDetails = () => {
         description: "Ocorreu um erro ao processar sua compra. Por favor, tente novamente.",
       });
     }
+  };
+
+  const handleBackToHome = () => {
+    navigate('/');
   };
 
   if (isLoading) {
@@ -135,6 +136,14 @@ const EventDetails = () => {
     if (isMobile) {
       return (
         <div className="space-y-6">
+          <Button 
+            variant="ghost" 
+            className="mb-4 flex items-center gap-2 hover:bg-gray-100"
+            onClick={handleBackToHome}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para Home
+          </Button>
           <div>
             <img
               src={event.image}
@@ -221,6 +230,14 @@ const EventDetails = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
+          <Button 
+            variant="ghost" 
+            className="mb-4 flex items-center gap-2 hover:bg-gray-100"
+            onClick={handleBackToHome}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para Home
+          </Button>
           <img
             src={event.image}
             alt={event.title}
@@ -307,7 +324,6 @@ const EventDetails = () => {
   );
 };
 
-// Componente para exibir os skeletons durante o carregamento
 const LoadingSkeletons = ({ isMobile }: { isMobile: boolean }) => {
   if (isMobile) {
     return (
