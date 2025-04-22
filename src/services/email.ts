@@ -83,14 +83,21 @@ export const EmailService = {
    */
   sendPasswordReset: (email: string, name: string, resetLink: string) => {
     console.log(`Enviando email de recuperação de senha para ${email} com link ${resetLink}`);
-    // Usar diretamente o supabase.auth.resetPasswordForEmail como fallback
-    return EmailService.sendEmail("password-reset", { email, name, resetLink })
-      .catch(error => {
-        console.log("Tentando fallback para recuperação de senha via Supabase");
-        return supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: resetLink
-        });
-      });
+    
+    // Usar apenas o método nativo do Supabase para recuperação de senha
+    // A edge function não está enviando emails corretamente
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: resetLink
+    }).then(({ data, error }) => {
+      if (error) {
+        console.error("Erro ao solicitar recuperação de senha:", error);
+        throw error;
+      }
+      console.log("Email de recuperação enviado com sucesso via Supabase Auth");
+      return data;
+    });
+    
+    // Removendo chamada para edge function que não está funcionando
   },
   
   /**

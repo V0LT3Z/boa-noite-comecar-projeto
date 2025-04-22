@@ -19,91 +19,7 @@ import { ptBR } from "date-fns/locale"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
 
-const mockEvents = [
-  {
-    id: 1,
-    title: "Festival de Música 2024",
-    date: "20 Maio 2024",
-    location: "São Paulo, SP",
-    image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=800&h=500&fit=crop",
-    category: "Música"
-  },
-  {
-    id: 2,
-    title: "Workshop de Tecnologia",
-    date: "15 Junho 2024",
-    location: "Rio de Janeiro, RJ",
-    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&h=500&fit=crop",
-    category: "Workshops"
-  },
-  {
-    id: 3,
-    title: "Conferência de Inovação",
-    date: "10 Julho 2024",
-    location: "Curitiba, PR",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop",
-    category: "Congressos"
-  },
-  {
-    id: 4,
-    title: "Feira de Startups",
-    date: "5 Agosto 2024",
-    location: "Belo Horizonte, MG",
-    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=500&fit=crop",
-    category: "Workshops"
-  },
-  {
-    id: 5,
-    title: "Dev Conference Brasil",
-    date: "22 Setembro 2024",
-    location: "Florianópolis, SC",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=500&fit=crop",
-    category: "Congressos"
-  },
-  {
-    id: 6,
-    title: "UX Design Summit",
-    date: "12 Outubro 2024",
-    location: "Porto Alegre, RS",
-    image: "https://images.unsplash.com/photo-1483058712412-4245e9b90334?w=800&h=500&fit=crop",
-    category: "Congressos"
-  }
-]
-
-const featuredEvents = [
-  {
-    id: 1,
-    title: "Rock in Rio 2024",
-    date: "Setembro 2024",
-    location: "Rio de Janeiro, RJ",
-    image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&h=400&fit=crop",
-    category: "Música"
-  },
-  {
-    id: 2,
-    title: "Festival de Música 2024",
-    date: "20 Maio 2024",
-    location: "São Paulo, SP",
-    image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=1200&h=400&fit=crop",
-    category: "Música"
-  },
-  {
-    id: 3,
-    title: "Workshop de Tecnologia",
-    date: "15 Junho 2024",
-    location: "Rio de Janeiro, RJ",
-    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&h=400&fit=crop",
-    category: "Workshops"
-  },
-  {
-    id: 4,
-    title: "Conferência de Inovação",
-    date: "10 Julho 2024",
-    location: "Curitiba, PR",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=400&fit=crop",
-    category: "Congressos"
-  }
-]
+// Removendo mock events para mostrar apenas eventos reais
 
 const Index = () => {
   const [showAllEvents, setShowAllEvents] = useState(false)
@@ -121,16 +37,18 @@ const Index = () => {
       const eventData = await fetchEvents();
       console.log("Eventos carregados:", eventData);
       
-      // Se não houver eventos do banco ou o número for muito baixo, adicionar os mockados
-      if (!eventData || eventData.length < 2) {
-        console.log("Usando eventos mockados para complementar");
-        // Combinar eventos do banco com os mockados, evitando duplicações por id
-        const existingIds = eventData?.map(e => e.id) || [];
-        const mocksToAdd = mockEvents
-          .filter(mock => !existingIds.includes(mock.id as number))
-          .map(mock => ({ ...mock, is_mock: true }));
+      if (!eventData || eventData.length === 0) {
+        setEvents([]);
+        console.log("Nenhum evento encontrado no banco de dados");
         
-        setEvents([...(eventData || []), ...mocksToAdd] as EventResponse[]);
+        // Exibir toast informativo apenas na primeira carga
+        if (!eventsLoaded) {
+          toast({
+            title: "Nenhum evento disponível",
+            description: "Ainda não há eventos disponíveis. Os produtores podem criar novos eventos na área administrativa.",
+            variant: "default",
+          });
+        }
       } else {
         setEvents(eventData);
       }
@@ -138,13 +56,11 @@ const Index = () => {
       setEventsLoaded(true);
     } catch (error) {
       console.error("Erro ao carregar eventos:", error);
-      // Usar dados mockados em caso de falha
-      console.log("Usando eventos mockados devido a erro");
-      setEvents(mockEvents as unknown as EventResponse[]);
+      setEvents([]);
       
       toast({
         title: "Falha ao carregar eventos",
-        description: "Estamos exibindo eventos mockados enquanto tentamos resolver o problema.",
+        description: "Ocorreu um erro ao carregar os eventos. Por favor, tente novamente mais tarde.",
         variant: "destructive",
       });
     } finally {
@@ -157,20 +73,6 @@ const Index = () => {
   }, [loadEvents]);
 
   const formattedEvents = events.map(event => {
-    // Se for um evento mockado, use seu formato diretamente
-    if ('category' in event || (event as any).is_mock) {
-      return {
-        id: event.id,
-        title: event.title,
-        date: typeof event.date === 'string' ? event.date : format(new Date(), "dd 'de' MMMM yyyy", { locale: ptBR }),
-        location: event.location,
-        image: (event as any).image || "https://picsum.photos/seed/" + event.id + "/800/500",
-        category: (event as any).category || "Eventos",
-        is_mock: (event as any).is_mock || false
-      };
-    }
-    
-    // Se for um evento do banco, formate os dados
     try {
       const eventDate = new Date(event.date);
       return {
@@ -179,8 +81,7 @@ const Index = () => {
         date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
         location: event.location,
         image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
-        category: "Eventos",
-        is_mock: false
+        category: "Eventos"
       };
     } catch (error) {
       console.error("Erro ao formatar evento:", error, event);
@@ -190,8 +91,7 @@ const Index = () => {
         date: "Data não disponível",
         location: event.location || "Local não informado",
         image: "https://picsum.photos/seed/fallback/800/500",
-        category: "Eventos",
-        is_mock: false
+        category: "Eventos"
       };
     }
   });
@@ -200,11 +100,7 @@ const Index = () => {
     ? formattedEvents.filter(event => event.category === selectedCategory)
     : formattedEvents;
     
-  const displayedEvents = showAllEvents ? filteredEvents : filteredEvents.slice(0, 3)
-
-  const filteredFeaturedEvents = selectedCategory 
-    ? featuredEvents.filter(event => event.category === selectedCategory)
-    : featuredEvents;
+  const displayedEvents = showAllEvents ? filteredEvents : filteredEvents.slice(0, 6);
 
   return (
     <div className="min-h-screen bg-white">
@@ -231,32 +127,34 @@ const Index = () => {
       </section>
 
       <main className="container mx-auto px-4 space-y-10 mt-10">
-        <Carousel className="relative rounded-2xl overflow-hidden">
-          <CarouselContent>
-            {filteredFeaturedEvents.map((event) => (
-              <CarouselItem key={event.id} className="cursor-pointer">
-                <div className="relative group">
-                  <img 
-                    src={event.image} 
-                    alt={event.title}
-                    className="w-full h-[400px] object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-primary opacity-50 mix-blend-multiply" />
-                  <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/50 to-transparent">
-                    <h2 className="text-4xl font-bold text-white mb-2">{event.title}</h2>
-                    <div className="flex items-center gap-4 text-white/90">
-                      <p>{event.date}</p>
-                      <p>•</p>
-                      <p>{event.location}</p>
+        {formattedEvents.length > 0 && (
+          <Carousel className="relative rounded-2xl overflow-hidden">
+            <CarouselContent>
+              {filteredEvents.slice(0, 4).map((event) => (
+                <CarouselItem key={event.id} className="cursor-pointer">
+                  <div className="relative group">
+                    <img 
+                      src={event.image} 
+                      alt={event.title}
+                      className="w-full h-[400px] object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-primary opacity-50 mix-blend-multiply" />
+                    <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/50 to-transparent">
+                      <h2 className="text-4xl font-bold text-white mb-2">{event.title}</h2>
+                      <div className="flex items-center gap-4 text-white/90">
+                        <p>{event.date}</p>
+                        <p>•</p>
+                        <p>{event.location}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="left-4" />
-          <CarouselNext className="right-4" />
-        </Carousel>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-4" />
+            <CarouselNext className="right-4" />
+          </Carousel>
+        )}
 
         <section className="space-y-6">
           <div className="flex items-center justify-between">
@@ -295,7 +193,7 @@ const Index = () => {
                   />
                 ))}
               </div>
-              {!showAllEvents && filteredEvents.length > 3 && (
+              {!showAllEvents && filteredEvents.length > 6 && (
                 <div className="flex justify-center mt-6">
                   <Button 
                     onClick={() => setShowAllEvents(true)}

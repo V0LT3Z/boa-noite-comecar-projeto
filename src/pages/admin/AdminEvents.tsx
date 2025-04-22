@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft } from "lucide-react";
@@ -10,43 +10,54 @@ import { EventsTable } from "@/components/admin/events/EventsTable";
 import { ConfirmActionDialog } from "@/components/admin/events/ConfirmActionDialog";
 import { EventSearchBar } from "@/components/admin/events/EventSearchBar";
 import { EmptyEventsList } from "@/components/admin/events/EmptyEventsList";
-
-// Mock data for demonstration with proper typing
-const mockEvents: EventItem[] = [
-  {
-    id: 1,
-    title: "Festival de Verão 2025",
-    date: "2025-01-15",
-    status: "active",
-    ticketsSold: 342,
-    totalRevenue: 17100,
-  },
-  {
-    id: 2,
-    title: "Show do Radiohead",
-    date: "2025-03-10",
-    status: "paused",
-    ticketsSold: 128,
-    totalRevenue: 12800,
-  },
-  {
-    id: 3,
-    title: "Feira Gastronômica",
-    date: "2025-02-05",
-    status: "cancelled",
-    ticketsSold: 0,
-    totalRevenue: 0,
-  },
-];
+import { fetchEvents } from "@/services/events";
+import { format } from "date-fns";
 
 const AdminEvents = () => {
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [events, setEvents] = useState<EventItem[]>(mockEvents);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState<"pause" | "cancel" | "activate">("pause");
+
+  // Carregar eventos da API
+  const loadEvents = async () => {
+    try {
+      setLoadingEvents(true);
+      const fetchedEvents = await fetchEvents();
+      
+      // Mapear os eventos para o formato do EventItem
+      const formattedEvents: EventItem[] = fetchedEvents.map(event => ({
+        id: event.id,
+        title: event.title,
+        date: format(new Date(event.date), "yyyy-MM-dd"),
+        status: (event.status as "active" | "paused" | "cancelled") || "active",
+        ticketsSold: event.tickets_sold || 0,
+        totalRevenue: 0, // Calcular a receita seria uma funcionalidade futura
+      }));
+      
+      setEvents(formattedEvents);
+    } catch (error) {
+      console.error("Erro ao carregar eventos:", error);
+      toast({
+        title: "Erro ao carregar eventos",
+        description: "Não foi possível carregar a lista de eventos. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingEvents(false);
+    }
+  };
+  
+  // Carregar eventos ao montar o componente
+  useEffect(() => {
+    if (!isCreatingEvent) {
+      loadEvents();
+    }
+  }, [isCreatingEvent]);
 
   const filteredEvents = events.filter(event => 
     event.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -94,6 +105,12 @@ const AdminEvents = () => {
     setEditingEvent(null);
     setIsCreatingEvent(true);
   };
+  
+  const handleFormSuccess = () => {
+    setIsCreatingEvent(false);
+    setEditingEvent(null);
+    loadEvents(); // Recarregar eventos após o sucesso
+  };
 
   return (
     <AdminLayout>
@@ -113,7 +130,7 @@ const AdminEvents = () => {
                 {editingEvent ? `Editar Evento: ${editingEvent.title}` : "Criar Novo Evento"}
               </h1>
             </div>
-            <EventForm event={editingEvent} onSuccess={handleFormBack} />
+            <EventForm event={editingEvent} onSuccess={handleFormSuccess} />
           </>
         ) : (
           <>
@@ -130,7 +147,11 @@ const AdminEvents = () => {
                 onSearchChange={setSearchQuery} 
               />
               
-              {filteredEvents.length > 0 ? (
+              {loadingEvents ? (
+                <div className="p-8 text-center">
+                  <p className="text-muted-foreground">Carregando eventos...</p>
+                </div>
+              ) : filteredEvents.length > 0 ? (
                 <EventsTable 
                   events={filteredEvents} 
                   onEdit={handleEdit}

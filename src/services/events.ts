@@ -50,6 +50,7 @@ export const fetchEvents = async () => {
     const { data: events, error } = await supabase
       .from("events")
       .select("*")
+      .eq("status", "active")
       .order("date", { ascending: true });
 
     if (error) {
@@ -109,48 +110,70 @@ export const fetchEventById = async (id: number) => {
 
 // Função para criar um evento
 export const createEvent = async (eventData: AdminEventForm) => {
-  // Combinar data e hora em um único timestamp
-  const dateTime = `${eventData.date}T${eventData.time}`;
-  const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
+  try {
+    console.log("Criando novo evento:", eventData);
+    // Combinar data e hora em um único timestamp
+    const dateTime = `${eventData.date}T${eventData.time}`;
+    const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
-  // Inserir o evento principal
-  const { data: eventInsert, error: eventError } = await supabase
-    .from("events")
-    .insert({
+    // Preparar dados do evento
+    const eventInsertData = {
       title: eventData.title,
       description: eventData.description,
       date: dateObj.toISOString(),
       location: eventData.location,
       image_url: eventData.bannerUrl,
       minimum_age: parseInt(eventData.minimumAge) || 0,
-      status: eventData.status,
+      status: eventData.status || "active",
       total_tickets: eventData.tickets.reduce(
         (sum, ticket) => sum + (parseInt(ticket.availableQuantity) || 0), 
         0
       )
-    })
-    .select()
-    .single();
+    };
+    
+    console.log("Dados do evento para inserção:", eventInsertData);
 
-  if (eventError) throw eventError;
+    // Inserir o evento principal
+    const { data: eventInsert, error: eventError } = await supabase
+      .from("events")
+      .insert(eventInsertData)
+      .select()
+      .single();
 
-  // Inserir os tipos de ingressos
-  const ticketTypesData = eventData.tickets.map(ticket => ({
-    event_id: eventInsert.id,
-    name: ticket.name,
-    price: parseFloat(ticket.price) || 0,
-    description: ticket.description,
-    available_quantity: parseInt(ticket.availableQuantity) || 0,
-    max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
-  }));
+    if (eventError) {
+      console.error("Erro ao criar evento:", eventError);
+      throw eventError;
+    }
 
-  const { error: ticketError } = await supabase
-    .from("ticket_types")
-    .insert(ticketTypesData);
+    console.log("Evento criado com sucesso:", eventInsert);
 
-  if (ticketError) throw ticketError;
+    // Inserir os tipos de ingressos
+    const ticketTypesData = eventData.tickets.map(ticket => ({
+      event_id: eventInsert.id,
+      name: ticket.name,
+      price: parseFloat(ticket.price) || 0,
+      description: ticket.description,
+      available_quantity: parseInt(ticket.availableQuantity) || 0,
+      max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
+    }));
 
-  return eventInsert;
+    console.log("Inserindo tipos de ingresso:", ticketTypesData);
+
+    const { error: ticketError } = await supabase
+      .from("ticket_types")
+      .insert(ticketTypesData);
+
+    if (ticketError) {
+      console.error("Erro ao criar tipos de ingresso:", ticketError);
+      throw ticketError;
+    }
+
+    console.log("Tipos de ingresso criados com sucesso");
+    return eventInsert;
+  } catch (error) {
+    console.error("Erro ao criar evento:", error);
+    throw error;
+  }
 };
 
 // Função para atualizar um evento

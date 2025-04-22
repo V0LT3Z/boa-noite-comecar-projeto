@@ -22,7 +22,7 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // Verificar se o evento existe apenas quando o usuário passar o mouse sobre o botão
+    // Verificar se o evento existe apenas uma vez
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
       
@@ -38,10 +38,7 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
       }
     };
     
-    // Se tivermos eventos mockados, não precisamos verificar
-    if (window.location.pathname === "/") {
-      setEventExists(true);
-    }
+    checkEvent();
     
     return () => {
       // Cleanup se necessário
@@ -98,34 +95,19 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
             </div>
           </div>
           
-          {window.location.pathname === "/" ? (
-            <Button 
-              className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 whitespace-nowrap"
-              onClick={() => {
-                toast({
-                  title: "Evento em Desenvolvimento",
-                  description: "Este evento será disponibilizado em breve. Fique atento às atualizações!",
-                  variant: "default",
-                });
-              }}
-            >
+          <Link 
+            to={`/evento/${id}`} 
+            className="flex-shrink-0"
+            onClick={(e) => {
+              if (!handleVerIngressos()) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <Button className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 whitespace-nowrap">
               Ver ingressos
             </Button>
-          ) : (
-            <Link 
-              to={`/evento/${id}`} 
-              className="flex-shrink-0"
-              onClick={(e) => {
-                if (!handleVerIngressos()) {
-                  e.preventDefault();
-                }
-              }}
-            >
-              <Button className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 whitespace-nowrap">
-                Ver ingressos
-              </Button>
-            </Link>
-          )}
+          </Link>
         </div>
       </div>
     </Card>
