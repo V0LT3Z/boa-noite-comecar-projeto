@@ -40,6 +40,7 @@ serve(async (req) => {
     // Extrair IDs do metadata
     const eventId = session.metadata?.eventId;
     const ticketsData = JSON.parse(session.metadata?.tickets || "[]");
+    const userEmail = session.customer_details?.email || "";
 
     // Buscar detalhes do evento
     const { data: event, error: eventError } = await supabaseClient
@@ -71,6 +72,33 @@ serve(async (req) => {
     const total = tickets.reduce((sum: number, ticket: any) => 
       sum + (ticket.price * ticket.quantity), 0
     );
+
+    // Enviar email de confirmação
+    if (userEmail) {
+      try {
+        const emailResponse = await fetch(`${req.headers.get("origin")}/functions/v1/send-purchase-confirmation`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            orderId: sessionId,
+            email: userEmail,
+            eventDetails: {
+              title: event.title,
+              date: new Date(event.date).toLocaleDateString('pt-BR'),
+              location: event.location
+            },
+            ticketsInfo: tickets
+          })
+        });
+
+        console.log("Status do envio de email:", emailResponse.status);
+      } catch (emailError) {
+        console.error("Erro ao enviar email de confirmação:", emailError);
+        // Continuar mesmo se o email falhar
+      }
+    }
 
     return new Response(JSON.stringify({
       event,
