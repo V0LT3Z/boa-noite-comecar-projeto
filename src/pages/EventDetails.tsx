@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock, ArrowLeft } from "lucide-react";
@@ -11,6 +10,7 @@ import TicketSelector from "@/components/TicketSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EventDetails as EventDetailsType } from "@/types/event";
 import { fetchEventById } from "@/services/events";
+import GradientCard from "@/components/GradientCard";
 
 const EventDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -100,7 +100,8 @@ const EventDetails = () => {
     <Button
       variant="secondary"
       onClick={onClick}
-      className="flex items-center gap-2 py-2 px-4 rounded-lg shadow-md border border-gray-200 bg-white hover:bg-gray-50 transition-all duration-200 text-gray-700"
+      className="flex items-center gap-2 py-2 px-4 rounded-lg shadow bg-white/80 transition-all duration-200 text-primary font-semibold"
+      style={{ position: "relative", zIndex: 10 }}
     >
       <ArrowLeft className="h-5 w-5 text-primary" />
       <span className="font-medium">Voltar</span>
@@ -140,25 +141,26 @@ const EventDetails = () => {
     if (isMobile) {
       return (
         <div className="flex flex-col w-full gap-5">
-          <div className="mb-2">
-            <BackButton onClick={handleBackToHome} />
+          <div className="relative w-full mb-2">
+            <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-r from-primary to-secondary rounded-t-2xl" />
+            <div className="relative pt-3 pl-2">
+              <BackButton onClick={handleBackToHome} />
+            </div>
           </div>
-          <div className="relative w-full rounded-lg overflow-hidden h-48 shadow-sm">
+          <div className="relative w-full rounded-2xl overflow-hidden h-56 shadow-md mb-1">
             <img
               src={event.image || '/placeholder.svg'}
               alt={event.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"/>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           </div>
-          
-          <div className="space-y-5">
-            <div>
-              <h1 className="text-xl font-bold text-primary leading-tight line-clamp-2">
+          <GradientCard className="w-full p-0">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-lg md:text-xl font-bold text-primary leading-tight">
                 {event.title}
               </h1>
-              
-              <div className="flex flex-wrap gap-2 mt-3">
+              <div className="flex flex-wrap gap-2 mt-0">
                 <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/30 rounded-full text-xs font-medium text-gray-700">
                   <Calendar className="h-3.5 w-3.5 text-primary" />
                   <span>{new Date(event.date).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}</span>
@@ -173,95 +175,94 @@ const EventDetails = () => {
                 </div>
               </div>
             </div>
-            
+          </GradientCard>
+          <GradientCard className="w-full p-0">
             <TicketSelector tickets={event.tickets} onPurchase={handlePurchase} />
-
-            <div>
-              <h2 className="text-lg font-semibold mb-2 text-gray-800">Descrição</h2>
-              <p className="text-gray-700 text-sm leading-relaxed">{event.description}</p>
-            </div>
-
-            <div>
-              <h2 className="text-lg font-semibold mb-2 text-gray-800">Local do Evento</h2>
-              <p className="text-gray-700 text-sm">
-                <span className="font-semibold">{event.venue.name}</span><br/>
-                {event.venue.address}<br/>
-                Capacidade: <span className="font-medium">{event.venue.capacity}</span>
-              </p>
-              <Button
-                variant="link"
-                asChild
-                className="mt-1 p-0 text-primary hover:text-secondary"
-              >
-                <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
-                  Ver no Mapa
-                </a>
-              </Button>
-            </div>
-
-            <div>
-              <h2 className="text-lg font-semibold mb-2 text-gray-800">Avisos</h2>
-              {event.warnings && event.warnings.length > 0 ? (
-                <ul className="list-disc pl-5 text-gray-700 text-sm space-y-1">
-                  {event.warnings.map((warning, index) => (
-                    <li key={index}>{warning}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-700 text-sm">Nenhum aviso especial para este evento.</p>
-              )}
-            </div>
-            
-            <div className="mt-2">
-              <EventMap coordinates={event.coordinates} />
-            </div>
+          </GradientCard>
+          <GradientCard className="w-full p-0">
+            <h2 className="text-base font-semibold mb-2 text-gray-800">Descrição</h2>
+            <p className="text-gray-700 text-sm leading-relaxed">{event.description}</p>
+          </GradientCard>
+          <GradientCard className="w-full p-0">
+            <h2 className="text-base font-semibold mb-2 text-gray-800">Local do Evento</h2>
+            <p className="text-gray-700 text-sm">
+              <span className="font-semibold">{event.venue.name}</span><br />
+              {event.venue.address}<br />
+              Capacidade: <span className="font-medium">{event.venue.capacity}</span>
+            </p>
+            <Button
+              variant="link"
+              asChild
+              className="mt-1 p-0 text-primary hover:text-secondary"
+            >
+              <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
+                Ver no Mapa
+              </a>
+            </Button>
+          </GradientCard>
+          <GradientCard className="w-full p-0">
+            <h2 className="text-base font-semibold mb-2 text-gray-800">Avisos</h2>
+            {event.warnings && event.warnings.length > 0 ? (
+              <ul className="list-disc pl-5 text-gray-700 text-sm space-y-1">
+                {event.warnings.map((warning, index) => (
+                  <li key={index}>{warning}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-700 text-sm">Nenhum aviso especial para este evento.</p>
+            )}
+          </GradientCard>
+          <div className="mt-2">
+            <EventMap coordinates={event.coordinates} />
           </div>
         </div>
       );
     }
 
     return (
-      <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="col-span-2 flex flex-col">
-          <div className="mb-4">
-            <BackButton onClick={handleBackToHome} />
+      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
+        <div className="col-span-1 flex flex-col gap-4">
+          <div className="relative w-full mb-1">
+            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-primary to-secondary rounded-t-2xl" />
+            <div className="relative pt-4 pl-2">
+              <BackButton onClick={handleBackToHome} />
+            </div>
           </div>
-          
-          <div className="relative w-full rounded-lg overflow-hidden h-64 shadow-sm mb-5">
+          <div className="relative w-full rounded-2xl overflow-hidden h-72 shadow-lg mb-2">
             <img
               src={event.image || '/placeholder.svg'}
               alt={event.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"/>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           </div>
-          
-          <h1 className="text-2xl font-bold text-gray-800 mb-3 leading-tight line-clamp-2">
-            {event.title}
-          </h1>
-          
-          <div className="flex flex-wrap gap-3 mb-6">
-            <div className="flex items-center gap-2 px-4 py-2 bg-soft-purple/30 rounded-full text-sm font-medium text-gray-700">
-              <Calendar className="h-4 w-4 text-primary" />
-              <span>{new Date(event.date).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}</span>
+          <GradientCard className="w-full p-0 mb-0">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-xl font-bold text-primary leading-tight">
+                {event.title}
+              </h1>
+              <div className="flex flex-wrap gap-2">
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/30 rounded-full text-xs font-medium text-gray-700">
+                  <Calendar className="h-3.5 w-3.5 text-primary" />
+                  <span>{new Date(event.date).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}</span>
+                </div>
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/30 rounded-full text-xs font-medium text-gray-700">
+                  <Clock className="h-3.5 w-3.5 text-secondary" />
+                  <span>{event.time}</span>
+                </div>
+                <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/30 rounded-full text-xs font-medium text-gray-700">
+                  <MapPin className="h-3.5 w-3.5 text-pink-500" />
+                  <span className="line-clamp-1">{event.location}</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-soft-blue/30 rounded-full text-sm font-medium text-gray-700">
-              <Clock className="h-4 w-4 text-secondary" />
-              <span>{event.time}</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-soft-pink/30 rounded-full text-sm font-medium text-gray-700">
-              <MapPin className="h-4 w-4 text-pink-500" />
-              <span>{event.location}</span>
-            </div>
-          </div>
-        
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-3 text-gray-800">Descrição</h2>
+          </GradientCard>
+          <GradientCard className="w-full p-0 mt-0">
+            <h2 className="text-lg font-semibold mb-2 text-gray-800">Descrição</h2>
             <p className="text-gray-700 text-base leading-relaxed">{event.description}</p>
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-3 text-gray-800">Local do Evento</h2>
+          </GradientCard>
+          <GradientCard className="w-full p-0">
+            <h2 className="text-lg font-semibold mb-2 text-gray-800">Local do Evento</h2>
             <p className="text-gray-700 text-base">
               <span className="font-semibold">{event.venue.name}</span><br/>
               {event.venue.address}<br/>
@@ -270,16 +271,15 @@ const EventDetails = () => {
             <Button
               variant="link"
               asChild
-              className="mt-2 p-0 text-primary hover:text-secondary"
+              className="mt-1 p-0 text-primary hover:text-secondary"
             >
               <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
                 Ver no Mapa
               </a>
             </Button>
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-3 text-gray-800">Avisos</h2>
+          </GradientCard>
+          <GradientCard className="w-full p-0">
+            <h2 className="text-lg font-semibold mb-2 text-gray-800">Avisos</h2>
             {event.warnings && event.warnings.length > 0 ? (
               <ul className="list-disc pl-5 text-gray-700 text-base space-y-1.5">
                 {event.warnings.map((warning, index) => (
@@ -289,39 +289,22 @@ const EventDetails = () => {
             ) : (
               <p className="text-gray-700 text-base">Nenhum aviso especial para este evento.</p>
             )}
-          </div>
-          
-          <div className="lg:hidden mt-4">
-            <Card className="bg-white shadow-sm rounded-lg border-0">
-              <CardContent className="p-4">
-                <EventMap coordinates={event.coordinates} />
-              </CardContent>
-            </Card>
+          </GradientCard>
+          <div className="mt-2">
+            <EventMap coordinates={event.coordinates} />
           </div>
         </div>
-        
-        <div className="col-span-1 space-y-6">
-          <Card className="bg-white shadow-sm border-0 rounded-lg p-1">
-            <CardContent className="p-4">
-              <TicketSelector 
-                tickets={event.tickets} 
-                onPurchase={handlePurchase}
-              />
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white shadow-sm border-0 rounded-lg hidden lg:block">
-            <CardContent className="p-4">
-              <EventMap coordinates={event.coordinates} />
-            </CardContent>
-          </Card>
+        <div className="col-span-1 flex flex-col gap-4 h-fit">
+          <GradientCard className="w-full p-0">
+            <TicketSelector tickets={event.tickets} onPurchase={handlePurchase} />
+          </GradientCard>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="min-h-[90vh] w-full px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto">
+    <div className="min-h-[90vh] w-full px-2 sm:px-0 lg:px-0 py-5 max-w-[1800px] mx-auto bg-[#f5f6fb]">
       {renderContent()}
     </div>
   );
