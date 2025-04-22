@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock, ArrowLeft } from "lucide-react";
@@ -141,15 +140,13 @@ const EventDetails = () => {
     if (isMobile) {
       return (
         <div className="flex flex-col w-full gap-5">
-          {/* Header area with gradient and back button */}
           <div className="relative w-full mb-2">
-            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-primary to-secondary rounded-t-2xl" />
+            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-primary to-secondary rounded-t-2xl" />
             <div className="relative pt-4 pl-4">
               <BackButton onClick={handleBackToHome} />
             </div>
           </div>
           
-          {/* Image area */}
           <div className="relative w-full rounded-2xl overflow-hidden h-56 shadow-md mb-1">
             <img
               src={event.image || '/placeholder.svg'}
@@ -159,7 +156,6 @@ const EventDetails = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           </div>
           
-          {/* Event title card */}
           <GradientCard className="w-full">
             <div className="flex flex-col gap-2">
               <h1 className="text-lg md:text-xl font-bold text-primary leading-tight">
@@ -182,18 +178,15 @@ const EventDetails = () => {
             </div>
           </GradientCard>
           
-          {/* Tickets */}
           <GradientCard className="w-full">
             <TicketSelector tickets={event.tickets} onPurchase={handlePurchase} />
           </GradientCard>
           
-          {/* Description */}
           <GradientCard className="w-full">
             <h2 className="text-base font-semibold mb-2 text-gray-800">Descrição</h2>
             <p className="text-gray-700 text-sm leading-relaxed">{event.description}</p>
           </GradientCard>
           
-          {/* Venue */}
           <GradientCard className="w-full">
             <h2 className="text-base font-semibold mb-2 text-gray-800">Local do Evento</h2>
             <p className="text-gray-700 text-sm">
@@ -212,7 +205,6 @@ const EventDetails = () => {
             </Button>
           </GradientCard>
           
-          {/* Warnings */}
           <GradientCard className="w-full">
             <h2 className="text-base font-semibold mb-2 text-gray-800">Avisos</h2>
             {event.warnings && event.warnings.length > 0 ? (
@@ -226,7 +218,6 @@ const EventDetails = () => {
             )}
           </GradientCard>
           
-          {/* Map */}
           <div className="mt-2">
             <EventMap coordinates={event.coordinates} />
           </div>
@@ -237,15 +228,13 @@ const EventDetails = () => {
     return (
       <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
         <div className="col-span-1 flex flex-col gap-4">
-          {/* Header area with gradient and back button */}
           <div className="relative w-full mb-1">
-            <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-r from-primary to-secondary rounded-t-2xl" />
+            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-primary to-secondary rounded-t-2xl" />
             <div className="relative pt-4 pl-4">
               <BackButton onClick={handleBackToHome} />
             </div>
           </div>
           
-          {/* Image area */}
           <div className="relative w-full rounded-2xl overflow-hidden h-72 shadow-lg mb-2">
             <img
               src={event.image || '/placeholder.svg'}
@@ -255,7 +244,6 @@ const EventDetails = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           </div>
           
-          {/* Event title and details */}
           <GradientCard className="w-full">
             <div className="flex flex-col gap-2">
               <h1 className="text-xl font-bold text-primary leading-tight">
@@ -278,13 +266,11 @@ const EventDetails = () => {
             </div>
           </GradientCard>
           
-          {/* Description */}
           <GradientCard className="w-full">
             <h2 className="text-lg font-semibold mb-2 text-gray-800">Descrição</h2>
             <p className="text-gray-700 text-base leading-relaxed">{event.description}</p>
           </GradientCard>
           
-          {/* Venue */}
           <GradientCard className="w-full">
             <h2 className="text-lg font-semibold mb-2 text-gray-800">Local do Evento</h2>
             <p className="text-gray-700 text-base">
@@ -303,7 +289,6 @@ const EventDetails = () => {
             </Button>
           </GradientCard>
           
-          {/* Warnings */}
           <GradientCard className="w-full">
             <h2 className="text-lg font-semibold mb-2 text-gray-800">Avisos</h2>
             {event.warnings && event.warnings.length > 0 ? (
@@ -317,7 +302,6 @@ const EventDetails = () => {
             )}
           </GradientCard>
           
-          {/* Map */}
           <div className="mt-2">
             <EventMap coordinates={event.coordinates} />
           </div>
