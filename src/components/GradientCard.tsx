@@ -6,12 +6,14 @@ interface GradientCardProps {
   children: React.ReactNode;
   className?: string;
   gradientHeight?: string;
+  gradientClassName?: string;
 }
 
 export default function GradientCard({
   children,
   className,
-  gradientHeight = "h-2.5"
+  gradientHeight = "h-2.5",
+  gradientClassName
 }: GradientCardProps) {
   return (
     <div
@@ -25,7 +27,8 @@ export default function GradientCard({
         className={cn(
           "w-full",
           gradientHeight,
-          "bg-gradient-to-r from-primary to-secondary"
+          "bg-gradient-to-r from-primary to-secondary",
+          gradientClassName
         )}
       />
       <div className="p-5 md:p-7">{children}</div>
