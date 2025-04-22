@@ -20,6 +20,7 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => void;
   openAuthModal: () => void;
+  resendConfirmationEmail: (email: string) => Promise<boolean>;
 }
 
 interface RegisterData {
@@ -104,6 +105,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) {
         console.error("Login error:", error);
+
+        // Handle specific error cases
+        if (error.message.includes("Email not confirmed")) {
+          toast({
+            title: "Email não confirmado",
+            description: "Por favor, verifique seu email e clique no link de confirmação ou solicite um novo email de confirmação.",
+            variant: "destructive",
+          });
+          
+          return false;
+        }
+        
         toast({
           title: "Erro ao fazer login",
           description: error.message || "Verifique suas credenciais e tente novamente.",
@@ -157,11 +170,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
       
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Bem-vindo ao Lovue Tickets!",
-        variant: "success",
-      });
+      // Verificar se o email precisa de confirmação
+      if (data?.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Quase lá!",
+          description: "Por favor, verifique seu email e clique no link de confirmação para ativar sua conta.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Conta criada com sucesso!",
+          description: "Bem-vindo ao Lovue Tickets!",
+          variant: "success",
+        });
+      }
       
       return true;
     } catch (error) {
@@ -174,6 +196,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const resendConfirmationEmail = async (email: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+      });
+      
+      if (error) {
+        console.error("Error resending confirmation email:", error);
+        toast({
+          title: "Erro ao reenviar email",
+          description: error.message || "Não foi possível reenviar o email de confirmação. Tente novamente mais tarde.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      toast({
+        title: "Email reenviado!",
+        description: "Verifique sua caixa de entrada pelo email de confirmação.",
+        variant: "success",
+      });
+      return true;
+    } catch (error) {
+      console.error("Error resending confirmation email:", error);
+      toast({
+        title: "Erro ao reenviar email",
+        description: "Não foi possível reenviar o email de confirmação. Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+      return false;
     }
   };
 
@@ -209,7 +265,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login: handleLogin,
         register,
         logout,
-        openAuthModal
+        openAuthModal,
+        resendConfirmationEmail
       }}
     >
       {children}

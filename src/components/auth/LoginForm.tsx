@@ -17,6 +17,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/AuthContext"
 import { Link } from "react-router-dom"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -31,9 +33,12 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
-  const { login } = useAuth();
+  const { login, resendConfirmationEmail } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [emailNotConfirmed, setEmailNotConfirmed] = useState(false);
+  const [currentEmail, setCurrentEmail] = useState("");
+  const [resendingEmail, setResendingEmail] = useState(false);
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -46,6 +51,7 @@ export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
   async function onSubmit(data: LoginFormValues) {
     console.log("Login data:", data)
     setIsSubmitting(true);
+    setCurrentEmail(data.email);
     
     try {
       const success = await login(data.email, data.password);
@@ -59,6 +65,12 @@ export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
         }
         
         onSuccess();
+      } else {
+        // Check if it might be an unconfirmed email issue
+        const errorMessage = document.querySelector(".sonner-toast")?.textContent || "";
+        if (errorMessage.includes("Email não confirmado") || errorMessage.includes("Email not confirmed")) {
+          setEmailNotConfirmed(true);
+        }
       }
     } catch (error) {
       console.error("Login submission error:", error);
@@ -67,9 +79,34 @@ export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
     }
   }
 
+  const handleResendEmail = async () => {
+    if (!currentEmail || resendingEmail) return;
+    
+    setResendingEmail(true);
+    await resendConfirmationEmail(currentEmail);
+    setResendingEmail(false);
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {emailNotConfirmed && (
+          <Alert variant="destructive" className="mb-4">
+            <ExclamationTriangleIcon className="h-4 w-4 mr-2" />
+            <AlertDescription className="text-sm">
+              Seu email ainda não foi confirmado. 
+              <Button 
+                variant="link" 
+                className="p-0 h-auto text-xs text-destructive-foreground underline ml-1"
+                onClick={handleResendEmail}
+                disabled={resendingEmail}
+              >
+                {resendingEmail ? "Enviando..." : "Reenviar email de confirmação"}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <FormField
           control={form.control}
           name="email"
