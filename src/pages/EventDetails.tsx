@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock, ArrowLeft } from "lucide-react";
@@ -30,27 +31,24 @@ const EventDetails = () => {
         navigate("/");
         return;
       }
-      
+
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const eventId = parseInt(id);
         if (isNaN(eventId)) {
           throw new Error("ID do evento inválido");
         }
-        
-        console.log("Buscando evento com ID:", eventId);
+
         const eventData = await fetchEventById(eventId);
-        
+
         if (eventData) {
-          console.log("Evento encontrado:", eventData);
           setEvent(eventData);
         } else {
           throw new Error("Evento não encontrado");
         }
       } catch (error) {
-        console.error("Erro ao carregar evento:", error);
         setError("Não foi possível encontrar os detalhes para este evento.");
         toast.error("Evento não encontrado", {
           description: "Não foi possível encontrar os detalhes para este evento.",
@@ -65,7 +63,7 @@ const EventDetails = () => {
 
   const handlePurchase = async (selectedTickets: { ticketId: number, quantity: number }[]) => {
     if (!id || selectedTickets.length === 0) return;
-    
+
     try {
       const response = await fetch('/api/create-checkout', {
         method: 'POST',
@@ -77,12 +75,12 @@ const EventDetails = () => {
           selectedTickets
         }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Erro ao criar checkout');
       }
-      
+
       const { url } = await response.json();
       if (url) {
         window.location.href = url;
@@ -90,7 +88,6 @@ const EventDetails = () => {
         throw new Error('URL de checkout não disponível');
       }
     } catch (error) {
-      console.error('Erro no checkout:', error);
       toast.error("Erro no processo de compra", {
         description: "Ocorreu um erro ao processar sua compra. Por favor, tente novamente.",
       });
@@ -138,36 +135,36 @@ const EventDetails = () => {
         <div className="space-y-6">
           <Button 
             variant="ghost" 
-            className="mb-4 flex items-center gap-2 hover:bg-gray-100"
+            className="mb-4 flex items-center gap-2 hover:bg-soft-purple hover:text-primary transition"
             onClick={handleBackToHome}
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar para Home
           </Button>
-          <div>
+          {/* Imagem principal com overlay e borda */}
+          <div className="relative w-full rounded-2xl overflow-hidden h-52 shadow-xl border glass">
             <img
               src={event.image}
               alt={event.title}
-              className="w-full rounded-lg mb-4 object-cover h-48"
+              className="w-full h-full object-cover"
             />
-            <h1 className="text-2xl font-bold text-primary mb-2">{event.title}</h1>
-            <div className="flex flex-col gap-2 text-gray-600 mb-4">
-              <div className="flex items-center">
-                <Calendar className="mr-2 h-5 w-5" />
-                {new Date(event.date).toLocaleDateString("pt-BR", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </div>
-              <div className="flex items-center">
-                <Clock className="mr-2 h-5 w-5" />
-                {event.time}
-              </div>
-              <div className="flex items-center">
-                <MapPin className="mr-2 h-5 w-5" />
-                {event.location}
-              </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"/>
+            {/* Badge categoria futura aqui */}
+          </div>
+          {/* Título com gradiente e sombra */}
+          <h1 className="text-3xl font-extrabold mb-2 mt-2 text-transparent bg-gradient-to-r from-primary to-secondary bg-clip-text drop-shadow-md leading-tight">
+            {event.title}
+          </h1>
+          {/* Chips info */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/60 rounded-full text-sm font-semibold text-primary shadow">
+              <Calendar className="h-4 w-4" />{new Date(event.date).toLocaleDateString("pt-BR", { year: "numeric", month: "long", day: "numeric" })}
+            </div>
+            <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/60 rounded-full text-sm font-semibold text-primary shadow">
+              <Clock className="h-4 w-4" />{event.time}
+            </div>
+            <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/60 rounded-full text-sm font-semibold text-primary shadow">
+              <MapPin className="h-4 w-4" />{event.location}
             </div>
           </div>
 
@@ -176,27 +173,26 @@ const EventDetails = () => {
             onPurchase={handlePurchase}
           />
 
-          <Card className="mb-4">
+          {/* Card descrição com glassmorphism */}
+          <Card className="mb-3 bg-white/80 backdrop-blur-lg shadow-lg border border-soft-purple">
             <CardContent className="pt-6">
-              <h2 className="text-xl font-semibold mb-2">Descrição</h2>
+              <h2 className="text-lg font-semibold mb-1 text-primary drop-shadow">Descrição</h2>
               <p className="text-gray-700">{event.description}</p>
             </CardContent>
           </Card>
 
-          <Card className="mb-4">
+          <Card className="mb-3 bg-white/80 backdrop-blur-lg shadow-lg border border-soft-blue">
             <CardContent className="pt-6">
-              <h2 className="text-xl font-semibold mb-2">Local do Evento</h2>
-              <p className="text-gray-700">
-                <strong>{event.venue.name}</strong>
-                <br />
-                {event.venue.address}
-                <br />
-                Capacidade: {event.venue.capacity}
+              <h2 className="text-lg font-semibold mb-1 text-primary drop-shadow">Local do Evento</h2>
+              <p className="text-gray-700 space-y-1">
+                <span className="font-bold">{event.venue.name}</span><br/>
+                {event.venue.address}<br/>
+                Capacidade: <span className="font-semibold">{event.venue.capacity}</span>
               </p>
               <Button
                 variant="link"
                 asChild
-                className="mt-2 p-0"
+                className="mt-2 p-0 text-primary hover:text-secondary"
               >
                 <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
                   Ver no Mapa
@@ -205,9 +201,9 @@ const EventDetails = () => {
             </CardContent>
           </Card>
 
-          <Card className="mb-4">
+          <Card className="mb-4 bg-white/80 backdrop-blur-lg shadow-lg border border-soft-pink">
             <CardContent className="pt-6">
-              <h2 className="text-xl font-semibold mb-2">Avisos</h2>
+              <h2 className="text-lg font-semibold mb-1 text-primary drop-shadow">Avisos</h2>
               {event.warnings && event.warnings.length > 0 ? (
                 <ul className="list-disc pl-5 text-gray-700">
                   {event.warnings.map((warning, index) => (
@@ -227,59 +223,66 @@ const EventDetails = () => {
       );
     }
 
+    // DESKTOP MODERNO
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* COL 1: Left - Imagem + descrição */}
         <div>
           <Button 
             variant="ghost" 
-            className="mb-4 flex items-center gap-2 hover:bg-gray-100"
+            className="mb-6 flex items-center gap-2 hover:bg-soft-purple hover:text-primary transition"
             onClick={handleBackToHome}
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar para Home
           </Button>
-          <img
-            src={event.image}
-            alt={event.title}
-            className="w-full rounded-lg mb-4 object-cover h-48 md:h-64"
-          />
-          <h1 className="text-3xl font-bold text-primary mb-2">{event.title}</h1>
-          <div className="flex items-center text-gray-600 mb-4">
-            <Calendar className="mr-2 h-5 w-5" />
-            {new Date(event.date).toLocaleDateString("pt-BR", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-            <Separator orientation="vertical" className="mx-2 h-5" />
-            <Clock className="mr-2 h-5 w-5" />
-            {event.time}
-            <Separator orientation="vertical" className="mx-2 h-5" />
-            <MapPin className="mr-2 h-5 w-5" />
-            {event.location}
+          {/* Imagem com overlay moderninha */}
+          <div className="relative w-full rounded-3xl overflow-hidden h-64 shadow-2xl border glass mb-5">
+            <img
+              src={event.image}
+              alt={event.title}
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-10"/>
           </div>
-          
-          <Card className="mb-4">
+          {/* Título com gradiente */}
+          <h1 className="text-4xl font-extrabold text-transparent bg-gradient-to-r from-primary to-secondary bg-clip-text drop-shadow-md mb-3 leading-tight">
+            {event.title}
+          </h1>
+          {/* Chips info */}
+          <div className="flex flex-wrap gap-3 mb-7">
+            <div className="flex items-center gap-1 px-3 py-1 bg-soft-purple/60 rounded-full text-base font-semibold text-primary shadow">
+              <Calendar className="h-4 w-4" />{new Date(event.date).toLocaleDateString("pt-BR", { year: "numeric", month: "long", day: "numeric" })}
+            </div>
+            <div className="flex items-center gap-1 px-3 py-1 bg-soft-blue/60 rounded-full text-base font-semibold text-primary shadow">
+              <Clock className="h-4 w-4" />{event.time}
+            </div>
+            <div className="flex items-center gap-1 px-3 py-1 bg-soft-pink/60 rounded-full text-base font-semibold text-primary shadow">
+              <MapPin className="h-4 w-4" />{event.location}
+            </div>
+          </div>
+        
+          {/* Card descrição */}
+          <Card className="mb-4 bg-white/80 backdrop-blur-lg shadow-xl border border-soft-purple">
             <CardContent className="pt-6">
-              <h2 className="text-xl font-semibold mb-2">Descrição</h2>
+              <h2 className="text-xl font-semibold mb-2 text-primary drop-shadow">Descrição</h2>
               <p className="text-gray-700">{event.description}</p>
             </CardContent>
           </Card>
 
-          <Card className="mb-4">
+          {/* Local do Evento */}
+          <Card className="mb-4 bg-white/80 backdrop-blur-lg shadow-xl border border-soft-blue">
             <CardContent className="pt-6">
-              <h2 className="text-xl font-semibold mb-2">Local do Evento</h2>
-              <p className="text-gray-700">
-                <strong>{event.venue.name}</strong>
-                <br />
-                {event.venue.address}
-                <br />
-                Capacidade: {event.venue.capacity}
+              <h2 className="text-xl font-semibold mb-2 text-primary drop-shadow">Local do Evento</h2>
+              <p className="text-gray-700 space-y-1">
+                <span className="font-bold">{event.venue.name}</span><br/>
+                {event.venue.address}<br/>
+                Capacidade: <span className="font-semibold">{event.venue.capacity}</span>
               </p>
               <Button
                 variant="link"
                 asChild
-                className="mt-2 p-0"
+                className="mt-2 p-0 text-primary hover:text-secondary"
               >
                 <a href={event.venue.map_url} target="_blank" rel="noopener noreferrer">
                   Ver no Mapa
@@ -288,9 +291,10 @@ const EventDetails = () => {
             </CardContent>
           </Card>
 
-          <Card className="mb-4">
+          {/* Avisos */}
+          <Card className="mb-4 bg-white/80 backdrop-blur-lg shadow-xl border border-soft-pink">
             <CardContent className="pt-6">
-              <h2 className="text-xl font-semibold mb-2">Avisos</h2>
+              <h2 className="text-xl font-semibold mb-2 text-primary drop-shadow">Avisos</h2>
               {event.warnings && event.warnings.length > 0 ? (
                 <ul className="list-disc pl-5 text-gray-700">
                   {event.warnings.map((warning, index) => (
@@ -304,13 +308,26 @@ const EventDetails = () => {
           </Card>
         </div>
 
+        {/* COL 2: Ingressos + mapa */}
         <div>
-          <TicketSelector 
-            tickets={event.tickets} 
-            onPurchase={handlePurchase}
-          />
-          <div className="mt-6">
-            <EventMap coordinates={event.coordinates} />
+          {/* Tickets */}
+          <div className="mb-8">
+            <Card className="bg-white/90 shadow-2xl border border-soft-purple px-3 pt-3 pb-5 glass">
+              <CardContent className="p-0">
+                <TicketSelector 
+                  tickets={event.tickets} 
+                  onPurchase={handlePurchase}
+                />
+              </CardContent>
+            </Card>
+          </div>
+          {/* MAP CARD */}
+          <div className="mt-8">
+            <Card className="bg-soft-blue/40 backdrop-blur-lg border-0 shadow-xl rounded-2xl">
+              <CardContent className="p-0">
+                <EventMap coordinates={event.coordinates} />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -318,17 +335,18 @@ const EventDetails = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 md:px-10 py-8 max-w-6xl">
       {renderContent()}
     </div>
   );
 };
 
+// Skeletons: pequenos retoques nas cores novas
 const LoadingSkeletons = ({ isMobile }: { isMobile: boolean }) => {
   if (isMobile) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-48 w-full rounded-lg" />
         <div>
           <Skeleton className="h-8 w-3/4 mb-2" />
           <div className="space-y-2">
@@ -337,8 +355,8 @@ const LoadingSkeletons = ({ isMobile }: { isMobile: boolean }) => {
             <Skeleton className="h-5 w-2/3" />
           </div>
         </div>
-        
-        <Card>
+
+        <Card className="bg-white/80 backdrop-blur-lg border-soft-purple">
           <CardContent className="pt-6">
             <Skeleton className="h-7 w-32 mb-4" />
             <div className="space-y-2">
@@ -348,23 +366,23 @@ const LoadingSkeletons = ({ isMobile }: { isMobile: boolean }) => {
             </div>
           </CardContent>
         </Card>
-        
-        <Skeleton className="h-64 w-full" />
+
+        <Skeleton className="h-64 w-full rounded-lg" />
       </div>
     );
   }
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div>
-        <Skeleton className="h-64 w-full mb-4" />
+        <Skeleton className="h-64 w-full mb-4 rounded-2xl" />
         <Skeleton className="h-10 w-3/4 mb-4" />
         <div className="mb-6">
           <Skeleton className="h-6 w-2/3 mb-2" />
           <Skeleton className="h-6 w-1/2 mb-2" />
         </div>
-        
-        <Card className="mb-4">
+
+        <Card className="bg-white/80 backdrop-blur-lg border-soft-purple">
           <CardContent className="p-6">
             <Skeleton className="h-7 w-32 mb-4" />
             <div className="space-y-2">
@@ -375,9 +393,9 @@ const LoadingSkeletons = ({ isMobile }: { isMobile: boolean }) => {
           </CardContent>
         </Card>
       </div>
-      
+
       <div>
-        <Card className="mb-6">
+        <Card className="bg-white/90 border-none shadow-xl">
           <CardContent className="p-6">
             <Skeleton className="h-7 w-40 mb-4" />
             <div className="space-y-3">
@@ -387,11 +405,12 @@ const LoadingSkeletons = ({ isMobile }: { isMobile: boolean }) => {
             <Skeleton className="h-10 w-full mt-4" />
           </CardContent>
         </Card>
-        
-        <Skeleton className="h-64 w-full" />
+
+        <Skeleton className="h-64 w-full mt-6 rounded-lg" />
       </div>
     </div>
   );
 };
 
 export default EventDetails;
+
