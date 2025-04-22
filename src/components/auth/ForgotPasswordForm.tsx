@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Mail } from "lucide-react"
 import { useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,7 +16,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { toast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast"
+import { EmailService } from "@/services/email"
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -30,6 +32,7 @@ interface ForgotPasswordFormProps {
 
 export default function ForgotPasswordForm({ onSuccess, onCancel }: ForgotPasswordFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   
   const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -42,11 +45,24 @@ export default function ForgotPasswordForm({ onSuccess, onCancel }: ForgotPasswo
     setIsSubmitting(true);
     
     try {
-      // Aqui seria a chamada para API de recuperação de senha
-      console.log("Solicitação de recuperação de senha para:", data.email);
+      // Gerar um token de recuperação e enviar o email
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       
-      // Simulando um atraso da chamada de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (error) {
+        throw error;
+      }
+      
+      // Enviar email personalizado através do nosso serviço de email
+      try {
+        // URL de recuperação de senha que será enviada por email
+        const resetLink = `${window.location.origin}/reset-password`;
+        await EmailService.sendPasswordReset(data.email, data.email.split('@')[0], resetLink);
+      } catch (emailError) {
+        console.error("Erro ao enviar email personalizado:", emailError);
+        // Mesmo que falhe o email personalizado, o Supabase já enviou um email padrão
+      }
       
       toast({
         title: "Email enviado com sucesso",

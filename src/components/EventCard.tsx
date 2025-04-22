@@ -51,9 +51,9 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
   const handleVerIngressos = () => {
     if (eventExists === false) {
       toast({
-        title: "Evento não disponível",
-        description: "Este evento está em desenvolvimento e ainda não está disponível.",
-        variant: "destructive",
+        title: "Evento em Desenvolvimento",
+        description: "Este evento será disponibilizado em breve. Fique atento às atualizações!",
+        variant: "default",
       });
       return false;
     }
@@ -103,8 +103,8 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
               className="bg-gradient-primary text-white hover:opacity-90 whitespace-nowrap"
               onClick={() => {
                 toast({
-                  title: "Evento em desenvolvimento",
-                  description: "Este evento está sendo criado e estará disponível em breve.",
+                  title: "Evento em Desenvolvimento",
+                  description: "Este evento será disponibilizado em breve. Fique atento às atualizações!",
                   variant: "default",
                 });
               }}

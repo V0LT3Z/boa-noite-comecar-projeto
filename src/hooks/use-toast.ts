@@ -16,9 +16,12 @@ export const useToast = () => {
       }
 
       if (variant === "destructive") {
-        toastOptions.className = "bg-destructive text-destructive-foreground"
+        toastOptions.className = "bg-destructive text-destructive-foreground border-destructive-border"
       } else if (variant === "success") {
-        toastOptions.className = "bg-green-500 text-white"
+        toastOptions.className = "bg-green-500 text-white border-green-600"
+      } else {
+        // Default toast com gradiente
+        toastOptions.className = "bg-gradient-to-r from-primary to-secondary text-white"
       }
 
       return sonnerToast(title, {
@@ -36,9 +39,12 @@ export const toast = ({ title, description, variant = "default" }: ToastProps) =
   }
 
   if (variant === "destructive") {
-    toastOptions.className = "bg-destructive text-destructive-foreground"
+    toastOptions.className = "bg-destructive text-destructive-foreground border-destructive-border"
   } else if (variant === "success") {
-    toastOptions.className = "bg-green-500 text-white"
+    toastOptions.className = "bg-green-500 text-white border-green-600"
+  } else {
+    // Default toast com gradiente
+    toastOptions.className = "bg-gradient-to-r from-primary to-secondary text-white"
   }
 
   return sonnerToast(title, {

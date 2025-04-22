@@ -17,6 +17,7 @@ import { EventResponse } from "@/types/event"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useToast } from "@/hooks/use-toast"
 
 const mockEvents = [
   {
@@ -109,6 +110,7 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [events, setEvents] = useState<EventResponse[]>([])
   const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
   
   useEffect(() => {
     const loadEvents = async () => {
@@ -117,10 +119,16 @@ const Index = () => {
         const eventData = await fetchEvents();
         console.log("Eventos carregados:", eventData);
         
-        // Se não houver eventos do banco, usar os mockados
-        if (!eventData || eventData.length === 0) {
-          console.log("Usando eventos mockados pois não há eventos no banco");
-          setEvents(mockEvents as unknown as EventResponse[]);
+        // Se não houver eventos do banco ou o número for muito baixo, adicionar os mockados
+        if (!eventData || eventData.length < 2) {
+          console.log("Usando eventos mockados para complementar");
+          // Combinar eventos do banco com os mockados, evitando duplicações por id
+          const existingIds = eventData?.map(e => e.id) || [];
+          const mocksToAdd = mockEvents
+            .filter(mock => !existingIds.includes(mock.id as number))
+            .map(mock => ({ ...mock, is_mock: true }));
+          
+          setEvents([...(eventData || []), ...mocksToAdd] as EventResponse[]);
         } else {
           setEvents(eventData);
         }
@@ -129,24 +137,31 @@ const Index = () => {
         // Usar dados mockados em caso de falha
         console.log("Usando eventos mockados devido a erro");
         setEvents(mockEvents as unknown as EventResponse[]);
+        
+        toast({
+          title: "Falha ao carregar eventos",
+          description: "Estamos exibindo eventos mockados enquanto tentamos resolver o problema.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
     
     loadEvents();
-  }, []);
+  }, [toast]);
 
   const formattedEvents = events.map(event => {
     // Se for um evento mockado, use seu formato diretamente
-    if ('category' in event) {
-      return event as unknown as {
-        id: number;
-        title: string;
-        date: string;
-        location: string;
-        image: string;
-        category: string;
+    if ('category' in event || (event as any).is_mock) {
+      return {
+        id: event.id,
+        title: event.title,
+        date: typeof event.date === 'string' ? event.date : format(new Date(), "dd 'de' MMMM yyyy", { locale: ptBR }),
+        location: event.location,
+        image: (event as any).image || "https://picsum.photos/seed/" + event.id + "/800/500",
+        category: (event as any).category || "Eventos",
+        is_mock: (event as any).is_mock || false
       };
     }
     
@@ -159,7 +174,8 @@ const Index = () => {
         date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
         location: event.location,
         image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
-        category: "Eventos"
+        category: "Eventos",
+        is_mock: false
       };
     } catch (error) {
       console.error("Erro ao formatar evento:", error, event);
@@ -169,7 +185,8 @@ const Index = () => {
         date: "Data não disponível",
         location: event.location || "Local não informado",
         image: "https://picsum.photos/seed/fallback/800/500",
-        category: "Eventos"
+        category: "Eventos",
+        is_mock: false
       };
     }
   });
@@ -269,6 +286,7 @@ const Index = () => {
                     date={event.date}
                     location={event.location}
                     image={event.image}
+                    category={event.category}
                   />
                 ))}
               </div>
