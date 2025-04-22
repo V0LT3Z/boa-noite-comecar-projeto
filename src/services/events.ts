@@ -113,8 +113,14 @@ export const createEvent = async (eventData: AdminEventForm) => {
   try {
     console.log("Criando novo evento:", eventData);
     // Combinar data e hora em um único timestamp
-    const dateTime = `${eventData.date}T${eventData.time}`;
+    const dateTime = `${format(eventData.date, "yyyy-MM-dd")}T${eventData.time || "19:00"}`;
     const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
+
+    // Calcular total de tickets
+    const totalTickets = eventData.tickets.reduce(
+      (sum, ticket) => sum + (parseInt(ticket.availableQuantity) || 0),
+      0
+    );
 
     // Preparar dados do evento
     const eventInsertData = {
@@ -122,13 +128,10 @@ export const createEvent = async (eventData: AdminEventForm) => {
       description: eventData.description,
       date: dateObj.toISOString(),
       location: eventData.location,
-      image_url: eventData.bannerUrl,
+      image_url: eventData.bannerUrl || null,
       minimum_age: parseInt(eventData.minimumAge) || 0,
       status: eventData.status || "active",
-      total_tickets: eventData.tickets.reduce(
-        (sum, ticket) => sum + (parseInt(ticket.availableQuantity) || 0), 
-        0
-      )
+      total_tickets: totalTickets || eventData.capacity || 0
     };
     
     console.log("Dados do evento para inserção:", eventInsertData);
@@ -148,27 +151,30 @@ export const createEvent = async (eventData: AdminEventForm) => {
     console.log("Evento criado com sucesso:", eventInsert);
 
     // Inserir os tipos de ingressos
-    const ticketTypesData = eventData.tickets.map(ticket => ({
-      event_id: eventInsert.id,
-      name: ticket.name,
-      price: parseFloat(ticket.price) || 0,
-      description: ticket.description,
-      available_quantity: parseInt(ticket.availableQuantity) || 0,
-      max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
-    }));
+    if (eventInsert && eventData.tickets && eventData.tickets.length > 0) {
+      const ticketTypesData = eventData.tickets.map(ticket => ({
+        event_id: eventInsert.id,
+        name: ticket.name,
+        price: parseFloat(ticket.price) || 0,
+        description: ticket.description,
+        available_quantity: parseInt(ticket.availableQuantity) || 0,
+        max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
+      }));
 
-    console.log("Inserindo tipos de ingresso:", ticketTypesData);
+      console.log("Inserindo tipos de ingresso:", ticketTypesData);
 
-    const { error: ticketError } = await supabase
-      .from("ticket_types")
-      .insert(ticketTypesData);
+      const { error: ticketError } = await supabase
+        .from("ticket_types")
+        .insert(ticketTypesData);
 
-    if (ticketError) {
-      console.error("Erro ao criar tipos de ingresso:", ticketError);
-      throw ticketError;
+      if (ticketError) {
+        console.error("Erro ao criar tipos de ingresso:", ticketError);
+        throw ticketError;
+      }
+
+      console.log("Tipos de ingresso criados com sucesso");
     }
-
-    console.log("Tipos de ingresso criados com sucesso");
+    
     return eventInsert;
   } catch (error) {
     console.error("Erro ao criar evento:", error);
@@ -179,7 +185,7 @@ export const createEvent = async (eventData: AdminEventForm) => {
 // Função para atualizar um evento
 export const updateEvent = async (id: number, eventData: AdminEventForm) => {
   // Combinar data e hora em um único timestamp
-  const dateTime = `${eventData.date}T${eventData.time}`;
+  const dateTime = `${format(eventData.date, "yyyy-MM-dd")}T${eventData.time}`;
   const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
   // Atualizar o evento principal

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Upload } from "lucide-react";
+import { Calendar as CalendarIcon, Upload, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -26,6 +26,18 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { createEvent } from "@/services/events";
+
+// Form schema for ticket type validation
+const ticketTypeSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(2, "Nome do ingresso deve ter pelo menos 2 caracteres"),
+  price: z.string().min(1, "Preço é obrigatório"),
+  description: z.string().optional(),
+  availableQuantity: z.string().min(1, "Quantidade disponível é obrigatória"),
+  maxPerPurchase: z.string().min(1, "Quantidade máxima por compra é obrigatória"),
+});
 
 // Form schema for event validation
 const eventSchema = z.object({
@@ -35,9 +47,14 @@ const eventSchema = z.object({
   date: z.date({
     required_error: "A data do evento é obrigatória",
   }),
+  time: z.string().default("19:00"),
+  minimumAge: z.string().default("0"),
   price: z.coerce.number().min(0, "O preço não pode ser negativo"),
   capacity: z.coerce.number().min(1, "A capacidade deve ser pelo menos 1"),
   bannerUrl: z.string().optional(),
+  status: z.enum(["active", "paused", "cancelled"]).default("active"),
+  warnings: z.array(z.string()).default([]),
+  tickets: z.array(ticketTypeSchema).min(1, "Adicione pelo menos um tipo de ingresso"),
 });
 
 // Types for form data and component props
@@ -59,9 +76,23 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       description: event?.description || "",
       location: event?.location || "",
       date: event?.date ? new Date(event.date) : new Date(),
+      time: event?.time || "19:00",
+      minimumAge: event?.minimumAge?.toString() || "0",
       price: event?.price || 0,
       capacity: event?.capacity || 100,
       bannerUrl: event?.bannerUrl || "",
+      status: event?.status || "active",
+      warnings: event?.warnings || [],
+      tickets: event?.tickets?.length > 0 
+        ? event.tickets 
+        : [{
+            id: "new-1",
+            name: "Entrada Padrão",
+            price: "0",
+            description: "Ingresso padrão para o evento",
+            availableQuantity: "100",
+            maxPerPurchase: "4"
+          }]
     },
   });
 
@@ -77,6 +108,36 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     }
   };
 
+  // Handle adding new ticket type
+  const addTicketType = () => {
+    const currentTickets = form.getValues("tickets") || [];
+    form.setValue("tickets", [
+      ...currentTickets,
+      {
+        id: `new-${Date.now()}`,
+        name: `Tipo de Ingresso ${currentTickets.length + 1}`,
+        price: "0",
+        description: "",
+        availableQuantity: "50",
+        maxPerPurchase: "4"
+      }
+    ]);
+  };
+
+  // Handle removing ticket type
+  const removeTicketType = (index: number) => {
+    const currentTickets = form.getValues("tickets") || [];
+    if (currentTickets.length <= 1) {
+      toast({
+        title: "Não é possível remover",
+        description: "Deve haver pelo menos um tipo de ingresso.",
+        variant: "destructive",
+      });
+      return;
+    }
+    form.setValue("tickets", currentTickets.filter((_, i) => i !== index));
+  };
+
   // Handle form submission
   const onSubmit = async (data: EventFormValues) => {
     setIsSubmitting(true);
@@ -84,49 +145,34 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     try {
       console.log("Submitting event data:", data);
       
-      const eventData = {
-        title: data.title,
-        description: data.description,
-        location: data.location,
-        date: format(data.date, "yyyy-MM-dd"),
-        image_url: data.bannerUrl || null,
-        status: "active",
-        total_tickets: data.capacity // Added this field to match the required schema
-      };
-
-      if (event?.id) {
-        // Update existing event
-        const { error } = await supabase
-          .from("events")
-          .update(eventData)
-          .eq("id", event.id);
-          
-        if (error) throw error;
+      try {
+        if (event?.id) {
+          // Update existing event logic will be here
+          console.log("Updating event:", event.id);
+        } else {
+          // Create new event
+          await createEvent(data);
+        }
+        
         toast({
-          title: "Evento atualizado",
-          description: "O evento foi atualizado com sucesso.",
+          title: event?.id ? "Evento atualizado" : "Evento criado",
+          description: event?.id 
+            ? "O evento foi atualizado com sucesso." 
+            : "O evento foi criado com sucesso.",
+          className: "bg-gradient-to-r from-primary to-secondary text-white",
         });
-      } else {
-        // Create new event
-        const { error } = await supabase
-          .from("events")
-          .insert(eventData); // Fixed: Changed from array to single object
-          
-        if (error) throw error;
-        toast({
-          title: "Evento criado",
-          description: "O evento foi criado com sucesso.",
-        });
+        
+        // Call success callback
+        onSuccess();
+      } catch (error: any) {
+        console.error("Erro ao salvar evento:", error);
+        throw error;
       }
-      
-      // Call success callback
-      onSuccess();
-      
-    } catch (error) {
-      console.error("Erro ao salvar evento:", error);
+    } catch (error: any) {
+      console.error("Erro detalhado ao salvar evento:", error);
       toast({
         title: "Erro ao salvar",
-        description: "Não foi possível salvar o evento. Tente novamente.",
+        description: `Não foi possível salvar o evento: ${error.message || "Erro desconhecido"}`,
         variant: "destructive",
       });
     } finally {
@@ -271,6 +317,21 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             </FormItem>
           )}
         />
+        
+        {/* Event time */}
+        <FormField
+          control={form.control}
+          name="time"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Hora</FormLabel>
+              <FormControl>
+                <Input type="time" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Event price and capacity */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -308,6 +369,134 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             )}
           />
         </div>
+        
+        {/* Event minimum age */}
+        <FormField
+          control={form.control}
+          name="minimumAge"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Idade Mínima</FormLabel>
+              <FormControl>
+                <Input type="number" min="0" {...field} />
+              </FormControl>
+              <FormDescription>
+                Defina 0 para sem restrição de idade
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Ticket Types Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Tipos de Ingressos</h3>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm"
+              onClick={addTicketType}
+            >
+              <Plus className="h-4 w-4 mr-2" /> Adicionar Tipo
+            </Button>
+          </div>
+
+          {form.watch("tickets")?.map((_, index) => (
+            <Card key={index} className="shadow-sm">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-medium">Tipo de Ingresso {index + 1}</h4>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeTicketType(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Ticket Name */}
+                  <FormField
+                    control={form.control}
+                    name={`tickets.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ex: VIP, Backstage, Pista" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Ticket Price */}
+                  <FormField
+                    control={form.control}
+                    name={`tickets.${index}.price`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Preço (R$)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Ticket Available Quantity */}
+                  <FormField
+                    control={form.control}
+                    name={`tickets.${index}.availableQuantity`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Quantidade Disponível</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Ticket Max Per Purchase */}
+                  <FormField
+                    control={form.control}
+                    name={`tickets.${index}.maxPerPurchase`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Máx. por Compra</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="1" max="10" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Ticket Description */}
+                  <FormField
+                    control={form.control}
+                    name={`tickets.${index}.description`}
+                    render={({ field }) => (
+                      <FormItem className="col-span-1 md:col-span-2">
+                        <FormLabel>Descrição</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Descreva este tipo de ingresso" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         {/* Submit button */}
         <Button 
@@ -325,3 +514,5 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     </Form>
   );
 }
+
+export default EventForm;

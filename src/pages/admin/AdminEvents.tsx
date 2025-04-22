@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft } from "lucide-react";
-import { EventForm } from "@/components/admin/EventForm";
+import EventForm from "@/components/admin/EventForm";
 import { toast } from "@/hooks/use-toast";
 import { EventItem, EventStatus } from "@/types/admin";
 import { EventsTable } from "@/components/admin/events/EventsTable";
@@ -23,20 +22,18 @@ const AdminEvents = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState<"pause" | "cancel" | "activate">("pause");
 
-  // Carregar eventos da API
   const loadEvents = async () => {
     try {
       setLoadingEvents(true);
       const fetchedEvents = await fetchEvents();
       
-      // Mapear os eventos para o formato do EventItem
       const formattedEvents: EventItem[] = fetchedEvents.map(event => ({
         id: event.id,
         title: event.title,
         date: format(new Date(event.date), "yyyy-MM-dd"),
         status: (event.status as "active" | "paused" | "cancelled") || "active",
         ticketsSold: event.tickets_sold || 0,
-        totalRevenue: 0, // Calcular a receita seria uma funcionalidade futura
+        totalRevenue: 0,
       }));
       
       setEvents(formattedEvents);
@@ -45,14 +42,13 @@ const AdminEvents = () => {
       toast({
         title: "Erro ao carregar eventos",
         description: "Não foi possível carregar a lista de eventos. Tente novamente.",
-        variant: "destructive",
+        className: "bg-gradient-to-r from-primary to-secondary text-white",
       });
     } finally {
       setLoadingEvents(false);
     }
   };
-  
-  // Carregar eventos ao montar o componente
+
   useEffect(() => {
     if (!isCreatingEvent) {
       loadEvents();
@@ -70,11 +66,9 @@ const AdminEvents = () => {
       )
     );
     
-    // Close dialog after action
     setConfirmDialogOpen(false);
     setSelectedEvent(null);
     
-    // Show success notification
     const action = 
       newStatus === "active" ? "ativado" : 
       newStatus === "paused" ? "pausado" : "cancelado";
@@ -82,6 +76,7 @@ const AdminEvents = () => {
     toast({
       title: `Evento ${action}`,
       description: `O evento foi ${action} com sucesso.`,
+      className: "bg-gradient-to-r from-primary to-secondary text-white",
     });
   };
 
@@ -109,7 +104,7 @@ const AdminEvents = () => {
   const handleFormSuccess = () => {
     setIsCreatingEvent(false);
     setEditingEvent(null);
-    loadEvents(); // Recarregar eventos após o sucesso
+    loadEvents();
   };
 
   return (
