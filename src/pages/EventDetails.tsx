@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock, ArrowLeft } from "lucide-react";
@@ -19,7 +18,7 @@ const EventDetails = () => {
   const [event, setEvent] = useState<EventDetailsType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPurchasing, setIsPurchasing] = useState(false); // Add state for tracking purchase process
+  const [isPurchasing, setIsPurchasing] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -66,7 +65,7 @@ const EventDetails = () => {
     if (!id || selectedTickets.length === 0) return;
 
     try {
-      setIsPurchasing(true); // Start purchase process
+      setIsPurchasing(true);
       
       console.log("Creating checkout session for event:", id);
       console.log("Selected tickets:", selectedTickets);
@@ -80,7 +79,12 @@ const EventDetails = () => {
 
       if (error) {
         console.error("Supabase function error:", error);
-        throw error;
+        throw new Error(`Erro na função: ${error.message}`);
+      }
+
+      if (!data) {
+        console.error("No data received from create-checkout function");
+        throw new Error("Nenhuma resposta recebida do servidor");
       }
 
       if (data?.url) {
@@ -90,13 +94,13 @@ const EventDetails = () => {
         console.error("No checkout URL received:", data);
         throw new Error('URL de checkout não disponível');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao criar checkout:", error);
       toast.error("Erro no processo de compra", {
-        description: "Ocorreu um erro ao processar sua compra. Por favor, tente novamente.",
+        description: `${error.message || "Ocorreu um erro ao processar sua compra. Por favor, tente novamente."}`
       });
     } finally {
-      setIsPurchasing(false); // End purchase process regardless of outcome
+      setIsPurchasing(false);
     }
   };
 

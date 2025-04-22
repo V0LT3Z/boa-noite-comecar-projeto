@@ -18,26 +18,26 @@ serve(async (req) => {
     const { eventId, selectedTickets } = await req.json()
     console.log(`Request data: eventId=${eventId}, tickets=${JSON.stringify(selectedTickets)}`);
 
-    // Inicializar cliente Stripe
+    // Initialize Stripe
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
-      console.error("STRIPE_SECRET_KEY is not set");
+      console.error("STRIPE_SECRET_KEY is not set or not accessible");
       throw new Error("Stripe key not configured");
     }
     
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     })
-    console.log("Stripe client initialized");
+    console.log("Stripe client initialized with key length:", stripeKey.length);
 
-    // Criar um cliente Supabase para acessar o banco
+    // Create a Supabase client to access the database
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     )
     console.log("Supabase client initialized");
 
-    // Buscar informações dos tickets selecionados
+    // Fetch information about the selected tickets
     const { data: ticketTypes, error: ticketError } = await supabaseClient
       .from("ticket_types")
       .select("*")
@@ -56,7 +56,7 @@ serve(async (req) => {
     }
     console.log(`Found ${ticketTypes.length} ticket types`);
 
-    // Criar os line items para o Stripe
+    // Create line items for Stripe
     const lineItems = selectedTickets.map((selected: any) => {
       const ticketType = ticketTypes.find((t) => t.id === selected.ticketId)
       if (!ticketType) throw new Error(`Tipo de ingresso não encontrado: ${selected.ticketId}`)
@@ -68,14 +68,14 @@ serve(async (req) => {
             name: ticketType.name,
             description: ticketType.description || undefined,
           },
-          unit_amount: Math.round(ticketType.price * 100), // Converter para centavos
+          unit_amount: Math.round(ticketType.price * 100), // Convert to cents
         },
         quantity: selected.quantity,
       }
     })
-    console.log("Line items created:", lineItems);
+    console.log("Line items created:", JSON.stringify(lineItems));
 
-    // Criar sessão de checkout
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
