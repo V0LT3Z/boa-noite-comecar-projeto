@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -141,7 +141,6 @@ const EventDetails = () => {
       return (
         <div className="flex flex-col w-full gap-5">
           <div className="relative w-full mb-2">
-            <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-r from-primary/80 to-secondary/80 rounded-t-2xl" />
             <div className="relative pt-4 pl-4">
               <BackButton onClick={handleBackToHome} />
             </div>
@@ -153,7 +152,6 @@ const EventDetails = () => {
               alt={event.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           </div>
           
           <GradientCard className="w-full">
@@ -229,7 +227,6 @@ const EventDetails = () => {
       <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
         <div className="col-span-1 flex flex-col gap-4">
           <div className="relative w-full mb-1">
-            <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-r from-primary/80 to-secondary/80 rounded-t-2xl" />
             <div className="relative pt-4 pl-4">
               <BackButton onClick={handleBackToHome} />
             </div>
@@ -241,7 +238,6 @@ const EventDetails = () => {
               alt={event.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           </div>
           
           <GradientCard className="w-full">
