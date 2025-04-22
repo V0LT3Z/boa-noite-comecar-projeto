@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import Stripe from "https://esm.sh/stripe@14.21.0"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
@@ -13,18 +14,28 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Creating checkout session...");
     const { eventId, selectedTickets } = await req.json()
+    console.log(`Request data: eventId=${eventId}, tickets=${JSON.stringify(selectedTickets)}`);
 
     // Inicializar cliente Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      console.error("STRIPE_SECRET_KEY is not set");
+      throw new Error("Stripe key not configured");
+    }
+    
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     })
+    console.log("Stripe client initialized");
 
     // Criar um cliente Supabase para acessar o banco
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     )
+    console.log("Supabase client initialized");
 
     // Buscar informações dos tickets selecionados
     const { data: ticketTypes, error: ticketError } = await supabaseClient
@@ -35,8 +46,15 @@ serve(async (req) => {
         selectedTickets.map((t: any) => t.ticketId)
       )
 
-    if (ticketError) throw ticketError
-    if (!ticketTypes) throw new Error("Nenhum tipo de ingresso encontrado")
+    if (ticketError) {
+      console.error("Error fetching ticket types:", ticketError);
+      throw ticketError;
+    }
+    if (!ticketTypes) {
+      console.error("No ticket types found");
+      throw new Error("Nenhum tipo de ingresso encontrado");
+    }
+    console.log(`Found ${ticketTypes.length} ticket types`);
 
     // Criar os line items para o Stripe
     const lineItems = selectedTickets.map((selected: any) => {
@@ -55,6 +73,7 @@ serve(async (req) => {
         quantity: selected.quantity,
       }
     })
+    console.log("Line items created:", lineItems);
 
     // Criar sessão de checkout
     const session = await stripe.checkout.sessions.create({
@@ -68,12 +87,14 @@ serve(async (req) => {
         tickets: JSON.stringify(selectedTickets),
       },
     })
+    console.log("Checkout session created:", session.id);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     })
   } catch (error) {
+    console.error("Error creating checkout session:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

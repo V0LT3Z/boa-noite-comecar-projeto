@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock, ArrowLeft } from "lucide-react";
@@ -18,6 +19,7 @@ const EventDetails = () => {
   const [event, setEvent] = useState<EventDetailsType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPurchasing, setIsPurchasing] = useState(false); // Add state for tracking purchase process
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -64,6 +66,11 @@ const EventDetails = () => {
     if (!id || selectedTickets.length === 0) return;
 
     try {
+      setIsPurchasing(true); // Start purchase process
+      
+      console.log("Creating checkout session for event:", id);
+      console.log("Selected tickets:", selectedTickets);
+      
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
           eventId: parseInt(id),
@@ -72,12 +79,15 @@ const EventDetails = () => {
       });
 
       if (error) {
+        console.error("Supabase function error:", error);
         throw error;
       }
 
       if (data?.url) {
+        console.log("Checkout URL received, redirecting to:", data.url);
         window.location.href = data.url;
       } else {
+        console.error("No checkout URL received:", data);
         throw new Error('URL de checkout não disponível');
       }
     } catch (error) {
@@ -85,6 +95,8 @@ const EventDetails = () => {
       toast.error("Erro no processo de compra", {
         description: "Ocorreu um erro ao processar sua compra. Por favor, tente novamente.",
       });
+    } finally {
+      setIsPurchasing(false); // End purchase process regardless of outcome
     }
   };
 

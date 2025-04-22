@@ -9,9 +9,10 @@ import { AuthDialog } from "@/components/auth/AuthDialog"
 interface TicketSelectorProps {
   tickets: TicketType[]
   onPurchase?: (selectedTickets: { ticketId: number, quantity: number }[]) => void
+  isPurchasing?: boolean // Add prop for purchase loading state
 }
 
-const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
+const TicketSelector = ({ tickets, onPurchase, isPurchasing = false }: TicketSelectorProps) => {
   const [selectedTickets, setSelectedTickets] = useState<{ ticketId: number, quantity: number }[]>(
     tickets?.map(ticket => ({ ticketId: ticket.id, quantity: 0 })) || []
   );
@@ -85,7 +86,7 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => handleQuantityChange(ticket.id, quantity - 1)}
-                  disabled={isDecrementDisabled}
+                  disabled={isDecrementDisabled || isPurchasing}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -95,7 +96,7 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => handleQuantityChange(ticket.id, quantity + 1)}
-                  disabled={isIncrementDisabled}
+                  disabled={isIncrementDisabled || isPurchasing}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -111,15 +112,23 @@ const TicketSelector = ({ tickets, onPurchase }: TicketSelectorProps) => {
           <Button 
             onClick={handlePurchaseClick}
             className="w-full bg-primary text-white"
-            disabled={!selectedTickets.some(item => item.quantity > 0)}
+            disabled={!selectedTickets.some(item => item.quantity > 0) || isPurchasing}
             size="lg"
           >
-            Comprar Ingressos
+            {isPurchasing ? (
+              <>
+                <span className="animate-spin mr-2">⭘</span>
+                Processando...
+              </>
+            ) : (
+              'Comprar Ingressos'
+            )}
           </Button>
           <Button 
             variant="outline"
             className="w-full"
             size="lg"
+            disabled={isPurchasing}
           >
             Adicionar aos favoritos
           </Button>
