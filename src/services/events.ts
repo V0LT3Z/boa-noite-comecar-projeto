@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
@@ -131,8 +130,7 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
       0
     );
 
-    // Preparar dados do evento - removendo user_id para evitar o erro de UUID inválido
-    // Já que ainda não temos integração completa com o Supabase Auth
+    // Preparar dados do evento
     const eventInsertData = {
       title: eventData.title,
       description: eventData.description,
@@ -141,8 +139,8 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
       image_url: eventData.bannerUrl || null,
       minimum_age: parseInt(eventData.minimumAge) || 0,
       status: eventData.status || "active",
-      total_tickets: totalTickets
-      // Removemos user_id temporariamente - será adicionado quando tivermos autenticação real com Supabase
+      total_tickets: totalTickets,
+      user_id: userId
     };
     
     console.log("Dados do evento para inserção:", eventInsertData);
@@ -170,7 +168,6 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
         description: ticket.description,
         available_quantity: parseInt(ticket.availableQuantity) || 0,
         max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
-        // Removemos user_id temporariamente - será adicionado quando tivermos autenticação real com Supabase
       }));
 
       console.log("Inserindo tipos de ingresso:", ticketTypesData);

@@ -1,5 +1,8 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 interface User {
   id: string;
@@ -35,59 +38,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const setupAuth = async () => {
       try {
-        const storedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('authToken');
+        // Configurar listener para mudanças de autenticação
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            console.log("Auth state changed:", event, session?.user?.id);
+            await handleAuthChange(session);
+          }
+        );
+
+        // Verificar sessão existente
+        const { data: { session } } = await supabase.auth.getSession();
+        await handleAuthChange(session);
         
-        console.log("Checking authentication:", { hasUser: !!storedUser, hasToken: !!token });
-        
-        if (storedUser && token) {
-          const parsedUser = JSON.parse(storedUser);
-          console.log("User authenticated:", parsedUser);
-          setUser(parsedUser);
-        } else {
-          console.log("No authenticated user found");
-        }
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
         console.error("Authentication error:", error);
-      } finally {
         setIsLoading(false);
       }
     };
     
-    checkAuth();
+    setupAuth();
   }, []);
 
-  const getRegisteredUsers = (): Record<string, { user: User, password: string }> => {
-    const users = localStorage.getItem('registeredUsers');
-    return users ? JSON.parse(users) : {};
+  const handleAuthChange = async (session: Session | null) => {
+    if (session?.user) {
+      const supabaseUser = session.user;
+      
+      try {
+        // Verifica se existe um perfil para o usuário ou pega os metadados
+        const userMeta = supabaseUser.user_metadata;
+        const role = userMeta?.role || 'user';
+        const fullName = userMeta?.full_name || userMeta?.name || 'Usuário';
+        
+        const userProfile = {
+          id: supabaseUser.id,
+          email: supabaseUser.email,
+          fullName: fullName,
+          role: role
+        };
+        
+        console.log("User authenticated:", userProfile);
+        setUser(userProfile);
+      } catch (error) {
+        console.error("Error getting user data:", error);
+      }
+    } else {
+      console.log("No authenticated user found");
+      setUser(null);
+    }
+    
+    setIsLoading(false);
   };
 
   const handleLogin = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
       
-      const registeredUsers = getRegisteredUsers();
-      const userRecord = registeredUsers[email];
-      
-      if (!userRecord || userRecord.password !== password) {
+      if (error) {
+        console.error("Login error:", error);
         toast({
           title: "Erro ao fazer login",
-          description: "Email ou senha incorretos.",
+          description: error.message || "Verifique suas credenciais e tente novamente.",
           variant: "destructive",
         });
         return false;
       }
-      
-      const mockToken = `mock-jwt-token-${Date.now()}`;
-      
-      localStorage.setItem('authToken', mockToken);
-      localStorage.setItem('user', JSON.stringify(userRecord.user));
-      
-      console.log("User logged in:", userRecord.user);
-      setUser(userRecord.user);
       
       toast({
         title: "Login realizado com sucesso!",
@@ -112,40 +135,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (userData: RegisterData): Promise<boolean> => {
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Registrar o usuário no Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: {
+            full_name: userData.fullName,
+            role: userData.role || 'user'
+          }
+        }
+      });
       
-      const registeredUsers = getRegisteredUsers();
-      
-      if (registeredUsers[userData.email]) {
+      if (error) {
+        console.error("Registration error:", error);
         toast({
           title: "Erro ao criar conta",
-          description: "Este email já está cadastrado.",
+          description: error.message || "Ocorreu um erro ao criar sua conta. Tente novamente.",
           variant: "destructive",
         });
         return false;
       }
-      
-      const newUser = {
-        id: `user-${Date.now()}`,
-        email: userData.email,
-        fullName: userData.fullName,
-        role: userData.role || 'user'
-      };
-      
-      registeredUsers[userData.email] = {
-        user: newUser,
-        password: userData.password
-      };
-      
-      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-      
-      const mockToken = `mock-jwt-token-${Date.now()}`;
-      
-      localStorage.setItem('authToken', mockToken);
-      localStorage.setItem('user', JSON.stringify(newUser));
-      
-      console.log("User registered:", newUser);
-      setUser(newUser);
       
       toast({
         title: "Conta criada com sucesso!",
@@ -167,11 +177,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     console.log("Logging out user");
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    setUser(null);
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      console.error("Logout error:", error);
+    }
+    
     toast({
       title: "Logout realizado",
       description: "Você saiu da sua conta com sucesso.",
