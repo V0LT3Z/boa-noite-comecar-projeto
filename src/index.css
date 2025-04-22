@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,9 +7,9 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
-    --primary: 270 50% 40%; // Purple
+    --primary: 270 50% 40%; /* Purple */
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 0%; // Black
+    --secondary: 0 0% 0%; /* Black */
     --secondary-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -17,9 +18,9 @@
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-    --primary: 270 50% 40%; // Purple
+    --primary: 270 50% 40%; /* Purple */
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 0%; // Black
+    --secondary: 0 0% 0%; /* Black */
     --secondary-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
