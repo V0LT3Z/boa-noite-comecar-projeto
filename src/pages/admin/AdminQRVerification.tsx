@@ -4,50 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Check, X, Scan, Camera, CameraOff } from "lucide-react";
+import { Check, X, Camera, CameraOff } from "lucide-react";
 import { verifyTicketQR } from "@/services/orders";
 import { QRVerification } from "@/types/admin";
-import { Html5QrcodeScanner } from "html5-qrcode";
-import { useEffect } from "react";
+import { useQRScanner } from "@/hooks/use-qr-scanner";
 
 const AdminQRVerification = () => {
   const [manualCode, setManualCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [scanResult, setScanResult] = useState<QRVerification | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
-
-  useEffect(() => {
-    let scanner: Html5QrcodeScanner | null = null;
-
-    if (isScanning) {
-      scanner = new Html5QrcodeScanner(
-        "reader",
-        { 
-          fps: 10,
-          qrbox: {width: 250, height: 250},
-          aspectRatio: 1,
-        },
-        false
-      );
-
-      scanner.render(onScanSuccess, onScanFailure);
-    }
-
-    return () => {
-      if (scanner) {
-        scanner.clear().catch(console.error);
-      }
-    };
-  }, [isScanning]);
-
-  const onScanSuccess = async (decodedText: string) => {
-    setIsScanning(false);
-    await verifyCode(decodedText);
-  };
-
-  const onScanFailure = (error: string) => {
-    console.error(error);
-  };
 
   const verifyCode = async (code: string) => {
     setIsVerifying(true);
@@ -82,9 +47,13 @@ const AdminQRVerification = () => {
 
   const handleManualCheck = () => verifyCode(manualCode);
 
+  const { isScanning, startScanning, stopScanning, isMobileApp } = useQRScanner(
+    (decodedText) => verifyCode(decodedText)
+  );
+
   const handleStartCamera = () => {
-    setIsScanning(prev => !prev);
     setScanResult(null);
+    startScanning();
   };
 
   return (
@@ -102,11 +71,14 @@ const AdminQRVerification = () => {
             <CardHeader>
               <CardTitle>Leitura de QR Code</CardTitle>
               <CardDescription>
-                Utilize a câmera para escanear o QR Code do ingresso.
+                {isMobileApp 
+                  ? "Tire uma foto do QR Code do ingresso."
+                  : "Utilize a câmera para escanear o QR Code do ingresso."
+                }
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center py-8">
-              {isScanning ? (
+              {isScanning && !isMobileApp ? (
                 <div className="w-full max-w-xs aspect-square">
                   <div id="reader"></div>
                 </div>
@@ -114,17 +86,17 @@ const AdminQRVerification = () => {
                 <div className="w-full max-w-xs aspect-square border-2 border-dashed rounded-md flex items-center justify-center bg-muted/30">
                   <Button onClick={handleStartCamera} className="gap-2">
                     <Camera className="h-5 w-5" />
-                    Iniciar câmera
+                    {isMobileApp ? "Tirar foto" : "Iniciar câmera"}
                   </Button>
                 </div>
               )}
             </CardContent>
-            {isScanning && (
+            {isScanning && !isMobileApp && (
               <CardFooter>
                 <Button 
                   variant="outline" 
                   className="w-full gap-2" 
-                  onClick={handleStartCamera}
+                  onClick={stopScanning}
                 >
                   <CameraOff className="h-5 w-5" />
                   Parar câmera
