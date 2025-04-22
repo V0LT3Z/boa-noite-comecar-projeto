@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,14 +27,14 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { createEvent } from "@/services/events";
-import { AdminEventForm } from "@/types/admin";
+import { AdminEventForm, AdminTicketType } from "@/types/admin";
 
 // Form schema for ticket type validation
 const ticketTypeSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2, "Nome do ingresso deve ter pelo menos 2 caracteres"),
   price: z.string().min(1, "Preço é obrigatório"),
-  description: z.string().optional(),
+  description: z.string().optional().default(""),
   availableQuantity: z.string().min(1, "Quantidade disponível é obrigatória"),
   maxPerPurchase: z.string().min(1, "Quantidade máxima por compra é obrigatória"),
 });
@@ -158,7 +159,14 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
         venue: data.location, // Using location as venue
         status: data.status,
         warnings: data.warnings,
-        tickets: data.tickets
+        tickets: data.tickets.map((ticket): AdminTicketType => ({
+          id: ticket.id || `new-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: ticket.name,
+          price: ticket.price,
+          description: ticket.description || "",
+          availableQuantity: ticket.availableQuantity,
+          maxPerPurchase: ticket.maxPerPurchase
+        }))
       };
       
       try {

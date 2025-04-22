@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { EventResponse, TicketTypeResponse, EventDetails, TicketType } from "@/types/event";
+import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
 import { format, parse } from "date-fns";
 
