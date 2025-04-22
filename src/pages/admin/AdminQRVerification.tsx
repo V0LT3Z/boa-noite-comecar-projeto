@@ -1,33 +1,59 @@
-
 import { useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Check, X, Scan } from "lucide-react";
+import { Check, X, Scan, Camera, CameraOff } from "lucide-react";
 import { verifyTicketQR } from "@/services/orders";
 import { QRVerification } from "@/types/admin";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import { useEffect } from "react";
 
 const AdminQRVerification = () => {
   const [manualCode, setManualCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [scanResult, setScanResult] = useState<QRVerification | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
 
-  const handleManualCheck = async () => {
-    if (!manualCode) {
-      toast({
-        title: "Código vazio",
-        description: "Por favor, insira um código para verificação.",
-        variant: "destructive",
-      });
-      return;
+  useEffect(() => {
+    let scanner: Html5QrcodeScanner | null = null;
+
+    if (isScanning) {
+      scanner = new Html5QrcodeScanner(
+        "reader",
+        { 
+          fps: 10,
+          qrbox: {width: 250, height: 250},
+          aspectRatio: 1,
+        },
+        false
+      );
+
+      scanner.render(onScanSuccess, onScanFailure);
     }
 
+    return () => {
+      if (scanner) {
+        scanner.clear().catch(console.error);
+      }
+    };
+  }, [isScanning]);
+
+  const onScanSuccess = async (decodedText: string) => {
+    setIsScanning(false);
+    await verifyCode(decodedText);
+  };
+
+  const onScanFailure = (error: string) => {
+    console.error(error);
+  };
+
+  const verifyCode = async (code: string) => {
     setIsVerifying(true);
     
     try {
-      const result = await verifyTicketQR(manualCode);
+      const result = await verifyTicketQR(code);
       setScanResult(result);
       
       if (result.valid) {
@@ -54,12 +80,11 @@ const AdminQRVerification = () => {
     }
   };
 
+  const handleManualCheck = () => verifyCode(manualCode);
+
   const handleStartCamera = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A leitura por câmera será implementada em breve.",
-      variant: "default",
-    });
+    setIsScanning(prev => !prev);
+    setScanResult(null);
   };
 
   return (
@@ -81,13 +106,31 @@ const AdminQRVerification = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center py-8">
-              <div className="w-full max-w-xs aspect-square border-2 border-dashed rounded-md flex items-center justify-center bg-muted/30">
-                <Button onClick={handleStartCamera} className="gap-2">
-                  <Scan className="h-5 w-5" />
-                  Iniciar câmera
-                </Button>
-              </div>
+              {isScanning ? (
+                <div className="w-full max-w-xs aspect-square">
+                  <div id="reader"></div>
+                </div>
+              ) : (
+                <div className="w-full max-w-xs aspect-square border-2 border-dashed rounded-md flex items-center justify-center bg-muted/30">
+                  <Button onClick={handleStartCamera} className="gap-2">
+                    <Camera className="h-5 w-5" />
+                    Iniciar câmera
+                  </Button>
+                </div>
+              )}
             </CardContent>
+            {isScanning && (
+              <CardFooter>
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2" 
+                  onClick={handleStartCamera}
+                >
+                  <CameraOff className="h-5 w-5" />
+                  Parar câmera
+                </Button>
+              </CardFooter>
+            )}
           </Card>
 
           <Card>
