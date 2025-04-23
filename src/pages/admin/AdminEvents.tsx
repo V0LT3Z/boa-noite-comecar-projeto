@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -83,7 +82,6 @@ const AdminEvents = () => {
         variant: "success"
       });
       
-      // Recarregar eventos após a mudança de status
       loadEvents();
     } catch (error) {
       console.error(`Erro ao ${newStatus} evento:`, error);
@@ -103,17 +101,12 @@ const AdminEvents = () => {
 
   const handleEdit = async (event: EventItem) => {
     try {
-      // Buscar dados completos do evento antes de editar
       const eventDetails = await fetchEventById(event.id);
       if (eventDetails) {
-        // Aqui corrigimos o erro - não adicionamos a propriedade completeData
         setEditingEvent({
           ...event,
-          // Adicionamos as propriedades do eventDetails diretamente no objeto
-          description: eventDetails.description || "",
-          location: eventDetails.location || "",
-          minimumAge: eventDetails.minimum_age?.toString() || "0",
-          venue: eventDetails.location || ""
+          venue: eventDetails.venue?.name || "",
+          minimumAge: eventDetails.minimumAge?.toString() || "0"
         });
         setIsCreatingEvent(true);
       } else {
@@ -129,7 +122,7 @@ const AdminEvents = () => {
         title: "Erro ao editar evento",
         description: "Não foi possível carregar os detalhes do evento.",
         variant: "destructive"
-        });
+      });
     }
   };
 
