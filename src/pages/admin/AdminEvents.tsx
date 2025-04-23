@@ -106,10 +106,14 @@ const AdminEvents = () => {
       // Buscar dados completos do evento antes de editar
       const eventDetails = await fetchEventById(event.id);
       if (eventDetails) {
+        // Aqui corrigimos o erro - não adicionamos a propriedade completeData
         setEditingEvent({
           ...event,
-          // Adicionar informações detalhadas para a edição
-          completeData: eventDetails
+          // Adicionamos as propriedades do eventDetails diretamente no objeto
+          description: eventDetails.description || "",
+          location: eventDetails.location || "",
+          minimumAge: eventDetails.minimum_age?.toString() || "0",
+          venue: eventDetails.location || ""
         });
         setIsCreatingEvent(true);
       } else {
@@ -125,7 +129,7 @@ const AdminEvents = () => {
         title: "Erro ao editar evento",
         description: "Não foi possível carregar os detalhes do evento.",
         variant: "destructive"
-      });
+        });
     }
   };
 
