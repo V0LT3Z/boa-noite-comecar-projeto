@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,7 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
-import { createEvent, updateEvent } from "@/services/events";
+import { createEvent, updateEvent, deleteTicketType } from "@/services/events";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -67,6 +68,7 @@ type EventFormProps = {
 
 export default function EventForm({ event, onSuccess }: EventFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeletingTicket, setIsDeletingTicket] = useState<number | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(event?.bannerUrl || null);
   const { user } = useAuth();
   
@@ -137,7 +139,7 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
   };
 
   // Handle removing ticket type
-  const removeTicketType = (index: number) => {
+  const removeTicketType = async (index: number) => {
     const currentTickets = form.getValues("tickets") || [];
     if (currentTickets.length <= 1) {
       toast({
@@ -147,6 +149,32 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
       });
       return;
     }
+    
+    const ticketToRemove = currentTickets[index];
+    
+    // If this is an existing ticket in the database (has a numeric ID), delete it from the database
+    if (ticketToRemove.id && typeof ticketToRemove.id === 'number' && event?.id) {
+      try {
+        setIsDeletingTicket(ticketToRemove.id);
+        await deleteTicketType(ticketToRemove.id);
+        toast({
+          title: "Ingresso removido",
+          description: `O ingresso "${ticketToRemove.name}" foi removido com sucesso.`,
+          variant: "success"
+        });
+      } catch (error: any) {
+        toast({
+          title: "Erro ao remover",
+          description: `Não foi possível remover o ingresso: ${error.message}`,
+          variant: "destructive"
+        });
+        return; // Don't proceed if DB deletion failed
+      } finally {
+        setIsDeletingTicket(null);
+      }
+    }
+    
+    // Remove from the form state
     form.setValue("tickets", currentTickets.filter((_, i) => i !== index));
   };
 
@@ -449,8 +477,13 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeTicketType(index)}
+                    disabled={isDeletingTicket === form.getValues(`tickets.${index}.id`)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    {isDeletingTicket === form.getValues(`tickets.${index}.id`) ? (
+                      "Removendo..."
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
 
