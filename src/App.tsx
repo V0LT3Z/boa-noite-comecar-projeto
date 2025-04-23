@@ -38,7 +38,7 @@ function App() {
                 {/* Public routes */}
                 <Route path="/" element={<Index />} />
                 <Route path="/evento/:id" element={<EventDetails />} />
-                <Route path="/checkout/:eventId" element={<Checkout />} />
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="/pagamento-sucesso" element={<PaymentSuccessConfirmation />} />
                 <Route path="/marketplace" element={<Marketplace />} />
 
