@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
@@ -101,14 +102,15 @@ export const fetchEventById = async (id: number) => {
     // Retornar os dados do evento com os tipos de ingressos
     const mappedEvent = mapEventResponse(event, (ticketTypes || []) as TicketTypeResponse[]);
     
-    // Adicionar os dados dos tickets para edição
+    // Fix: Convert string values to appropriate types for the EventDetails.tickets format
+    // This is different from the TicketType[] in the model - we use strings for the form
     mappedEvent.tickets = (ticketTypes || []).map(ticket => ({
       id: ticket.id,
       name: ticket.name,
-      price: ticket.price.toString(),
-      description: ticket.description || "",
-      availableQuantity: ticket.available_quantity.toString(),
-      maxPerPurchase: ticket.max_per_purchase.toString()
+      price: ticket.price, // Keep as number for the TicketType interface
+      description: ticket.description || undefined,
+      availableQuantity: ticket.available_quantity,
+      maxPerPurchase: ticket.max_per_purchase
     }));
     
     return mappedEvent;
@@ -262,7 +264,7 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
       const ticketData = {
         event_id: id,
         name: ticket.name,
-        price: parseFloat(ticket.price) || 0,
+        price: parseFloat(ticket.price) || 0, // Convert string to number for database
         description: ticket.description,
         available_quantity: parseInt(ticket.availableQuantity) || 0,
         max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
