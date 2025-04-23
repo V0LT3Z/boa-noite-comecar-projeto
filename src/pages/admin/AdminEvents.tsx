@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { EventsTable } from "@/components/admin/events/EventsTable";
 import { ConfirmActionDialog } from "@/components/admin/events/ConfirmActionDialog";
 import { EventSearchBar } from "@/components/admin/events/EventSearchBar";
 import { EmptyEventsList } from "@/components/admin/events/EmptyEventsList";
-import { fetchEvents, fetchEventById, updateEventStatus } from "@/services/events";
+import { fetchEvents, fetchEventById, updateEventStatus, updateEvent } from "@/services/events";
 import { format } from "date-fns";
 
 const AdminEvents = () => {
@@ -34,6 +35,10 @@ const AdminEvents = () => {
         status: (event.status as "active" | "paused" | "cancelled") || "active",
         ticketsSold: event.tickets_sold || 0,
         totalRevenue: 0,
+        description: event.description || "",
+        location: event.location || "",
+        venue: event.location || "", // Using location as venue if not specified
+        minimumAge: event.minimum_age?.toString() || "0"
       }));
       
       setEvents(formattedEvents);
@@ -103,10 +108,14 @@ const AdminEvents = () => {
     try {
       const eventDetails = await fetchEventById(event.id);
       if (eventDetails) {
+        // Make sure we're preserving all required fields from both sources
         setEditingEvent({
           ...event,
+          description: eventDetails.description || "",
+          location: eventDetails.location || "",
           venue: eventDetails.venue?.name || "",
-          minimumAge: eventDetails.minimumAge?.toString() || "0"
+          minimumAge: eventDetails.minimumAge?.toString() || "0",
+          // Add any other fields needed for editing
         });
         setIsCreatingEvent(true);
       } else {
@@ -174,7 +183,8 @@ const AdminEvents = () => {
             <div className="border rounded-lg">
               <EventSearchBar 
                 searchQuery={searchQuery} 
-                onSearchChange={setSearchQuery} 
+                onSearchChange={setSearchQuery}
+                events={filteredEvents}
               />
               
               {loadingEvents ? (

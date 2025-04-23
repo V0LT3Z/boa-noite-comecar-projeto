@@ -200,6 +200,12 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
     const dateTime = `${eventData.date}T${eventData.time || "19:00"}`;
     const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
+    // Calcular total de tickets
+    const totalTickets = eventData.tickets.reduce(
+      (sum, ticket) => sum + (parseInt(ticket.availableQuantity) || 0),
+      0
+    );
+
     // Atualizar o evento principal
     const { error: eventError } = await supabase
       .from("events")
@@ -211,6 +217,7 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
         image_url: eventData.bannerUrl,
         minimum_age: parseInt(eventData.minimumAge) || 0,
         status: eventData.status,
+        total_tickets: totalTickets,
         updated_at: new Date().toISOString()
       })
       .eq("id", id);
@@ -249,7 +256,7 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
 
       console.log("Processando ticket:", ticket);
 
-      // Se o ingresso tem um ID numérico, é uma atualização
+      // Se o ingresso tem um ID existente, é uma atualização
       if (ticket.id && !isNaN(parseInt(ticket.id.toString()))) {
         const ticketId = parseInt(ticket.id.toString());
         console.log("Atualizando ticket existente:", ticketId, ticketData);
