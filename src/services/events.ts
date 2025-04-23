@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
@@ -193,93 +194,141 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
 
 // Função para atualizar um evento
 export const updateEvent = async (id: number, eventData: AdminEventForm) => {
-  // Combinar data e hora em um único timestamp
-  const dateTime = `${format(eventData.date, "yyyy-MM-dd")}T${eventData.time}`;
-  const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
+  try {
+    console.log("Atualizando evento:", id, eventData);
+    // Combinar data e hora em um único timestamp
+    const dateTime = `${eventData.date}T${eventData.time || "19:00"}`;
+    const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
-  // Atualizar o evento principal
-  const { error: eventError } = await supabase
-    .from("events")
-    .update({
-      title: eventData.title,
-      description: eventData.description,
-      date: dateObj.toISOString(),
-      location: eventData.location,
-      image_url: eventData.bannerUrl,
-      minimum_age: parseInt(eventData.minimumAge) || 0,
-      status: eventData.status,
-      updated_at: new Date().toISOString()
-    })
-    .eq("id", id);
+    // Atualizar o evento principal
+    const { error: eventError } = await supabase
+      .from("events")
+      .update({
+        title: eventData.title,
+        description: eventData.description,
+        date: dateObj.toISOString(),
+        location: eventData.location,
+        image_url: eventData.bannerUrl,
+        minimum_age: parseInt(eventData.minimumAge) || 0,
+        status: eventData.status,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", id);
 
-  if (eventError) throw eventError;
-
-  // Buscar os tipos de ingressos existentes
-  const { data: existingTickets } = await supabase
-    .from("ticket_types")
-    .select("id")
-    .eq("event_id", id);
-
-  const existingIds = existingTickets?.map(ticket => ticket.id) || [];
-
-  // Processar os tipos de ingressos (atualizar/inserir/excluir)
-  for (const ticket of eventData.tickets) {
-    const ticketData = {
-      event_id: id,
-      name: ticket.name,
-      price: parseFloat(ticket.price) || 0,
-      description: ticket.description,
-      available_quantity: parseInt(ticket.availableQuantity) || 0,
-      max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
-    };
-
-    // Se o ingresso tem um ID numérico, é uma atualização
-    if (!isNaN(parseInt(ticket.id))) {
-      const ticketId = parseInt(ticket.id);
-      const { error } = await supabase
-        .from("ticket_types")
-        .update(ticketData)
-        .eq("id", ticketId);
-
-      if (error) throw error;
-      
-      // Remover este ID da lista de existingIds
-      const index = existingIds.indexOf(ticketId);
-      if (index > -1) {
-        existingIds.splice(index, 1);
-      }
-    } else {
-      // Caso contrário, é uma inserção
-      const { error } = await supabase
-        .from("ticket_types")
-        .insert(ticketData);
-
-      if (error) throw error;
+    if (eventError) {
+      console.error("Erro ao atualizar evento:", eventError);
+      throw eventError;
     }
-  }
 
-  // Excluir tipos de ingressos que não estão mais presentes
-  if (existingIds.length > 0) {
-    const { error } = await supabase
+    console.log("Evento atualizado com sucesso");
+
+    // Buscar os tipos de ingressos existentes
+    const { data: existingTickets, error: fetchTicketsError } = await supabase
       .from("ticket_types")
-      .delete()
-      .in("id", existingIds);
+      .select("id")
+      .eq("event_id", id);
 
-    if (error) throw error;
+    if (fetchTicketsError) {
+      console.error("Erro ao buscar tipos de ingressos existentes:", fetchTicketsError);
+      throw fetchTicketsError;
+    }
+
+    const existingIds = existingTickets?.map(ticket => ticket.id) || [];
+    console.log("IDs de ingressos existentes:", existingIds);
+
+    // Processar os tipos de ingressos (atualizar/inserir/excluir)
+    for (const ticket of eventData.tickets) {
+      const ticketData = {
+        event_id: id,
+        name: ticket.name,
+        price: parseFloat(ticket.price) || 0,
+        description: ticket.description,
+        available_quantity: parseInt(ticket.availableQuantity) || 0,
+        max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
+      };
+
+      console.log("Processando ticket:", ticket);
+
+      // Se o ingresso tem um ID numérico, é uma atualização
+      if (ticket.id && !isNaN(parseInt(ticket.id.toString()))) {
+        const ticketId = parseInt(ticket.id.toString());
+        console.log("Atualizando ticket existente:", ticketId, ticketData);
+        
+        const { error } = await supabase
+          .from("ticket_types")
+          .update(ticketData)
+          .eq("id", ticketId);
+
+        if (error) {
+          console.error("Erro ao atualizar tipo de ingresso:", error);
+          throw error;
+        }
+        
+        // Remover este ID da lista de existingIds
+        const index = existingIds.indexOf(ticketId);
+        if (index > -1) {
+          existingIds.splice(index, 1);
+        }
+      } else {
+        // Caso contrário, é uma inserção
+        console.log("Inserindo novo ticket:", ticketData);
+        const { error } = await supabase
+          .from("ticket_types")
+          .insert(ticketData);
+
+        if (error) {
+          console.error("Erro ao inserir novo tipo de ingresso:", error);
+          throw error;
+        }
+      }
+    }
+
+    // Excluir tipos de ingressos que não estão mais presentes
+    if (existingIds.length > 0) {
+      console.log("Excluindo tipos de ingressos não utilizados:", existingIds);
+      const { error } = await supabase
+        .from("ticket_types")
+        .delete()
+        .in("id", existingIds);
+
+      if (error) {
+        console.error("Erro ao excluir tipos de ingressos:", error);
+        throw error;
+      }
+    }
+
+    return { id };
+  } catch (error) {
+    console.error("Erro geral ao atualizar evento:", error);
+    throw error;
   }
-
-  return { id };
 };
 
 // Função para atualizar o status de um evento
 export const updateEventStatus = async (id: number, status: "active" | "paused" | "cancelled") => {
-  const { error } = await supabase
-    .from("events")
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq("id", id);
+  try {
+    console.log(`Alterando status do evento ${id} para ${status}`);
+    
+    const { data, error } = await supabase
+      .from("events")
+      .update({ 
+        status, 
+        updated_at: new Date().toISOString() 
+      })
+      .eq("id", id)
+      .select();
 
-  if (error) throw error;
-  return { id, status };
+    if (error) {
+      console.error("Erro ao atualizar status do evento:", error);
+      throw error;
+    }
+
+    console.log("Status atualizado com sucesso:", data);
+    return { id, status };
+  } catch (error) {
+    console.error("Erro ao atualizar status:", error);
+    throw error;
+  }
 };
 
 // Função para buscar os ingressos de um usuário

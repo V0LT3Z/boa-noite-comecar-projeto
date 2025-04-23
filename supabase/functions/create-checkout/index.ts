@@ -91,14 +91,19 @@ serve(async (req) => {
         if (!ticketType) {
           throw new Error(`Tipo de ingresso não encontrado: ${selected.ticketId}`);
         }
+        
+        console.log("Ticket type found:", ticketType);
+        console.log("Price from DB:", ticketType.price);
 
         return {
           id: ticketType.id,
           name: ticketType.name,
-          price: Number(ticketType.price), // Garante que o preço é um número
+          price: parseFloat(ticketType.price), // Convertendo para número
           quantity: selected.quantity,
         };
       });
+      
+      console.log("Formatted tickets:", formattedTickets);
 
       // Return data for the custom checkout page
       const checkoutData = {

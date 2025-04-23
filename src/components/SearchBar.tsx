@@ -101,7 +101,7 @@ const SearchBar = ({ onSearch, defaultQuery = "", suggestions = [] }: SearchBarP
               </div>
             </PopoverTrigger>
             {suggestions.length > 0 && (
-              <PopoverContent className="w-[400px] p-0" align="start">
+              <PopoverContent className="w-[400px] p-0 bg-white border border-gray-200 shadow-md" align="start">
                 <Command>
                   <CommandList>
                     <CommandEmpty>Nenhum evento encontrado.</CommandEmpty>
@@ -111,7 +111,7 @@ const SearchBar = ({ onSearch, defaultQuery = "", suggestions = [] }: SearchBarP
                           key={event.id}
                           value={event.title}
                           onSelect={handleSelect}
-                          className="cursor-pointer"
+                          className="cursor-pointer hover:bg-gray-100"
                         >
                           <div className="flex flex-col">
                             <span className="font-medium">{event.title}</span>

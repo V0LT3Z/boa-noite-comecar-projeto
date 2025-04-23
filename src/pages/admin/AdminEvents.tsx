@@ -10,7 +10,7 @@ import { EventsTable } from "@/components/admin/events/EventsTable";
 import { ConfirmActionDialog } from "@/components/admin/events/ConfirmActionDialog";
 import { EventSearchBar } from "@/components/admin/events/EventSearchBar";
 import { EmptyEventsList } from "@/components/admin/events/EmptyEventsList";
-import { fetchEvents } from "@/services/events";
+import { fetchEvents, fetchEventById, updateEventStatus } from "@/services/events";
 import { format } from "date-fns";
 
 const AdminEvents = () => {
@@ -60,25 +60,39 @@ const AdminEvents = () => {
     event.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleStatusChange = (eventId: number, newStatus: EventStatus) => {
-    setEvents(currentEvents => 
-      currentEvents.map(event => 
-        event.id === eventId ? { ...event, status: newStatus } : event
-      )
-    );
-    
-    setConfirmDialogOpen(false);
-    setSelectedEvent(null);
-    
-    const action = 
-      newStatus === "active" ? "ativado" : 
-      newStatus === "paused" ? "pausado" : "cancelado";
-    
-    toast({
-      title: `Evento ${action}`,
-      description: `O evento foi ${action} com sucesso.`,
-      variant: "success"
-    });
+  const handleStatusChange = async (eventId: number, newStatus: EventStatus) => {
+    try {
+      await updateEventStatus(eventId, newStatus);
+      
+      setEvents(currentEvents => 
+        currentEvents.map(event => 
+          event.id === eventId ? { ...event, status: newStatus } : event
+        )
+      );
+      
+      setConfirmDialogOpen(false);
+      setSelectedEvent(null);
+      
+      const action = 
+        newStatus === "active" ? "ativado" : 
+        newStatus === "paused" ? "pausado" : "cancelado";
+      
+      toast({
+        title: `Evento ${action}`,
+        description: `O evento foi ${action} com sucesso.`,
+        variant: "success"
+      });
+      
+      // Recarregar eventos após a mudança de status
+      loadEvents();
+    } catch (error) {
+      console.error(`Erro ao ${newStatus} evento:`, error);
+      toast({
+        title: "Erro ao alterar status",
+        description: "Não foi possível alterar o status do evento. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const openConfirmDialog = (event: EventItem, action: "pause" | "cancel" | "activate") => {
@@ -87,9 +101,32 @@ const AdminEvents = () => {
     setConfirmDialogOpen(true);
   };
 
-  const handleEdit = (event: EventItem) => {
-    setEditingEvent(event);
-    setIsCreatingEvent(true);
+  const handleEdit = async (event: EventItem) => {
+    try {
+      // Buscar dados completos do evento antes de editar
+      const eventDetails = await fetchEventById(event.id);
+      if (eventDetails) {
+        setEditingEvent({
+          ...event,
+          // Adicionar informações detalhadas para a edição
+          completeData: eventDetails
+        });
+        setIsCreatingEvent(true);
+      } else {
+        toast({
+          title: "Erro ao editar evento",
+          description: "Não foi possível carregar os detalhes do evento.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao buscar dados para edição:", error);
+      toast({
+        title: "Erro ao editar evento",
+        description: "Não foi possível carregar os detalhes do evento.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleFormBack = () => {
