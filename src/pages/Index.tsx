@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 import Header from "@/components/Header"
@@ -129,6 +128,16 @@ const Index = () => {
   const hasSearchResults = searchQuery && filteredEvents.length > 0;
   const noSearchResults = searchQuery && filteredEvents.length === 0;
 
+  // Preparar sugestões de busca para o SearchBar
+  const searchSuggestions = useMemo(() => {
+    return formattedEvents.map(event => ({
+      id: event.id,
+      title: event.title,
+      date: event.date,
+      location: event.location
+    }));
+  }, [formattedEvents]);
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -142,7 +151,11 @@ const Index = () => {
             <p className="text-muted-foreground text-center mb-6">
               Shows, festivais, workshops e muito mais
             </p>
-            <SearchBar onSearch={handleSearch} defaultQuery={searchQuery} />
+            <SearchBar 
+              onSearch={handleSearch} 
+              defaultQuery={searchQuery}
+              suggestions={searchSuggestions}
+            />
             <div className="mt-4">
               <CategoryCarousel 
                 selectedCategory={selectedCategory} 

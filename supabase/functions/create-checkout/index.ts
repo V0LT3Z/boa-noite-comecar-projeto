@@ -9,7 +9,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders })
   }
@@ -26,15 +25,6 @@ serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );
     }
-
-    // Use the hardcoded Stripe key for now to fix the immediate issue
-    const stripeKey = "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";
-    
-    console.log("Using provided Stripe key, length:", stripeKey.length);
-    const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
-    })
-    console.log("Stripe client initialized successfully");
 
     // Create a Supabase client to access the database
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -102,13 +92,10 @@ serve(async (req) => {
           throw new Error(`Tipo de ingresso não encontrado: ${selected.ticketId}`);
         }
 
-        // Ensure price is at least R$1.00
-        const price = ticketType.price > 0 ? ticketType.price : 100; // Minimum R$1.00
-
         return {
           id: ticketType.id,
           name: ticketType.name,
-          price: price,
+          price: Number(ticketType.price), // Garante que o preço é um número
           quantity: selected.quantity,
         };
       });
