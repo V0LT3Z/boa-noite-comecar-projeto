@@ -22,6 +22,7 @@ const AdminEvents = () => {
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState<"pause" | "cancel" | "activate">("pause");
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
 
   const loadEvents = async () => {
     try {
@@ -66,6 +67,7 @@ const AdminEvents = () => {
 
   const handleStatusChange = async (eventId: number, newStatus: EventStatus) => {
     try {
+      setIsProcessingAction(true);
       await updateEventStatus(eventId, newStatus);
       
       setEvents(currentEvents => 
@@ -73,9 +75,6 @@ const AdminEvents = () => {
           event.id === eventId ? { ...event, status: newStatus } : event
         )
       );
-      
-      setConfirmDialogOpen(false);
-      setSelectedEvent(null);
       
       const action = 
         newStatus === "active" ? "ativado" : 
@@ -95,6 +94,10 @@ const AdminEvents = () => {
         description: "Não foi possível alterar o status do evento. Tente novamente.",
         variant: "destructive"
       });
+    } finally {
+      setIsProcessingAction(false);
+      setConfirmDialogOpen(false);
+      setSelectedEvent(null);
     }
   };
 
@@ -184,7 +187,8 @@ const AdminEvents = () => {
               <EventSearchBar 
                 searchQuery={searchQuery} 
                 onSearchChange={setSearchQuery}
-                events={filteredEvents}
+                events={events}
+                autoFocus={true}
               />
               
               {loadingEvents ? (
@@ -211,6 +215,7 @@ const AdminEvents = () => {
         selectedEvent={selectedEvent}
         actionType={actionType}
         onConfirm={(event, newStatus) => handleStatusChange(event.id, newStatus)}
+        disabled={isProcessingAction}
       />
     </AdminLayout>
   );

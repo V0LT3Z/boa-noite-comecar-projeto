@@ -17,6 +17,7 @@ interface ConfirmActionDialogProps {
   selectedEvent: EventItem | null;
   actionType: "pause" | "cancel" | "activate";
   onConfirm: (event: EventItem, status: "active" | "paused" | "cancelled") => void;
+  disabled?: boolean;
 }
 
 export const ConfirmActionDialog = ({
@@ -24,11 +25,12 @@ export const ConfirmActionDialog = ({
   onOpenChange,
   selectedEvent,
   actionType,
-  onConfirm
+  onConfirm,
+  disabled = false
 }: ConfirmActionDialogProps) => {
   
   const handleConfirm = () => {
-    if (!selectedEvent) return;
+    if (!selectedEvent || disabled) return;
     
     const newStatus = 
       actionType === "pause" ? "paused" : 
@@ -52,17 +54,20 @@ export const ConfirmActionDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={disabled}>Cancelar</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleConfirm}
+            disabled={disabled}
             className={
               actionType === "cancel" ? "bg-destructive hover:bg-destructive/90" :
               actionType === "activate" ? "bg-green-600 hover:bg-green-700" :
               "bg-amber-500 hover:bg-amber-600"
             }
           >
-            {actionType === "pause" ? "Pausar" : 
-             actionType === "cancel" ? "Cancelar" : "Ativar"}
+            {disabled ? "Processando..." : (
+              actionType === "pause" ? "Pausar" : 
+              actionType === "cancel" ? "Cancelar" : "Ativar"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

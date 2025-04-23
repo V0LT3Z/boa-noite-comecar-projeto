@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
@@ -99,7 +98,20 @@ export const fetchEventById = async (id: number) => {
       // Ainda podemos retornar o evento mesmo sem ingressos
     }
 
-    return mapEventResponse(event, (ticketTypes || []) as TicketTypeResponse[]);
+    // Retornar os dados do evento com os tipos de ingressos
+    const mappedEvent = mapEventResponse(event, (ticketTypes || []) as TicketTypeResponse[]);
+    
+    // Adicionar os dados dos tickets para edição
+    mappedEvent.tickets = (ticketTypes || []).map(ticket => ({
+      id: ticket.id,
+      name: ticket.name,
+      price: ticket.price.toString(),
+      description: ticket.description || "",
+      availableQuantity: ticket.available_quantity.toString(),
+      maxPerPurchase: ticket.max_per_purchase.toString()
+    }));
+    
+    return mappedEvent;
   } catch (error) {
     console.error("Erro geral ao buscar evento:", error);
     return null;
@@ -245,6 +257,8 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
 
     // Processar os tipos de ingressos (atualizar/inserir/excluir)
     for (const ticket of eventData.tickets) {
+      console.log("Processando ticket:", ticket);
+      
       const ticketData = {
         event_id: id,
         name: ticket.name,
@@ -253,8 +267,6 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
         available_quantity: parseInt(ticket.availableQuantity) || 0,
         max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
       };
-
-      console.log("Processando ticket:", ticket);
 
       // Se o ingresso tem um ID existente, é uma atualização
       if (ticket.id && !isNaN(parseInt(ticket.id.toString()))) {
