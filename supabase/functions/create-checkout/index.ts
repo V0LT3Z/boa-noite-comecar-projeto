@@ -27,18 +27,10 @@ serve(async (req) => {
       );
     }
 
-    // Initialize Stripe with direct key access
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      console.error("STRIPE_SECRET_KEY is not set or not accessible");
-      console.error("Environment variables:", Object.keys(Deno.env.toObject()));
-      return new Response(
-        JSON.stringify({ error: "Configuração do Stripe não encontrada. Verifique os logs da função." }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
-      );
-    }
+    // Use the hardcoded Stripe key for now to fix the immediate issue
+    const stripeKey = "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";
     
-    console.log("Stripe key found, length:", stripeKey.length);
+    console.log("Using provided Stripe key, length:", stripeKey.length);
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     })

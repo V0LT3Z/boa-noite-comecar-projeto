@@ -17,8 +17,11 @@ serve(async (req) => {
     const { sessionId } = await req.json();
     if (!sessionId) throw new Error("Session ID não fornecido");
 
+    // Use the hardcoded Stripe key for now to fix the immediate issue
+    const stripeKey = "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";
+    
     // Inicializar Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     });
 
