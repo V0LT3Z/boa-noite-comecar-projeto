@@ -223,33 +223,66 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
       throw eventError;
     }
 
-    const { error: deleteError } = await supabase
+    const { data: existingTickets, error: fetchError } = await supabase
       .from("ticket_types")
-      .delete()
+      .select("*")
       .eq("event_id", id);
 
-    if (deleteError) {
-      console.error("Erro ao excluir tipos de ingressos existentes:", deleteError);
-      throw deleteError;
+    if (fetchError) {
+      console.error("Erro ao buscar tipos de ingressos existentes:", fetchError);
+      throw fetchError;
     }
 
-    if (eventData.tickets.length > 0) {
-      const ticketsToInsert = eventData.tickets.map(ticket => ({
+    for (const ticket of eventData.tickets) {
+      const ticketData = {
         event_id: id,
         name: ticket.name,
         price: parseFloat(String(ticket.price)) || 0,
         description: ticket.description,
         available_quantity: parseInt(String(ticket.availableQuantity)) || 0,
         max_per_purchase: parseInt(String(ticket.maxPerPurchase)) || 4
-      }));
-
-      const { error: insertError } = await supabase
+      };
+      
+      if (ticket.id && typeof ticket.id === 'number') {
+        const { error: updateError } = await supabase
+          .from("ticket_types")
+          .update(ticketData)
+          .eq("id", ticket.id);
+        
+        if (updateError) {
+          console.error(`Erro ao atualizar ingresso ${ticket.id}:`, updateError);
+          throw updateError;
+        }
+      } else {
+        const { error: insertError } = await supabase
+          .from("ticket_types")
+          .insert(ticketData);
+        
+        if (insertError) {
+          console.error("Erro ao inserir novo tipo de ingresso:", insertError);
+          throw insertError;
+        }
+      }
+    }
+    
+    const ticketIdsInForm = eventData.tickets
+      .map(t => typeof t.id === 'number' ? t.id : null)
+      .filter(id => id !== null);
+    
+    const ticketsToDelete = existingTickets?.filter(
+      ticket => !ticketIdsInForm.includes(ticket.id)
+    );
+    
+    if (ticketsToDelete && ticketsToDelete.length > 0) {
+      const idsToDelete = ticketsToDelete.map(ticket => ticket.id);
+      const { error: deleteError } = await supabase
         .from("ticket_types")
-        .insert(ticketsToInsert);
-
-      if (insertError) {
-        console.error("Erro ao inserir novos tipos de ingresso:", insertError);
-        throw insertError;
+        .delete()
+        .in("id", idsToDelete);
+      
+      if (deleteError) {
+        console.error("Erro ao excluir tipos de ingressos obsoletos:", deleteError);
+        throw deleteError;
       }
     }
 
