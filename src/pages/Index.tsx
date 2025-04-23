@@ -88,7 +88,8 @@ const Index = () => {
           date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
           location: event.location,
           image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
-          category: "Eventos"
+          category: "Eventos",
+          status: event.status
         };
       } catch (error) {
         console.error("Erro ao formatar evento:", error, event);
@@ -98,13 +99,13 @@ const Index = () => {
           date: "Data não disponível",
           location: event.location || "Local não informado",
           image: "https://picsum.photos/seed/fallback/800/500",
-          category: "Eventos"
+          category: "Eventos",
+          status: "active"
         };
       }
     });
   }, [events]);
 
-  // Filter events by search query and category
   const filteredEvents = useMemo(() => {
     return formattedEvents.filter(event => {
       // Filter by category if selected
@@ -124,11 +125,9 @@ const Index = () => {
     
   const displayedEvents = showAllEvents ? filteredEvents : filteredEvents.slice(0, 6);
   
-  // Check if we have any search results
   const hasSearchResults = searchQuery && filteredEvents.length > 0;
   const noSearchResults = searchQuery && filteredEvents.length === 0;
 
-  // Preparar sugestões de busca para o SearchBar
   const searchSuggestions = useMemo(() => {
     return formattedEvents.map(event => ({
       id: event.id,
@@ -137,6 +136,8 @@ const Index = () => {
       location: event.location
     }));
   }, [formattedEvents]);
+
+  const carouselEvents = filteredEvents.filter(event => event.status !== "cancelled").slice(0, 4);
 
   return (
     <div className="min-h-screen bg-white">
@@ -167,7 +168,6 @@ const Index = () => {
       </section>
 
       <main className="container mx-auto px-4 space-y-10 mt-10">
-        {/* Show search results heading if searching */}
         {searchQuery && (
           <div className="text-center">
             <h2 className="text-xl font-semibold text-primary">
@@ -183,10 +183,10 @@ const Index = () => {
           </div>
         )}
       
-        {formattedEvents.length > 0 && !noSearchResults && !loading && (
+        {formattedEvents.length > 0 && !noSearchResults && !loading && carouselEvents.length > 0 && (
           <Carousel className="relative rounded-2xl overflow-hidden">
             <CarouselContent>
-              {filteredEvents.slice(0, 4).map((event) => (
+              {carouselEvents.map((event) => (
                 <CarouselItem key={event.id} className="cursor-pointer">
                   <div className="relative group">
                     <img 
@@ -250,6 +250,7 @@ const Index = () => {
                     location={event.location}
                     image={event.image}
                     category={event.category}
+                    status={event.status}
                   />
                 ))}
               </div>

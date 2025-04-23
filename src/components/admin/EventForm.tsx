@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,13 +25,13 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
-import { createEvent } from "@/services/events";
+import { createEvent, updateEvent } from "@/services/events";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Form schema for ticket type validation
 const ticketTypeSchema = z.object({
-  id: z.string().optional(),
+  id: z.union([z.string(), z.number()]).optional(),
   name: z.string().min(2, "Nome do ingresso deve ter pelo menos 2 caracteres"),
   price: z.string().min(1, "Preço é obrigatório"),
   description: z.string().optional().default(""),
@@ -88,7 +87,16 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
       status: event?.status || "active",
       warnings: event?.warnings || [],
       tickets: event?.tickets?.length > 0 
-        ? event.tickets 
+        ? event.tickets.map(ticket => ({
+            id: ticket.id,
+            name: ticket.name,
+            price: typeof ticket.price === 'number' ? ticket.price.toString() : ticket.price,
+            description: ticket.description || "",
+            availableQuantity: typeof ticket.availableQuantity === 'number' ? 
+              ticket.availableQuantity.toString() : ticket.availableQuantity,
+            maxPerPurchase: typeof ticket.maxPerPurchase === 'number' ? 
+              ticket.maxPerPurchase.toString() : ticket.maxPerPurchase
+          })) 
         : [{
             id: "new-1",
             name: "Entrada Padrão",
@@ -173,16 +181,13 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
       
       try {
         if (event?.id) {
-          // Update existing event logic will be here
-          console.log("Updating event:", event.id);
+          // Update existing event
+          await updateEvent(event.id, adminEventData);
         } else {
           // Create new event
-          // Passamos o ID do usuário, mas o serviço foi modificado para não usá-lo
-          // com o Supabase até termos autenticação real
           if (!user) {
             throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
           }
-          console.log("Creating event with user ID:", user.id);
           await createEvent(adminEventData, user.id);
         }
         

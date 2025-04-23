@@ -15,10 +15,12 @@ interface EventCardProps {
   location: string
   image: string
   category?: string
+  status?: string
 }
 
-const EventCard = ({ id, title, date, location, image, category }: EventCardProps) => {
+const EventCard = ({ id, title, date, location, image, category, status }: EventCardProps) => {
   const [eventExists, setEventExists] = useState<boolean | null>(null);
+  const [eventStatus, setEventStatus] = useState<string | undefined>(status);
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
@@ -30,6 +32,9 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
       try {
         const event = await fetchEventById(id);
         setEventExists(!!event);
+        if (event) {
+          setEventStatus(event.status);
+        }
       } catch (error) {
         console.error("Erro ao verificar evento:", error);
         setEventExists(false);
@@ -46,7 +51,14 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
   }, [id, eventExists, isChecking]);
   
   const handleVerIngressos = () => {
-    if (eventExists === false) {
+    if (eventStatus === "cancelled") {
+      toast({
+        title: "Evento Cancelado",
+        description: "Este evento foi cancelado e não está mais disponível para compra.",
+        variant: "destructive",
+      });
+      return false;
+    } else if (eventExists === false) {
       toast({
         title: "Evento em Desenvolvimento",
         description: "Este evento será disponibilizado em breve. Fique atento às atualizações!",
@@ -72,6 +84,13 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
           {category && (
             <div className="absolute top-2 left-2 bg-white/80 px-2 py-1 rounded-full text-xs font-semibold text-primary">
               {category}
+            </div>
+          )}
+
+          {/* Adicionar badge de status se for cancelado */}
+          {eventStatus === "cancelled" && (
+            <div className="absolute top-2 right-2 bg-red-500/90 px-2 py-1 rounded-full text-xs font-bold text-white">
+              Cancelado
             </div>
           )}
           
@@ -104,8 +123,13 @@ const EventCard = ({ id, title, date, location, image, category }: EventCardProp
               }
             }}
           >
-            <Button className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 whitespace-nowrap">
-              Ver ingressos
+            <Button 
+              className={`${eventStatus === "cancelled" 
+                ? "bg-gray-400 hover:bg-gray-500"
+                : "bg-gradient-to-r from-primary to-secondary hover:opacity-90"} text-white whitespace-nowrap`}
+              disabled={eventStatus === "cancelled"}
+            >
+              {eventStatus === "cancelled" ? "Indisponível" : "Ver ingressos"}
             </Button>
           </Link>
         </div>
