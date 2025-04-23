@@ -51,7 +51,9 @@ const Index = () => {
           });
         }
       } else {
-        setEvents(eventData);
+        // Filter out cancelled events
+        const activeEvents = eventData.filter(event => event.status !== "cancelled");
+        setEvents(activeEvents);
       }
       
       setEventsLoaded(true);

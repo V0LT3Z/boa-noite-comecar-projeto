@@ -172,10 +172,10 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
         tickets: data.tickets.map((ticket): AdminTicketType => ({
           id: ticket.id || `new-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           name: ticket.name,
-          price: ticket.price,
+          price: parseFloat(ticket.price), // Convert string to number for database
           description: ticket.description || "",
-          availableQuantity: ticket.availableQuantity,
-          maxPerPurchase: ticket.maxPerPurchase
+          availableQuantity: parseInt(ticket.availableQuantity),
+          maxPerPurchase: parseInt(ticket.maxPerPurchase)
         }))
       };
       

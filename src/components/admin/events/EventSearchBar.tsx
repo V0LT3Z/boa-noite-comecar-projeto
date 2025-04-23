@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -42,75 +43,70 @@ export const EventSearchBar = ({
   const filteredEvents = events.filter(event => 
     event.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   const handleSelect = (value: string) => {
     onSearchChange(value);
     setOpen(false);
     
-    // Keep focus on input after selection
+    // Focus on input after selection with a slight delay
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 10);
+  };
+
+  // Handle input change without losing focus
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearchChange(e.target.value);
+    // Only open if there are events and typing
+    if (e.target.value && events.length > 0 && !open) {
+      setOpen(true);
+    }
+  };
+
+  // Focus input when clicking container and prevent popover opening on admin pages
+  const handleContainerClick = () => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
   };
 
-  // Prevent losing focus when clicking input container
-  const handleContainerClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Set popover open state
-    setOpen(true);
-    
-    // Keep focus on input
-    if (inputRef.current) {
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 0);
-    }
-  };
-
-  // Handle change in input
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onSearchChange(e.target.value);
-    if (!open) {
-      setOpen(true);
-    }
-  };
-
   return (
     <div className="p-4 border-b">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <div 
-            className="flex items-center border rounded-md pl-2 bg-white cursor-text"
-            onClick={handleContainerClick}
-          >
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              ref={inputRef}
-              placeholder="Buscar eventos..."
-              className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              value={searchQuery}
-              onChange={handleInputChange}
-              onFocus={() => setOpen(true)}
-            />
-          </div>
-        </PopoverTrigger>
-        
-        {events.length > 0 && (
+      <div 
+        className="flex items-center border rounded-md pl-2 bg-white cursor-text"
+        onClick={handleContainerClick}
+      >
+        <Search className="h-4 w-4 text-muted-foreground" />
+        <Input
+          ref={inputRef}
+          placeholder="Buscar eventos..."
+          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+          value={searchQuery}
+          onChange={handleInputChange}
+          onFocus={() => {
+            // Don't open popover automatically in admin page
+            if (window.location.pathname.includes('/admin')) {
+              return;
+            }
+            setOpen(true);
+          }}
+        />
+      </div>
+      
+      {events.length > 0 && !window.location.pathname.includes('/admin') && (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <div className="hidden">
+              {/* Hidden trigger, we control open state manually */}
+            </div>
+          </PopoverTrigger>
+          
           <PopoverContent 
             className="w-[300px] p-0 max-h-[300px] overflow-y-auto" 
             align="start"
             sideOffset={5}
-            onInteractOutside={() => {
-              if (inputRef.current && document.activeElement === inputRef.current) {
-                // Don't close if input has focus
-                return;
-              }
-              setOpen(false);
-            }}
           >
             <Command>
               <CommandList>
@@ -131,8 +127,8 @@ export const EventSearchBar = ({
               </CommandList>
             </Command>
           </PopoverContent>
-        )}
-      </Popover>
+        </Popover>
+      )}
     </div>
   );
 };

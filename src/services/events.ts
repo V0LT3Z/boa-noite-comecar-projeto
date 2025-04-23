@@ -101,15 +101,17 @@ export const fetchEventById = async (id: number) => {
     // Retornar os dados do evento com os tipos de ingressos
     const mappedEvent = mapEventResponse(event, (ticketTypes || []) as TicketTypeResponse[]);
     
-    // Convert numeric values to strings for form editing
-    mappedEvent.tickets = (ticketTypes || []).map(ticket => ({
-      id: ticket.id,
-      name: ticket.name,
-      price: Number(ticket.price), // Keep numeric for the model
-      description: ticket.description || "",
-      availableQuantity: Number(ticket.available_quantity),
-      maxPerPurchase: Number(ticket.max_per_purchase)
-    }));
+    // Process tickets to ensure they have the correct type format
+    if (ticketTypes && ticketTypes.length > 0) {
+      mappedEvent.tickets = ticketTypes.map(ticket => ({
+        id: ticket.id,
+        name: ticket.name,
+        price: Number(ticket.price), // Ensure price is a number
+        description: ticket.description || "",
+        availableQuantity: Number(ticket.available_quantity),
+        maxPerPurchase: Number(ticket.max_per_purchase)
+      }));
+    }
     
     return mappedEvent;
   } catch (error) {
@@ -139,7 +141,7 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
 
     // Calcular total de tickets
     const totalTickets = eventData.tickets.reduce(
-      (sum, ticket) => sum + (parseInt(ticket.availableQuantity) || 0),
+      (sum, ticket) => sum + (parseInt(String(ticket.availableQuantity)) || 0),
       0
     );
 
@@ -214,7 +216,7 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
 
     // Calcular total de tickets
     const totalTickets = eventData.tickets.reduce(
-      (sum, ticket) => sum + (parseInt(ticket.availableQuantity) || 0),
+      (sum, ticket) => sum + (parseInt(String(ticket.availableQuantity)) || 0),
       0
     );
 
@@ -259,18 +261,21 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
     for (const ticket of eventData.tickets) {
       console.log("Processando ticket:", ticket);
       
+      // Ensure values have correct types for database
       const ticketData = {
         event_id: id,
         name: ticket.name,
-        price: parseFloat(ticket.price) || 0, // Convert string to number for database
+        price: typeof ticket.price === 'number' ? ticket.price : parseFloat(String(ticket.price)) || 0,
         description: ticket.description,
-        available_quantity: parseInt(ticket.availableQuantity) || 0,
-        max_per_purchase: parseInt(ticket.maxPerPurchase) || 4
+        available_quantity: typeof ticket.availableQuantity === 'number' ? 
+          ticket.availableQuantity : parseInt(String(ticket.availableQuantity)) || 0,
+        max_per_purchase: typeof ticket.maxPerPurchase === 'number' ? 
+          ticket.maxPerPurchase : parseInt(String(ticket.maxPerPurchase)) || 4
       };
 
-      // Se o ingresso tem um ID existente, é uma atualização
-      if (ticket.id && !isNaN(parseInt(ticket.id.toString()))) {
-        const ticketId = parseInt(ticket.id.toString());
+      // Se o ingresso tem um ID existente (não é uma string "new-X"), é uma atualização
+      if (ticket.id && typeof ticket.id === 'number') {
+        const ticketId = ticket.id;
         console.log("Atualizando ticket existente:", ticketId, ticketData);
         
         const { error } = await supabase
