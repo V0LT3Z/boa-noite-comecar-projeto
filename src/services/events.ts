@@ -3,9 +3,7 @@ import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
 import { format, parse } from "date-fns";
 
-// Função para converter dados do Supabase para o formato da aplicação
 const mapEventResponse = (event: EventResponse, ticketTypes: TicketTypeResponse[] = []): EventDetails => {
-  // Extrair data e hora do timestamp
   const eventDate = new Date(event.date);
   const formattedDate = format(eventDate, "yyyy-MM-dd");
   const formattedTime = format(eventDate, "HH:mm");
@@ -17,7 +15,7 @@ const mapEventResponse = (event: EventResponse, ticketTypes: TicketTypeResponse[
     time: formattedTime,
     location: event.location,
     description: event.description || "",
-    image: event.image_url || "https://picsum.photos/seed/event/800/500", // Imagem padrão se não houver
+    image: event.image_url || "https://picsum.photos/seed/event/800/500",
     minimumAge: event.minimum_age || 0,
     status: (event.status as "active" | "paused" | "cancelled") || "active",
     tickets: ticketTypes.map(tt => ({
@@ -28,7 +26,7 @@ const mapEventResponse = (event: EventResponse, ticketTypes: TicketTypeResponse[
       availableQuantity: tt.available_quantity,
       maxPerPurchase: tt.max_per_purchase
     })),
-    warnings: [],  // Warnings serão implementados em uma fase posterior
+    warnings: [],
     venue: {
       name: event.location,
       address: event.location,
@@ -42,7 +40,6 @@ const mapEventResponse = (event: EventResponse, ticketTypes: TicketTypeResponse[
   };
 };
 
-// Função para buscar eventos
 export const fetchEvents = async () => {
   try {
     console.log("Buscando todos os eventos");
@@ -64,7 +61,6 @@ export const fetchEvents = async () => {
   }
 };
 
-// Função para buscar um evento específico
 export const fetchEventById = async (id: number) => {
   try {
     console.log("Buscando evento com ID:", id);
@@ -79,7 +75,6 @@ export const fetchEventById = async (id: number) => {
       return null;
     }
 
-    // Verificar se retornou algum evento
     if (!eventData || eventData.length === 0) {
       console.log("Evento não encontrado para o ID:", id);
       return null;
@@ -95,18 +90,16 @@ export const fetchEventById = async (id: number) => {
 
     if (ticketError) {
       console.error("Erro ao buscar tipos de ingressos:", ticketError);
-      // Ainda podemos retornar o evento mesmo sem ingressos
+      return null;
     }
 
-    // Retornar os dados do evento com os tipos de ingressos
     const mappedEvent = mapEventResponse(event, (ticketTypes || []) as TicketTypeResponse[]);
     
-    // Process tickets to ensure they have the correct type format
     if (ticketTypes && ticketTypes.length > 0) {
       mappedEvent.tickets = ticketTypes.map(ticket => ({
         id: ticket.id,
         name: ticket.name,
-        price: Number(ticket.price), // Ensure price is a number
+        price: Number(ticket.price),
         description: ticket.description || "",
         availableQuantity: Number(ticket.available_quantity),
         maxPerPurchase: Number(ticket.max_per_purchase)
@@ -120,15 +113,12 @@ export const fetchEventById = async (id: number) => {
   }
 };
 
-// Função para criar um evento
 export const createEvent = async (eventData: AdminEventForm, userId?: string) => {
   try {
     console.log("Criando novo evento:", eventData);
-    // Combinar data e hora em um único timestamp
     const dateTime = `${eventData.date}T${eventData.time || "19:00"}`;
     const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
-    // Verificar se temos o ID do usuário
     if (!userId) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -139,13 +129,11 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
     
     console.log("Criando evento para o usuário com ID:", userId);
 
-    // Calcular total de tickets
     const totalTickets = eventData.tickets.reduce(
       (sum, ticket) => sum + (parseInt(String(ticket.availableQuantity)) || 0),
       0
     );
 
-    // Preparar dados do evento
     const eventInsertData = {
       title: eventData.title,
       description: eventData.description,
@@ -160,7 +148,6 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
     
     console.log("Dados do evento para inserção:", eventInsertData);
 
-    // Inserir o evento principal
     const { data: eventInsert, error: eventError } = await supabase
       .from("events")
       .insert(eventInsertData)
@@ -174,7 +161,6 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
 
     console.log("Evento criado com sucesso:", eventInsert);
 
-    // Inserir os tipos de ingressos
     if (eventInsert && eventData.tickets && eventData.tickets.length > 0) {
       const ticketTypesData = eventData.tickets.map(ticket => ({
         event_id: eventInsert.id,
@@ -206,21 +192,17 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
   }
 };
 
-// Função para atualizar um evento
 export const updateEvent = async (id: number, eventData: AdminEventForm) => {
   try {
     console.log("Atualizando evento:", id, eventData);
-    // Combinar data e hora em um único timestamp
     const dateTime = `${eventData.date}T${eventData.time || "19:00"}`;
     const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
-    // Calcular total de tickets
     const totalTickets = eventData.tickets.reduce(
       (sum, ticket) => sum + (parseInt(String(ticket.availableQuantity)) || 0),
       0
     );
 
-    // Atualizar o evento principal
     const { error: eventError } = await supabase
       .from("events")
       .update({
@@ -241,81 +223,33 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
       throw eventError;
     }
 
-    console.log("Evento atualizado com sucesso");
-
-    // Buscar os tipos de ingressos existentes
-    const { data: existingTickets, error: fetchTicketsError } = await supabase
+    const { error: deleteError } = await supabase
       .from("ticket_types")
-      .select("id")
+      .delete()
       .eq("event_id", id);
 
-    if (fetchTicketsError) {
-      console.error("Erro ao buscar tipos de ingressos existentes:", fetchTicketsError);
-      throw fetchTicketsError;
+    if (deleteError) {
+      console.error("Erro ao excluir tipos de ingressos existentes:", deleteError);
+      throw deleteError;
     }
 
-    const existingIds = existingTickets?.map(ticket => ticket.id) || [];
-    console.log("IDs de ingressos existentes:", existingIds);
-
-    // Processar os tipos de ingressos (atualizar/inserir/excluir)
-    for (const ticket of eventData.tickets) {
-      console.log("Processando ticket:", ticket);
-      
-      // Ensure values have correct types for database
-      const ticketData = {
+    if (eventData.tickets.length > 0) {
+      const ticketsToInsert = eventData.tickets.map(ticket => ({
         event_id: id,
         name: ticket.name,
         price: parseFloat(String(ticket.price)) || 0,
         description: ticket.description,
         available_quantity: parseInt(String(ticket.availableQuantity)) || 0,
         max_per_purchase: parseInt(String(ticket.maxPerPurchase)) || 4
-      };
+      }));
 
-      // Se o ingresso tem um ID existente (não é uma string "new-X"), é uma atualização
-      if (ticket.id && typeof ticket.id === 'number') {
-        const ticketId = ticket.id;
-        console.log("Atualizando ticket existente:", ticketId, ticketData);
-        
-        const { error } = await supabase
-          .from("ticket_types")
-          .update(ticketData)
-          .eq("id", ticketId);
-
-        if (error) {
-          console.error("Erro ao atualizar tipo de ingresso:", error);
-          throw error;
-        }
-        
-        // Remover este ID da lista de existingIds
-        const index = existingIds.indexOf(ticketId);
-        if (index > -1) {
-          existingIds.splice(index, 1);
-        }
-      } else {
-        // Caso contrário, é uma inserção
-        console.log("Inserindo novo ticket:", ticketData);
-        const { error } = await supabase
-          .from("ticket_types")
-          .insert(ticketData);
-
-        if (error) {
-          console.error("Erro ao inserir novo tipo de ingresso:", error);
-          throw error;
-        }
-      }
-    }
-
-    // Excluir tipos de ingressos que não estão mais presentes
-    if (existingIds.length > 0) {
-      console.log("Excluindo tipos de ingressos não utilizados:", existingIds);
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from("ticket_types")
-        .delete()
-        .in("id", existingIds);
+        .insert(ticketsToInsert);
 
-      if (error) {
-        console.error("Erro ao excluir tipos de ingressos:", error);
-        throw error;
+      if (insertError) {
+        console.error("Erro ao inserir novos tipos de ingresso:", insertError);
+        throw insertError;
       }
     }
 
@@ -326,7 +260,6 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
   }
 };
 
-// Função para atualizar o status de um evento
 export const updateEventStatus = async (id: number, status: "active" | "paused" | "cancelled") => {
   try {
     console.log(`Alterando status do evento ${id} para ${status}`);
@@ -353,7 +286,6 @@ export const updateEventStatus = async (id: number, status: "active" | "paused" 
   }
 };
 
-// Função para buscar os ingressos de um usuário
 export const fetchUserTickets = async () => {
   const { data: tickets, error } = await supabase
     .from("tickets")
