@@ -1,5 +1,6 @@
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
+import { useSearchParams } from "react-router-dom"
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
 import EventCard from "@/components/EventCard"
@@ -19,9 +20,10 @@ import { ptBR } from "date-fns/locale"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
 
-// Removendo mock events para mostrar apenas eventos reais
-
 const Index = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get('q') || '';
+  
   const [showAllEvents, setShowAllEvents] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [events, setEvents] = useState<EventResponse[]>([])
@@ -71,36 +73,61 @@ const Index = () => {
   useEffect(() => {
     loadEvents();
   }, [loadEvents]);
+  
+  const handleSearch = (query: string) => {
+    // Update URL with search query
+    setSearchParams(query ? { q: query } : {});
+  };
 
-  const formattedEvents = events.map(event => {
-    try {
-      const eventDate = new Date(event.date);
-      return {
-        id: event.id,
-        title: event.title,
-        date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
-        location: event.location,
-        image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
-        category: "Eventos"
-      };
-    } catch (error) {
-      console.error("Erro ao formatar evento:", error, event);
-      return {
-        id: event.id || 0,
-        title: event.title || "Evento sem título",
-        date: "Data não disponível",
-        location: event.location || "Local não informado",
-        image: "https://picsum.photos/seed/fallback/800/500",
-        category: "Eventos"
-      };
-    }
-  });
+  const formattedEvents = useMemo(() => {
+    return events.map(event => {
+      try {
+        const eventDate = new Date(event.date);
+        return {
+          id: event.id,
+          title: event.title,
+          date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
+          location: event.location,
+          image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
+          category: "Eventos"
+        };
+      } catch (error) {
+        console.error("Erro ao formatar evento:", error, event);
+        return {
+          id: event.id || 0,
+          title: event.title || "Evento sem título",
+          date: "Data não disponível",
+          location: event.location || "Local não informado",
+          image: "https://picsum.photos/seed/fallback/800/500",
+          category: "Eventos"
+        };
+      }
+    });
+  }, [events]);
 
-  const filteredEvents = selectedCategory 
-    ? formattedEvents.filter(event => event.category === selectedCategory)
-    : formattedEvents;
+  // Filter events by search query and category
+  const filteredEvents = useMemo(() => {
+    return formattedEvents.filter(event => {
+      // Filter by category if selected
+      const matchesCategory = selectedCategory 
+        ? event.category === selectedCategory
+        : true;
+      
+      // Filter by search query if provided
+      const matchesSearch = searchQuery 
+        ? event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          event.location.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
+      
+      return matchesCategory && matchesSearch;
+    });
+  }, [formattedEvents, selectedCategory, searchQuery]);
     
   const displayedEvents = showAllEvents ? filteredEvents : filteredEvents.slice(0, 6);
+  
+  // Check if we have any search results
+  const hasSearchResults = searchQuery && filteredEvents.length > 0;
+  const noSearchResults = searchQuery && filteredEvents.length === 0;
 
   return (
     <div className="min-h-screen bg-white">
@@ -115,7 +142,7 @@ const Index = () => {
             <p className="text-muted-foreground text-center mb-6">
               Shows, festivais, workshops e muito mais
             </p>
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} defaultQuery={searchQuery} />
             <div className="mt-4">
               <CategoryCarousel 
                 selectedCategory={selectedCategory} 
@@ -127,7 +154,23 @@ const Index = () => {
       </section>
 
       <main className="container mx-auto px-4 space-y-10 mt-10">
-        {formattedEvents.length > 0 && (
+        {/* Show search results heading if searching */}
+        {searchQuery && (
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-primary">
+              {noSearchResults 
+                ? `Não encontramos resultados para "${searchQuery}"` 
+                : `Resultados para "${searchQuery}"`}
+            </h2>
+            {noSearchResults && (
+              <p className="text-muted-foreground mt-2">
+                Tente buscar por termos diferentes ou navegue pelos eventos abaixo.
+              </p>
+            )}
+          </div>
+        )}
+      
+        {formattedEvents.length > 0 && !noSearchResults && !loading && (
           <Carousel className="relative rounded-2xl overflow-hidden">
             <CarouselContent>
               {filteredEvents.slice(0, 4).map((event) => (
@@ -159,7 +202,11 @@ const Index = () => {
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold text-primary">
-              {selectedCategory ? `Eventos de ${selectedCategory}` : "Todos os Eventos"}
+              {hasSearchResults 
+                ? `Eventos encontrados (${filteredEvents.length})`
+                : selectedCategory 
+                  ? `Eventos de ${selectedCategory}` 
+                  : "Todos os Eventos"}
             </h2>
             {selectedCategory && (
               <Button 
@@ -178,7 +225,7 @@ const Index = () => {
                 <Skeleton key={i} className="h-32 w-full rounded-lg" />
               ))}
             </div>
-          ) : formattedEvents.length > 0 ? (
+          ) : filteredEvents.length > 0 ? (
             <>
               <div className="flex flex-col gap-6">
                 {displayedEvents.map((event) => (
@@ -207,7 +254,9 @@ const Index = () => {
           ) : (
             <div className="py-10 text-center">
               <p className="text-muted-foreground">
-                Nenhum evento encontrado para esta categoria.
+                {noSearchResults 
+                  ? "Tente ajustar sua busca para encontrar eventos."
+                  : "Nenhum evento encontrado para esta categoria."}
               </p>
             </div>
           )}

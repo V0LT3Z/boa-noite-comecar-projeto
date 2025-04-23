@@ -1,22 +1,29 @@
-
 import { useState } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useNavigate } from "react-router-dom"
 
-const SearchBar = () => {
-  const [searchQuery, setSearchQuery] = useState("")
+interface SearchBarProps {
+  onSearch?: (query: string) => void;
+  defaultQuery?: string;
+}
+
+const SearchBar = ({ onSearch, defaultQuery = "" }: SearchBarProps) => {
+  const [searchQuery, setSearchQuery] = useState(defaultQuery)
   const navigate = useNavigate()
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      // In a real application, this would navigate to a search results page with the query
       console.log(`Searching for: ${searchQuery}`)
-      // navigate(`/search?q=${encodeURIComponent(searchQuery)}`)
       
-      // For now, we'll just log the search and reset the query
-      setSearchQuery("")
+      if (onSearch) {
+        // If there's an onSearch handler, use it
+        onSearch(searchQuery.trim())
+      } else {
+        // Otherwise navigate to the homepage with search query
+        navigate(`/?q=${encodeURIComponent(searchQuery.trim())}`)
+      }
     }
   }
 
