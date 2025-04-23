@@ -88,6 +88,9 @@ serve(async (req) => {
           throw new Error(`Tipo de ingresso não encontrado: ${selected.ticketId}`);
         }
 
+        // Certifique-se que o preço não seja zero (Stripe não aceita preços zero)
+        const price = ticketType.price > 0 ? ticketType.price : 100; // Preço mínimo R$1,00
+
         return {
           price_data: {
             currency: "brl",
@@ -95,7 +98,7 @@ serve(async (req) => {
               name: ticketType.name,
               description: ticketType.description || undefined,
             },
-            unit_amount: Math.round(ticketType.price * 100), // Convert to cents
+            unit_amount: Math.round(price * 100), // Convert to cents
           },
           quantity: selected.quantity,
         };
