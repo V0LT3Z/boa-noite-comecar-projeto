@@ -79,56 +79,63 @@ serve(async (req) => {
     }
     console.log(`Found ${ticketTypes.length} ticket types`);
 
-    // Create line items for Stripe
+    // Fetch event details
+    const { data: event, error: eventError } = await supabaseClient
+      .from("events")
+      .select("*")
+      .eq("id", eventId)
+      .single();
+    
+    if (eventError) {
+      console.error("Error fetching event:", eventError);
+      return new Response(
+        JSON.stringify({ error: `Erro ao buscar o evento: ${eventError.message}` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      );
+    }
+
     try {
-      console.log("Creating line items...");
-      const lineItems = selectedTickets.map((selected: any) => {
+      // Format ticket information for the checkout page
+      const formattedTickets = selectedTickets.map((selected: any) => {
         const ticketType = ticketTypes.find((t) => t.id === selected.ticketId);
         if (!ticketType) {
           throw new Error(`Tipo de ingresso não encontrado: ${selected.ticketId}`);
         }
 
-        // Certifique-se que o preço não seja zero (Stripe não aceita preços zero)
-        const price = ticketType.price > 0 ? ticketType.price : 100; // Preço mínimo R$1,00
+        // Ensure price is at least R$1.00
+        const price = ticketType.price > 0 ? ticketType.price : 100; // Minimum R$1.00
 
         return {
-          price_data: {
-            currency: "brl",
-            product_data: {
-              name: ticketType.name,
-              description: ticketType.description || undefined,
-            },
-            unit_amount: Math.round(price * 100), // Convert to cents
-          },
+          id: ticketType.id,
+          name: ticketType.name,
+          price: price,
           quantity: selected.quantity,
         };
       });
-      console.log("Line items created successfully");
 
-      // Create checkout session
-      console.log("Creating Stripe checkout session...");
-      const origin = req.headers.get("origin") || "http://localhost:3000";
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: lineItems,
-        mode: "payment",
-        success_url: `${origin}/pagamento-sucesso?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/pagamento-cancelado`,
-        metadata: {
-          eventId,
-          tickets: JSON.stringify(selectedTickets),
+      // Return data for the custom checkout page
+      const checkoutData = {
+        event: {
+          id: event.id,
+          title: event.title,
+          date: new Date(event.date).toLocaleDateString('pt-BR'),
+          time: event.time || "00:00",
+          location: event.location,
+          image: event.image_url,
         },
-      });
-      console.log("Checkout session created:", session.id);
+        tickets: formattedTickets,
+        // Generate a unique order ID
+        orderId: `order-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      };
 
-      return new Response(JSON.stringify({ url: session.url }), {
+      return new Response(JSON.stringify({ success: true, checkoutData }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     } catch (error) {
-      console.error("Error in checkout session creation:", error.message, error.stack);
+      console.error("Error preparing checkout data:", error.message, error.stack);
       return new Response(
-        JSON.stringify({ error: `Erro ao criar sessão de pagamento: ${error.message}` }),
+        JSON.stringify({ error: `Erro ao preparar dados para checkout: ${error.message}` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
       );
     }

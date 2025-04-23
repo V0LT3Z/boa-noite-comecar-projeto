@@ -92,15 +92,15 @@ const EventDetails = () => {
         throw new Error("Nenhuma resposta recebida do servidor");
       }
 
-      if (data?.url) {
-        console.log("Checkout URL received, redirecting to:", data.url);
-        window.location.href = data.url;
+      if (data.success && data.checkoutData) {
+        console.log("Checkout data received, navigating to checkout page:", data.checkoutData);
+        navigate('/checkout', { state: { orderData: data.checkoutData } });
       } else if (data?.error) {
         console.error("Error received from create-checkout:", data.error);
         throw new Error(data.error);
       } else {
-        console.error("No checkout URL received:", data);
-        throw new Error('URL de checkout não disponível');
+        console.error("Unexpected response format:", data);
+        throw new Error('Resposta inesperada do servidor');
       }
     } catch (error: any) {
       console.error("Erro ao criar checkout:", error);

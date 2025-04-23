@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -8,8 +9,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import CardForm from "@/components/checkout/CardForm";
 import PixQRCode from "@/components/checkout/PixQRCode";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useProtectedRoute } from "@/hooks/use-protected-route";
+import { createOrder } from "@/services/orders";
 
 const Checkout = () => {
   const { isLoading } = useProtectedRoute();
@@ -17,6 +19,7 @@ const Checkout = () => {
   const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Get order data from location state or use fallback if accessed directly
   const orderData = location.state?.orderData || {
     event: {
       id: 1,
@@ -29,46 +32,51 @@ const Checkout = () => {
     tickets: [
       { id: 1, name: "Ingresso Comum", price: 150.0, quantity: 2 },
       { id: 2, name: "Ingresso VIP", price: 300.0, quantity: 1 }
-    ]
+    ],
+    orderId: `order-${Date.now()}`
   };
 
-  const createStripeCheckout = async (paymentMethod: string) => {
+  const handleSubmitCard = async (data: any) => {
+    await processPayment("card", data);
+  };
+  
+  const handleSubmitPix = async () => {
+    await processPayment("pix");
+  };
+
+  const processPayment = async (paymentMethod: string, cardData?: any) => {
     setIsSubmitting(true);
     
     try {
+      // For demonstration, we'll use the orders service to create an order
       const selectedTickets = orderData.tickets.map((ticket: any) => ({
         ticketId: ticket.id,
         quantity: ticket.quantity,
       }));
 
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: {
-          eventId: orderData.event.id,
-          selectedTickets,
-        },
+      // Create order in the database
+      await createOrder(
+        orderData.event.id,
+        selectedTickets,
+        paymentMethod
+      );
+      
+      // Navigate to success page
+      navigate('/pagamento-sucesso', { 
+        state: { 
+          sessionId: orderData.orderId,
+          eventInfo: orderData.event,
+          tickets: orderData.tickets
+        } 
       });
-
-      if (error) throw error;
-      if (!data?.url) throw new Error("URL de checkout não recebida");
-
-      window.location.href = data.url;
-    } catch (error) {
-      console.error("Erro ao criar checkout:", error);
-      toast({
-        title: "Erro no pagamento",
-        description: "Não foi possível processar o pagamento. Tente novamente.",
-        variant: "destructive"
+    } catch (error: any) {
+      console.error("Erro ao processar pagamento:", error);
+      toast.error("Erro no pagamento", {
+        description: "Não foi possível processar o pagamento. Tente novamente."
       });
+    } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleSubmitCard = async () => {
-    await createStripeCheckout("card");
-  };
-  
-  const handleSubmitPix = async () => {
-    await createStripeCheckout("pix");
   };
 
   if (isLoading) {
