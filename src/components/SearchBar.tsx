@@ -1,4 +1,5 @@
-import { useState } from "react"
+
+import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useNavigate } from "react-router-dom"
@@ -11,12 +12,26 @@ interface SearchBarProps {
 const SearchBar = ({ onSearch, defaultQuery = "" }: SearchBarProps) => {
   const [searchQuery, setSearchQuery] = useState(defaultQuery)
   const navigate = useNavigate()
-  
+
+  // Quando searchQuery for limpo, mostra novamente todos eventos
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      if (onSearch) {
+        onSearch("");
+      } else {
+        // Remove o parâmetro de busca da URL
+        navigate(`/`);
+      }
+    }
+    // Só disparar quando searchQuery mudar (e não em cada render)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery])
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
       console.log(`Searching for: ${searchQuery}`)
-      
+
       if (onSearch) {
         // If there's an onSearch handler, use it
         onSearch(searchQuery.trim())
@@ -31,11 +46,11 @@ const SearchBar = ({ onSearch, defaultQuery = "" }: SearchBarProps) => {
     <div className="w-full max-w-4xl mx-auto relative">
       <form onSubmit={handleSearch}>
         <div className="relative">
-          <Input 
-            type="text" 
+          <Input
+            type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar eventos..." 
+            placeholder="Buscar eventos..."
             className="pl-10 py-6 bg-white border border-gray-200 text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/50 rounded-lg shadow-sm transition-all duration-300"
           />
           <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
