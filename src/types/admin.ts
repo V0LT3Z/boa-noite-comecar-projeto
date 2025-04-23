@@ -1,4 +1,3 @@
-
 import { ReactNode } from 'react';
 
 export interface NavigationItem {
@@ -16,6 +15,10 @@ export interface EventItem {
   status: EventStatus;
   ticketsSold: number;
   totalRevenue: number;
+  venue?: string;
+  minimumAge?: string;
+  description?: string;
+  location?: string;
 }
 
 export interface TeamMember {
