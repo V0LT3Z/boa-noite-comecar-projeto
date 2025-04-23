@@ -1,3 +1,4 @@
+
 import { ReactNode } from 'react';
 
 export interface NavigationItem {
@@ -45,12 +46,12 @@ export interface AdminEventForm {
 }
 
 export interface AdminTicketType {
-  id?: string; // Changed from required to optional
+  id?: string | number; // Changed to accept both string and number
   name: string;
-  price: string;
+  price: string; // Changed from number to string to match the form
   description: string;
-  availableQuantity: string;
-  maxPerPurchase: string;
+  availableQuantity: string; // Changed from number to string to match the form
+  maxPerPurchase: string; // Changed from number to string to match the form
 }
 
 export interface QRVerification {

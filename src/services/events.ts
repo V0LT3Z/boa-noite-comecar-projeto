@@ -265,12 +265,10 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
       const ticketData = {
         event_id: id,
         name: ticket.name,
-        price: typeof ticket.price === 'number' ? ticket.price : parseFloat(String(ticket.price)) || 0,
+        price: parseFloat(String(ticket.price)) || 0,
         description: ticket.description,
-        available_quantity: typeof ticket.availableQuantity === 'number' ? 
-          ticket.availableQuantity : parseInt(String(ticket.availableQuantity)) || 0,
-        max_per_purchase: typeof ticket.maxPerPurchase === 'number' ? 
-          ticket.maxPerPurchase : parseInt(String(ticket.maxPerPurchase)) || 4
+        available_quantity: parseInt(String(ticket.availableQuantity)) || 0,
+        max_per_purchase: parseInt(String(ticket.maxPerPurchase)) || 4
       };
 
       // Se o ingresso tem um ID existente (não é uma string "new-X"), é uma atualização

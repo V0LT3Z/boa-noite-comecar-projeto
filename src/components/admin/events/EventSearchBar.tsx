@@ -59,13 +59,9 @@ export const EventSearchBar = ({
   // Handle input change without losing focus
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearchChange(e.target.value);
-    // Only open if there are events and typing
-    if (e.target.value && events.length > 0 && !open) {
-      setOpen(true);
-    }
   };
 
-  // Focus input when clicking container and prevent popover opening on admin pages
+  // Focus input when clicking container
   const handleContainerClick = () => {
     if (inputRef.current) {
       inputRef.current.focus();
@@ -85,13 +81,6 @@ export const EventSearchBar = ({
           className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           value={searchQuery}
           onChange={handleInputChange}
-          onFocus={() => {
-            // Don't open popover automatically in admin page
-            if (window.location.pathname.includes('/admin')) {
-              return;
-            }
-            setOpen(true);
-          }}
         />
       </div>
       
