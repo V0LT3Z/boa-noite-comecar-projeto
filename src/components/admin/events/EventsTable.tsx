@@ -1,7 +1,7 @@
 
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
-import { Edit, MoreHorizontal, PauseCircle, Play, X } from "lucide-react";
+import { Edit, MoreHorizontal, PauseCircle, Play, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   Table, TableBody, TableCell, TableHead, 
@@ -21,9 +21,10 @@ interface EventsTableProps {
   events: EventItem[];
   onEdit: (event: EventItem) => void;
   onStatusAction: (event: EventItem, action: "pause" | "cancel" | "activate") => void;
+  onDeleteEvent: (event: EventItem) => void;
 }
 
-export const EventsTable = ({ events, onEdit, onStatusAction }: EventsTableProps) => {
+export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: EventsTableProps) => {
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "dd 'de' MMMM 'de' yyyy", { locale: pt });
@@ -95,6 +96,14 @@ export const EventsTable = ({ events, onEdit, onStatusAction }: EventsTableProps
                         Cancelar
                       </DropdownMenuItem>
                     )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => onDeleteEvent(event)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remover evento
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

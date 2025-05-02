@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, Trash2 } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import EventForm from "@/components/admin/EventForm";
 import { toast } from "@/hooks/use-toast";
 import { EventItem, EventStatus } from "@/types/admin";
@@ -10,8 +10,9 @@ import { EventsTable } from "@/components/admin/events/EventsTable";
 import { ConfirmActionDialog } from "@/components/admin/events/ConfirmActionDialog";
 import { EventSearchBar } from "@/components/admin/events/EventSearchBar";
 import { EmptyEventsList } from "@/components/admin/events/EmptyEventsList";
-import { fetchEvents, fetchEventById, updateEventStatus, updateEvent } from "@/services/events";
+import { fetchEvents, fetchEventById, updateEventStatus, updateEvent, deleteEvent } from "@/services/events";
 import { format } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
 const AdminEvents = () => {
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
@@ -23,7 +24,8 @@ const AdminEvents = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState<"pause" | "cancel" | "activate">("pause");
   const [isProcessingAction, setIsProcessingAction] = useState(false);
-  const [hideCancelledEvents, setHideCancelledEvents] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadEvents = async () => {
     try {
@@ -64,12 +66,7 @@ const AdminEvents = () => {
 
   const filteredEvents = events.filter(event => {
     // Filter by search query
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Filter out cancelled events if hideCancelledEvents is true
-    const shouldInclude = hideCancelledEvents ? event.status !== "cancelled" : true;
-    
-    return matchesSearch && shouldInclude;
+    return event.title.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   const handleStatusChange = async (eventId: number, newStatus: EventStatus) => {
@@ -107,6 +104,40 @@ const AdminEvents = () => {
       // Garantir que todos os estados sejam limpos adequadamente, independente de sucesso ou erro
       setIsProcessingAction(false);
       setConfirmDialogOpen(false);
+      setSelectedEvent(null);
+    }
+  };
+
+  const handleDelete = async (event: EventItem) => {
+    setSelectedEvent(event);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedEvent) return;
+    
+    try {
+      setIsDeleting(true);
+      await deleteEvent(selectedEvent.id);
+      
+      toast({
+        title: "Evento removido",
+        description: "O evento foi removido com sucesso.",
+        variant: "success"
+      });
+      
+      // Atualizar a lista de eventos após a exclusão
+      await loadEvents();
+    } catch (error) {
+      console.error("Erro ao remover evento:", error);
+      toast({
+        title: "Erro ao remover evento",
+        description: "Não foi possível remover o evento. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
       setSelectedEvent(null);
     }
   };
@@ -164,21 +195,6 @@ const AdminEvents = () => {
     loadEvents();
   };
 
-  // Toggle function to show/hide cancelled events
-  const toggleCancelledEvents = () => {
-    setHideCancelledEvents(!hideCancelledEvents);
-    toast({
-      title: hideCancelledEvents ? "Mostrando todos os eventos" : "Ocultando eventos cancelados",
-      description: hideCancelledEvents 
-        ? "Agora você está vendo todos os eventos, incluindo os cancelados." 
-        : "Os eventos cancelados foram ocultados da lista.",
-      variant: "default"
-    });
-  };
-
-  // Count how many cancelled events are being filtered
-  const cancelledEventsCount = events.filter(event => event.status === "cancelled").length;
-
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -204,20 +220,6 @@ const AdminEvents = () => {
             <div className="flex items-center justify-between">
               <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Eventos</h1>
               <div className="flex gap-3">
-                <Button 
-                  variant={hideCancelledEvents ? "default" : "outline"} 
-                  onClick={toggleCancelledEvents}
-                  className="flex items-center gap-2"
-                  disabled={cancelledEventsCount === 0}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  {hideCancelledEvents ? "Mostrar Cancelados" : "Ocultar Cancelados"}
-                  {!hideCancelledEvents && cancelledEventsCount > 0 && (
-                    <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
-                      {cancelledEventsCount}
-                    </span>
-                  )}
-                </Button>
                 <Button onClick={handleNewEvent}>
                   <Plus className="mr-2 h-4 w-4" /> Novo Evento
                 </Button>
@@ -241,6 +243,7 @@ const AdminEvents = () => {
                   events={filteredEvents} 
                   onEdit={handleEdit}
                   onStatusAction={openConfirmDialog}
+                  onDeleteEvent={handleDelete}
                 />
               ) : (
                 <EmptyEventsList onCreateEvent={handleNewEvent} />
@@ -250,6 +253,7 @@ const AdminEvents = () => {
         )}
       </div>
 
+      {/* Status change confirmation dialog */}
       <ConfirmActionDialog
         open={confirmDialogOpen}
         onOpenChange={(open) => {
@@ -267,6 +271,41 @@ const AdminEvents = () => {
         onConfirm={(event, newStatus) => handleStatusChange(event.id, newStatus)}
         disabled={isProcessingAction}
       />
+
+      {/* Delete event confirmation dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={(open) => {
+        if (!isDeleting) {
+          setDeleteDialogOpen(open);
+          if (!open) {
+            setSelectedEvent(null);
+          }
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar remoção</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            Tem certeza que deseja remover permanentemente o evento <span className="font-semibold">{selectedEvent?.title}</span>? Esta ação não pode ser desfeita.
+          </DialogDescription>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Removendo..." : "Remover evento"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };

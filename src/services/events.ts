@@ -366,3 +366,25 @@ export const deleteTicketType = async (ticketTypeId: number) => {
     throw error;
   }
 };
+
+export const deleteEvent = async (id: number) => {
+  try {
+    console.log(`Excluindo evento com ID: ${id}`);
+    
+    const { error } = await supabase
+      .from("events")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Erro ao excluir evento:", error);
+      throw error;
+    }
+
+    console.log("Evento excluído com sucesso");
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao excluir evento:", error);
+    throw error;
+  }
+};
