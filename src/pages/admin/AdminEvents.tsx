@@ -97,6 +97,7 @@ const AdminEvents = () => {
         variant: "destructive"
       });
     } finally {
+      // Garantir que todos os estados sejam limpos adequadamente, independente de sucesso ou erro
       setIsProcessingAction(false);
       setConfirmDialogOpen(false);
       setSelectedEvent(null);
@@ -213,7 +214,16 @@ const AdminEvents = () => {
 
       <ConfirmActionDialog
         open={confirmDialogOpen}
-        onOpenChange={setConfirmDialogOpen}
+        onOpenChange={(open) => {
+          // Não permitir fechar o diálogo durante o processamento da ação
+          if (!isProcessingAction) {
+            setConfirmDialogOpen(open);
+            // Se estiver fechando o diálogo manualmente, limpe também o evento selecionado
+            if (!open) {
+              setSelectedEvent(null);
+            }
+          }
+        }}
         selectedEvent={selectedEvent}
         actionType={actionType}
         onConfirm={(event, newStatus) => handleStatusChange(event.id, newStatus)}

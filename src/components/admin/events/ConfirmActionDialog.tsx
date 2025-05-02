@@ -45,7 +45,15 @@ export const ConfirmActionDialog = ({
   }
   
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        // Não permitir fechar o diálogo durante o processamento da ação
+        if (!disabled) {
+          onOpenChange(isOpen);
+        }
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
