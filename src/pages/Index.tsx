@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams, Link } from "react-router-dom"
 import Header from "@/components/Header"
 import SearchBar from "@/components/SearchBar"
 import EventCard from "@/components/EventCard"
@@ -190,22 +191,24 @@ const Index = () => {
             <CarouselContent>
               {carouselEvents.map((event) => (
                 <CarouselItem key={event.id} className="cursor-pointer">
-                  <div className="relative group">
-                    <img 
-                      src={event.image} 
-                      alt={event.title}
-                      className="w-full h-[400px] object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-primary opacity-50 mix-blend-multiply" />
-                    <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/50 to-transparent">
-                      <h2 className="text-4xl font-bold text-white mb-2">{event.title}</h2>
-                      <div className="flex items-center gap-4 text-white/90">
-                        <p>{event.date}</p>
-                        <p>•</p>
-                        <p>{event.location}</p>
+                  <Link to={`/evento/${event.id}`}>
+                    <div className="relative group">
+                      <img 
+                        src={event.image} 
+                        alt={event.title}
+                        className="w-full h-[400px] object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-primary opacity-50 mix-blend-multiply" />
+                      <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/50 to-transparent">
+                        <h2 className="text-4xl font-bold text-white mb-2">{event.title}</h2>
+                        <div className="flex items-center gap-4 text-white/90">
+                          <p>{event.date}</p>
+                          <p>•</p>
+                          <p>{event.location}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 </CarouselItem>
               ))}
             </CarouselContent>
