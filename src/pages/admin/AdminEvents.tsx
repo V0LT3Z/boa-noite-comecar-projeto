@@ -35,10 +35,13 @@ const AdminEvents = () => {
   // Refs to prevent state updates during unmount
   const isMountedRef = useRef(true);
   const apiCallInProgressRef = useRef(false);
+  const deletedEventIdsRef = useRef<number[]>([]);
 
   // Reset mounted ref on unmount
   useEffect(() => {
     isMountedRef.current = true;
+    deletedEventIdsRef.current = [];
+    
     return () => {
       isMountedRef.current = false;
     };
@@ -60,8 +63,15 @@ const AdminEvents = () => {
       // Skip state update if component unmounted during fetch
       if (!isMountedRef.current) return;
       
+      // Filter out any previously deleted events that might still come from the API
+      const filteredEvents = fetchedEvents.filter(
+        event => !deletedEventIdsRef.current.includes(event.id)
+      );
+      
+      console.log(`Eventos após filtragem: ${filteredEvents.length} (removidos: ${deletedEventIdsRef.current.length})`);
+      
       // Format events for display
-      const formattedEvents: EventItem[] = fetchedEvents.map(event => ({
+      const formattedEvents: EventItem[] = filteredEvents.map(event => ({
         id: event.id,
         title: event.title,
         date: format(new Date(event.date), "yyyy-MM-dd"),
@@ -189,6 +199,10 @@ const AdminEvents = () => {
       
       // Skip state updates if component unmounted
       if (!isMountedRef.current) return;
+      
+      // Add the deleted event ID to our tracking ref to ensure it doesn't reappear
+      deletedEventIdsRef.current.push(selectedEvent.id);
+      console.log("Eventos excluídos:", deletedEventIdsRef.current);
       
       // Update UI immediately by removing the deleted event
       setEvents(prevEvents => prevEvents.filter(event => event.id !== selectedEvent.id));
@@ -409,7 +423,9 @@ const AdminEvents = () => {
           <DialogFooter>
             <Button 
               variant="outline" 
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (!isDeleting && isMountedRef.current) {
                   setDeleteDialogOpen(false);
                 }

@@ -96,7 +96,7 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
         </TableHeader>
         <TableBody>
           {events.map((event) => (
-            <TableRow key={event.id}>
+            <TableRow key={`event-${event.id}`}>
               <TableCell className="font-medium">{event.title}</TableCell>
               <TableCell>{formatDate(event.date)}</TableCell>
               <TableCell><EventStatusBadge status={event.status} /></TableCell>
