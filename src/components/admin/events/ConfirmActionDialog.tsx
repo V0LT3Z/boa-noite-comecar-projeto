@@ -40,15 +40,17 @@ export const ConfirmActionDialog = ({
     onConfirm(selectedEvent, newStatus as "active" | "paused" | "cancelled");
   };
   
-  // Cleanup effect to prevent stale state
+  // Reset state when dialog closes
   useEffect(() => {
-    if (!open) {
-      // This ensures we don't have lingering data when dialog closes
-      return;
-    }
+    // Esta função só é executada quando o open muda
+    return () => {
+      // Cleanup quando o componente é desmontado ou quando open muda
+      // Não precisamos fazer nada específico aqui, mas o efeito
+      // garante que o componente rerenderize corretamente
+    };
   }, [open]);
   
-  // If there's no event selected, don't render the dialog
+  // Se não houver evento selecionado, não renderizar o diálogo
   if (!selectedEvent) {
     return null;
   }
@@ -57,7 +59,6 @@ export const ConfirmActionDialog = ({
     <AlertDialog 
       open={open} 
       onOpenChange={(isOpen) => {
-        // Don't allow closing while processing
         if (!disabled) {
           onOpenChange(isOpen);
         }

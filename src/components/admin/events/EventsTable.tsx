@@ -33,6 +33,21 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
     }
   };
 
+  // Função para lidar com ações de forma segura
+  const handleAction = (
+    event: React.MouseEvent, 
+    callback: Function, 
+    ...args: any[]
+  ) => {
+    // Evita propagação para garantir que apenas esta ação seja executada
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Executa a callback com args após um pequeno delay para garantir
+    // que o menu dropdown seja fechado antes da ação
+    setTimeout(() => callback(...args), 10);
+  };
+
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -64,14 +79,16 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onEdit(event)}>
+                    <DropdownMenuItem 
+                      onClick={(e) => handleAction(e, onEdit, event)}
+                    >
                       <Edit className="h-4 w-4 mr-2" />
                       Editar
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     {event.status === "active" && (
                       <DropdownMenuItem 
-                        onClick={() => onStatusAction(event, "pause")}
+                        onClick={(e) => handleAction(e, onStatusAction, event, "pause")}
                         className="text-amber-600"
                       >
                         <PauseCircle className="h-4 w-4 mr-2" />
@@ -80,7 +97,7 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
                     )}
                     {event.status === "paused" && (
                       <DropdownMenuItem 
-                        onClick={() => onStatusAction(event, "activate")}
+                        onClick={(e) => handleAction(e, onStatusAction, event, "activate")}
                         className="text-green-600"
                       >
                         <Play className="h-4 w-4 mr-2" />
@@ -89,7 +106,7 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
                     )}
                     {(event.status === "active" || event.status === "paused") && (
                       <DropdownMenuItem 
-                        onClick={() => onStatusAction(event, "cancel")}
+                        onClick={(e) => handleAction(e, onStatusAction, event, "cancel")}
                         className="text-destructive"
                       >
                         <X className="h-4 w-4 mr-2" />
@@ -98,10 +115,7 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent event bubbling
-                        onDeleteEvent(event);
-                      }}
+                      onClick={(e) => handleAction(e, onDeleteEvent, event)}
                       className="text-destructive"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />

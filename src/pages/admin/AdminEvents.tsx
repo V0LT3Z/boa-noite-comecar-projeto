@@ -27,7 +27,7 @@ const AdminEvents = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Use useCallback to prevent unnecessary re-renders
+  // Use useCallback para evitar re-renderizações desnecessárias
   const loadEvents = useCallback(async () => {
     try {
       setLoadingEvents(true);
@@ -42,7 +42,7 @@ const AdminEvents = () => {
         totalRevenue: 0,
         description: event.description || "",
         location: event.location || "",
-        venue: event.location || "", // Using location as venue if not specified
+        venue: event.location || "",
         minimumAge: event.minimum_age?.toString() || "0"
       }));
       
@@ -66,7 +66,6 @@ const AdminEvents = () => {
   }, [isCreatingEvent, loadEvents]);
 
   const filteredEvents = events.filter(event => {
-    // Filter by search query
     return event.title.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
@@ -107,7 +106,8 @@ const AdminEvents = () => {
   };
 
   const handleDelete = async (event: EventItem) => {
-    setSelectedEvent(event);
+    // Importante: fornecer uma nova referência de objeto para evitar problemas de estado
+    setSelectedEvent({...event});
     setDeleteDialogOpen(true);
   };
 
@@ -141,7 +141,8 @@ const AdminEvents = () => {
   };
 
   const openConfirmDialog = (event: EventItem, action: "pause" | "cancel" | "activate") => {
-    setSelectedEvent(event);
+    // Importante: fornecer uma nova referência de objeto para evitar problemas de estado
+    setSelectedEvent({...event});
     setActionType(action);
     setConfirmDialogOpen(true);
   };
@@ -256,7 +257,8 @@ const AdminEvents = () => {
           if (!isProcessingAction) {
             setConfirmDialogOpen(open);
             if (!open) {
-              setSelectedEvent(null);
+              // Limpar o estado ao fechar
+              setTimeout(() => setSelectedEvent(null), 300);
             }
           }
         }}
@@ -271,7 +273,8 @@ const AdminEvents = () => {
         if (!isDeleting) {
           setDeleteDialogOpen(open);
           if (!open) {
-            setSelectedEvent(null);
+            // Limpar o estado ao fechar
+            setTimeout(() => setSelectedEvent(null), 300);
           }
         }
       }}>
