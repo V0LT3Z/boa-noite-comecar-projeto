@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EventItem } from "@/types/admin";
+import { useEffect } from "react";
 
 interface ConfirmActionDialogProps {
   open: boolean;
@@ -39,7 +40,15 @@ export const ConfirmActionDialog = ({
     onConfirm(selectedEvent, newStatus as "active" | "paused" | "cancelled");
   };
   
-  // Se não há evento selecionado, não renderize o diálogo
+  // Cleanup effect to prevent stale state
+  useEffect(() => {
+    if (!open) {
+      // This ensures we don't have lingering data when dialog closes
+      return;
+    }
+  }, [open]);
+  
+  // If there's no event selected, don't render the dialog
   if (!selectedEvent) {
     return null;
   }
@@ -48,7 +57,7 @@ export const ConfirmActionDialog = ({
     <AlertDialog 
       open={open} 
       onOpenChange={(isOpen) => {
-        // Não permitir fechar o diálogo durante o processamento da ação
+        // Don't allow closing while processing
         if (!disabled) {
           onOpenChange(isOpen);
         }

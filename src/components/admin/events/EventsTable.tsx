@@ -98,7 +98,10 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
-                      onClick={() => onDeleteEvent(event)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent event bubbling
+                        onDeleteEvent(event);
+                      }}
                       className="text-destructive"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />

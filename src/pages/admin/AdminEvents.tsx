@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft } from "lucide-react";
@@ -27,7 +27,8 @@ const AdminEvents = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const loadEvents = async () => {
+  // Use useCallback to prevent unnecessary re-renders
+  const loadEvents = useCallback(async () => {
     try {
       setLoadingEvents(true);
       const fetchedEvents = await fetchEvents();
@@ -56,13 +57,13 @@ const AdminEvents = () => {
     } finally {
       setLoadingEvents(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!isCreatingEvent) {
       loadEvents();
     }
-  }, [isCreatingEvent]);
+  }, [isCreatingEvent, loadEvents]);
 
   const filteredEvents = events.filter(event => {
     // Filter by search query
@@ -74,7 +75,7 @@ const AdminEvents = () => {
       setIsProcessingAction(true);
       await updateEventStatus(eventId, newStatus);
       
-      // Atualiza o estado local imediatamente para feedback visual rápido
+      // Update local state immediately for responsive UI
       setEvents(currentEvents => 
         currentEvents.map(event => 
           event.id === eventId ? { ...event, status: newStatus } : event
@@ -91,8 +92,6 @@ const AdminEvents = () => {
         variant: "success"
       });
       
-      // Recarregar eventos do servidor para garantir dados atualizados
-      await loadEvents();
     } catch (error) {
       console.error(`Erro ao ${newStatus} evento:`, error);
       toast({
@@ -101,7 +100,6 @@ const AdminEvents = () => {
         variant: "destructive"
       });
     } finally {
-      // Garantir que todos os estados sejam limpos adequadamente, independente de sucesso ou erro
       setIsProcessingAction(false);
       setConfirmDialogOpen(false);
       setSelectedEvent(null);
@@ -120,14 +118,14 @@ const AdminEvents = () => {
       setIsDeleting(true);
       await deleteEvent(selectedEvent.id);
       
+      // Update UI immediately by removing the deleted event
+      setEvents(prevEvents => prevEvents.filter(event => event.id !== selectedEvent.id));
+      
       toast({
         title: "Evento removido",
         description: "O evento foi removido com sucesso.",
         variant: "success"
       });
-      
-      // Atualizar a lista de eventos após a exclusão
-      await loadEvents();
     } catch (error) {
       console.error("Erro ao remover evento:", error);
       toast({
@@ -152,14 +150,12 @@ const AdminEvents = () => {
     try {
       const eventDetails = await fetchEventById(event.id);
       if (eventDetails) {
-        // Make sure we're preserving all required fields from both sources
         setEditingEvent({
           ...event,
           description: eventDetails.description || "",
           location: eventDetails.location || "",
           venue: eventDetails.venue?.name || "",
           minimumAge: eventDetails.minimumAge?.toString() || "0",
-          // Add any other fields needed for editing
         });
         setIsCreatingEvent(true);
       } else {
@@ -257,10 +253,8 @@ const AdminEvents = () => {
       <ConfirmActionDialog
         open={confirmDialogOpen}
         onOpenChange={(open) => {
-          // Não permitir fechar o diálogo durante o processamento da ação
           if (!isProcessingAction) {
             setConfirmDialogOpen(open);
-            // Se estiver fechando o diálogo manualmente, limpe também o evento selecionado
             if (!open) {
               setSelectedEvent(null);
             }
