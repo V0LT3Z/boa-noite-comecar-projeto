@@ -70,6 +70,7 @@ const AdminEvents = () => {
       setIsProcessingAction(true);
       await updateEventStatus(eventId, newStatus);
       
+      // Atualiza o estado local imediatamente para feedback visual rápido
       setEvents(currentEvents => 
         currentEvents.map(event => 
           event.id === eventId ? { ...event, status: newStatus } : event
@@ -86,7 +87,8 @@ const AdminEvents = () => {
         variant: "success"
       });
       
-      loadEvents();
+      // Recarregar eventos do servidor para garantir dados atualizados
+      await loadEvents();
     } catch (error) {
       console.error(`Erro ao ${newStatus} evento:`, error);
       toast({

@@ -39,6 +39,11 @@ export const ConfirmActionDialog = ({
     onConfirm(selectedEvent, newStatus as "active" | "paused" | "cancelled");
   };
   
+  // Se não há evento selecionado, não renderize o diálogo
+  if (!selectedEvent) {
+    return null;
+  }
+  
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
