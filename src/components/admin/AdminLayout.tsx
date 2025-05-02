@@ -1,4 +1,3 @@
-
 import { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -96,9 +95,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               onLogout={logout}
             />
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground hidden md:inline-block">
-                Olá, {user?.fullName?.split(' ')[0]}
-              </span>
               <Avatar className="h-9 w-9">
                 <AvatarFallback className="bg-primary/10 text-primary">
                   {getInitials(user?.fullName)}
