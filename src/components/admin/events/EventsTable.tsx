@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EventStatusBadge } from "./EventStatusBadge";
 import { EventItem } from "@/types/admin";
+import { useRef } from "react";
 
 interface EventsTableProps {
   events: EventItem[];
@@ -25,6 +26,9 @@ interface EventsTableProps {
 }
 
 export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: EventsTableProps) => {
+  // Use ref to track which dropdown is open
+  const activeDropdownRef = useRef<number | null>(null);
+  
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "dd 'de' MMMM 'de' yyyy", { locale: pt });
@@ -33,23 +37,32 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
     }
   };
 
-  // Improved action handler with better event handling
+  // Safe action handler with preventions for event bubbling
   const handleAction = (
     event: React.MouseEvent, 
     callback: Function, 
     ...args: any[]
   ) => {
-    // Prevent event bubbling
+    // Stop event bubbling completely
     event.preventDefault();
     event.stopPropagation();
     
-    // Clone any objects to prevent state mutation
+    // Create deep copies of any objects to prevent state mutation
     const clonedArgs = args.map(arg => 
-      typeof arg === 'object' && arg !== null ? {...arg} : arg
+      typeof arg === 'object' && arg !== null ? JSON.parse(JSON.stringify(arg)) : arg
     );
     
-    // Close dropdown first to prevent UI freezing
-    setTimeout(() => callback(...clonedArgs), 10);
+    // Close all dropdowns first
+    activeDropdownRef.current = null;
+    
+    // Small delay to ensure UI is updated before callback executes
+    setTimeout(() => {
+      try {
+        callback(...clonedArgs);
+      } catch (error) {
+        console.error("Error in action handler:", error);
+      }
+    }, 10);
   };
 
   return (
@@ -76,7 +89,12 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
                 {event.totalRevenue.toLocaleString('pt-BR')}
               </TableCell>
               <TableCell>
-                <DropdownMenu>
+                <DropdownMenu 
+                  open={activeDropdownRef.current === event.id}
+                  onOpenChange={(open) => {
+                    activeDropdownRef.current = open ? event.id : null;
+                  }}
+                >
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                       <MoreHorizontal className="h-4 w-4" />

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft } from "lucide-react";
@@ -15,24 +15,52 @@ import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
 const AdminEvents = () => {
+  // Component state
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  
+  // Dialog state
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [actionType, setActionType] = useState<"pause" | "cancel" | "activate">("pause");
-  const [isProcessingAction, setIsProcessingAction] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [actionType, setActionType] = useState<"pause" | "cancel" | "activate">("pause");
+  
+  // Processing state
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Refs to prevent state updates during unmount
+  const isMountedRef = useRef(true);
+  const apiCallInProgressRef = useRef(false);
 
-  // Use useCallback for functions to prevent unnecessary re-renders
+  // Reset mounted ref on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Load events with useCallback to prevent unnecessary re-renders
   const loadEvents = useCallback(async () => {
+    // Skip if we're already loading or unmounted
+    if (apiCallInProgressRef.current || !isMountedRef.current) return;
+    
     try {
+      console.log("Iniciando carregamento de eventos");
+      apiCallInProgressRef.current = true;
       setLoadingEvents(true);
+      
+      // Fetch events from the API
       const fetchedEvents = await fetchEvents();
       
+      // Skip state update if component unmounted during fetch
+      if (!isMountedRef.current) return;
+      
+      // Format events for display
       const formattedEvents: EventItem[] = fetchedEvents.map(event => ({
         id: event.id,
         title: event.title,
@@ -47,7 +75,11 @@ const AdminEvents = () => {
       }));
       
       setEvents(formattedEvents);
+      console.log(`${formattedEvents.length} eventos carregados com sucesso`);
     } catch (error) {
+      // Skip error handling if component unmounted
+      if (!isMountedRef.current) return;
+      
       console.error("Erro ao carregar eventos:", error);
       toast({
         title: "Erro ao carregar eventos",
@@ -55,27 +87,45 @@ const AdminEvents = () => {
         variant: "destructive"
       });
     } finally {
-      setLoadingEvents(false);
+      // Skip state update if component unmounted
+      if (isMountedRef.current) {
+        setLoadingEvents(false);
+      }
+      apiCallInProgressRef.current = false;
     }
   }, []);
 
+  // Load events on mount and when event creation state changes
   useEffect(() => {
     if (!isCreatingEvent) {
       loadEvents();
     }
   }, [isCreatingEvent, loadEvents]);
 
+  // Filter events based on search query
   const filteredEvents = events.filter(event => {
     return event.title.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  // Improved state handling during status changes
+  // Handle event status changes with improved error handling
   const handleStatusChange = async (eventId: number, newStatus: EventStatus) => {
+    if (apiCallInProgressRef.current) {
+      console.log("Uma operação já está em andamento, ignorando...");
+      return;
+    }
+    
     try {
+      apiCallInProgressRef.current = true;
       setIsProcessingAction(true);
+      console.log(`Alterando status do evento ${eventId} para ${newStatus}`);
+      
+      // Update status in the API
       await updateEventStatus(eventId, newStatus);
       
-      // Update local state immediately for responsive UI
+      // Skip state updates if component unmounted
+      if (!isMountedRef.current) return;
+      
+      // Update local state optimistically for responsive UI
       setEvents(currentEvents => 
         currentEvents.map(event => 
           event.id === eventId ? { ...event, status: newStatus } : event
@@ -93,6 +143,9 @@ const AdminEvents = () => {
       });
       
     } catch (error) {
+      // Skip error handling if component unmounted
+      if (!isMountedRef.current) return;
+      
       console.error(`Erro ao ${newStatus} evento:`, error);
       toast({
         title: "Erro ao alterar status",
@@ -100,27 +153,42 @@ const AdminEvents = () => {
         variant: "destructive"
       });
     } finally {
-      setIsProcessingAction(false);
-      setConfirmDialogOpen(false);
-      // Use setTimeout to ensure dialog is fully closed before resetting state
-      setTimeout(() => {
-        setSelectedEvent(null);
-      }, 300);
+      // Reset state only if still mounted
+      if (isMountedRef.current) {
+        setIsProcessingAction(false);
+        setConfirmDialogOpen(false);
+        
+        // Use timeout to ensure dialog is fully closed before resetting selection
+        setTimeout(() => {
+          if (isMountedRef.current) {
+            setSelectedEvent(null);
+          }
+        }, 300);
+      }
+      apiCallInProgressRef.current = false;
     }
   };
 
+  // Handle event deletion
   const handleDelete = (event: EventItem) => {
-    // Create a new object to prevent mutations
-    setSelectedEvent({...event});
+    // Create a deep copy to prevent mutations
+    setSelectedEvent(JSON.parse(JSON.stringify(event)));
     setDeleteDialogOpen(true);
   };
 
+  // Confirm deletion of an event
   const confirmDelete = async () => {
-    if (!selectedEvent) return;
+    if (!selectedEvent || apiCallInProgressRef.current) return;
     
     try {
+      apiCallInProgressRef.current = true;
       setIsDeleting(true);
+      console.log(`Removendo evento ${selectedEvent.id}`);
+      
       await deleteEvent(selectedEvent.id);
+      
+      // Skip state updates if component unmounted
+      if (!isMountedRef.current) return;
       
       // Update UI immediately by removing the deleted event
       setEvents(prevEvents => prevEvents.filter(event => event.id !== selectedEvent.id));
@@ -131,6 +199,9 @@ const AdminEvents = () => {
         variant: "success"
       });
     } catch (error) {
+      // Skip error handling if component unmounted
+      if (!isMountedRef.current) return;
+      
       console.error("Erro ao remover evento:", error);
       toast({
         title: "Erro ao remover evento",
@@ -138,25 +209,43 @@ const AdminEvents = () => {
         variant: "destructive"
       });
     } finally {
-      setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      // Use setTimeout to ensure dialog is fully closed before resetting state
-      setTimeout(() => {
-        setSelectedEvent(null);
-      }, 300);
+      // Reset state only if still mounted
+      if (isMountedRef.current) {
+        setIsDeleting(false);
+        setDeleteDialogOpen(false);
+        
+        // Use timeout to ensure dialog is fully closed before resetting selection
+        setTimeout(() => {
+          if (isMountedRef.current) {
+            setSelectedEvent(null);
+          }
+        }, 300);
+      }
+      apiCallInProgressRef.current = false;
     }
   };
 
+  // Open confirm dialog for status changes
   const openConfirmDialog = (event: EventItem, action: "pause" | "cancel" | "activate") => {
-    // Create a new object to prevent mutations
-    setSelectedEvent({...event});
+    // Create a deep copy to prevent mutations
+    setSelectedEvent(JSON.parse(JSON.stringify(event)));
     setActionType(action);
     setConfirmDialogOpen(true);
   };
 
+  // Handle editing an event
   const handleEdit = async (event: EventItem) => {
+    if (apiCallInProgressRef.current) return;
+    
     try {
+      apiCallInProgressRef.current = true;
+      console.log(`Carregando detalhes do evento ${event.id} para edição`);
+      
       const eventDetails = await fetchEventById(event.id);
+      
+      // Skip state updates if component unmounted
+      if (!isMountedRef.current) return;
+      
       if (eventDetails) {
         setEditingEvent({
           ...event,
@@ -174,15 +263,21 @@ const AdminEvents = () => {
         });
       }
     } catch (error) {
+      // Skip error handling if component unmounted
+      if (!isMountedRef.current) return;
+      
       console.error("Erro ao buscar dados para edição:", error);
       toast({
         title: "Erro ao editar evento",
         description: "Não foi possível carregar os detalhes do evento.",
         variant: "destructive"
       });
+    } finally {
+      apiCallInProgressRef.current = false;
     }
   };
 
+  // Navigation and form handlers
   const handleFormBack = () => {
     setIsCreatingEvent(false);
     setEditingEvent(null);
@@ -199,7 +294,7 @@ const AdminEvents = () => {
     loadEvents();
   };
 
-  // Clear dialogs and reset state when exiting the page
+  // Close all dialogs and reset state on unmount
   useEffect(() => {
     return () => {
       setSelectedEvent(null);
@@ -272,11 +367,15 @@ const AdminEvents = () => {
       <ConfirmActionDialog
         open={confirmDialogOpen}
         onOpenChange={(open) => {
-          if (!isProcessingAction) {
+          if (!isProcessingAction && isMountedRef.current) {
             setConfirmDialogOpen(open);
             if (!open) {
               // Clear state after dialog closes
-              setTimeout(() => setSelectedEvent(null), 300);
+              setTimeout(() => {
+                if (isMountedRef.current) {
+                  setSelectedEvent(null);
+                }
+              }, 300);
             }
           }
         }}
@@ -288,11 +387,15 @@ const AdminEvents = () => {
 
       {/* Delete event confirmation dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={(open) => {
-        if (!isDeleting) {
+        if (!isDeleting && isMountedRef.current) {
           setDeleteDialogOpen(open);
           if (!open) {
             // Clear state after dialog closes
-            setTimeout(() => setSelectedEvent(null), 300);
+            setTimeout(() => {
+              if (isMountedRef.current) {
+                setSelectedEvent(null);
+              }
+            }, 300);
           }
         }
       }}>
@@ -306,14 +409,22 @@ const AdminEvents = () => {
           <DialogFooter>
             <Button 
               variant="outline" 
-              onClick={() => setDeleteDialogOpen(false)}
+              onClick={() => {
+                if (!isDeleting && isMountedRef.current) {
+                  setDeleteDialogOpen(false);
+                }
+              }}
               disabled={isDeleting}
             >
               Cancelar
             </Button>
             <Button 
               variant="destructive" 
-              onClick={confirmDelete}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                confirmDelete();
+              }}
               disabled={isDeleting}
             >
               {isDeleting ? "Removendo..." : "Remover evento"}

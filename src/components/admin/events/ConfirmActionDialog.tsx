@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EventItem } from "@/types/admin";
+import { useEffect, useRef } from "react";
 
 interface ConfirmActionDialogProps {
   open: boolean;
@@ -28,27 +29,44 @@ export const ConfirmActionDialog = ({
   onConfirm,
   disabled = false
 }: ConfirmActionDialogProps) => {
+  // Use a ref to track if we're in the middle of processing
+  const isProcessingRef = useRef(disabled);
+  
+  // Update ref when disabled prop changes
+  useEffect(() => {
+    isProcessingRef.current = disabled;
+  }, [disabled]);
+  
+  // Clean up when dialog closes
+  useEffect(() => {
+    if (!open && isProcessingRef.current) {
+      // Reset processing state if we were processing and dialog closed
+      setTimeout(() => {
+        isProcessingRef.current = false;
+      }, 300);
+    }
+  }, [open]);
   
   const handleConfirm = () => {
-    if (!selectedEvent || disabled) return;
+    if (!selectedEvent || isProcessingRef.current) return;
     
     const newStatus = 
       actionType === "pause" ? "paused" : 
       actionType === "cancel" ? "cancelled" : "active";
     
-    // Create a new object to prevent state mutation issues
-    const eventCopy = {...selectedEvent};
+    // Create a deep copy of the event object to prevent any state mutation
+    const eventCopy = JSON.parse(JSON.stringify(selectedEvent));
     
-    // Close the dialog first to prevent UI freezing
+    // Close the dialog first
     onOpenChange(false);
     
-    // Small timeout to ensure UI updates before heavy processing
+    // Set a small delay to ensure UI updates before proceeding with the action
     setTimeout(() => {
       onConfirm(eventCopy, newStatus as "active" | "paused" | "cancelled");
-    }, 10);
+    }, 50);
   };
   
-  // If no event is selected, don't render the dialog
+  // Safety check - if no event is selected, don't render
   if (!selectedEvent) {
     return null;
   }
@@ -57,7 +75,8 @@ export const ConfirmActionDialog = ({
     <AlertDialog 
       open={open} 
       onOpenChange={(isOpen) => {
-        if (!disabled) {
+        // Only allow changing if not currently processing
+        if (!isProcessingRef.current) {
           onOpenChange(isOpen);
         }
       }}
@@ -77,12 +96,20 @@ export const ConfirmActionDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel 
             disabled={disabled} 
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              if (!isProcessingRef.current) {
+                onOpenChange(false);
+              }
+            }}
           >
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction 
-            onClick={handleConfirm}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleConfirm();
+            }}
             disabled={disabled}
             className={
               actionType === "cancel" ? "bg-destructive hover:bg-destructive/90" :
