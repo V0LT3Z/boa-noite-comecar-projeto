@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
@@ -418,6 +419,28 @@ export const deleteEvent = async (id: number) => {
         console.error("Erro ao excluir tipos de ingressos:", deleteTicketTypesError);
         // Continue with deletion anyway
       }
+    }
+    
+    // Also delete any favorites associated with this event
+    const { error: favoritesError } = await supabase
+      .from("favorites")
+      .delete()
+      .eq("event_id", id);
+      
+    if (favoritesError) {
+      console.error("Erro ao excluir favoritos associados:", favoritesError);
+      // Continue with deletion anyway
+    }
+    
+    // Delete notifications associated with this event
+    const { error: notificationsError } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("event_id", id);
+      
+    if (notificationsError) {
+      console.error("Erro ao excluir notificações associadas:", notificationsError);
+      // Continue with deletion anyway
     }
     
     // Finally, delete the event itself

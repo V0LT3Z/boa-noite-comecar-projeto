@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -195,7 +194,7 @@ const AdminEvents = () => {
       setIsDeleting(true);
       console.log(`Removendo evento ${selectedEvent.id}`);
       
-      await deleteEvent(selectedEvent.id);
+      const result = await deleteEvent(selectedEvent.id);
       
       // Skip state updates if component unmounted
       if (!isMountedRef.current) return;
