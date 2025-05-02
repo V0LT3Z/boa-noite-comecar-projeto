@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Trash2 } from "lucide-react";
 import EventForm from "@/components/admin/EventForm";
 import { toast } from "@/hooks/use-toast";
 import { EventItem, EventStatus } from "@/types/admin";
@@ -23,6 +23,7 @@ const AdminEvents = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState<"pause" | "cancel" | "activate">("pause");
   const [isProcessingAction, setIsProcessingAction] = useState(false);
+  const [hideCancelledEvents, setHideCancelledEvents] = useState(false);
 
   const loadEvents = async () => {
     try {
@@ -61,9 +62,15 @@ const AdminEvents = () => {
     }
   }, [isCreatingEvent]);
 
-  const filteredEvents = events.filter(event => 
-    event.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredEvents = events.filter(event => {
+    // Filter by search query
+    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filter out cancelled events if hideCancelledEvents is true
+    const shouldInclude = hideCancelledEvents ? event.status !== "cancelled" : true;
+    
+    return matchesSearch && shouldInclude;
+  });
 
   const handleStatusChange = async (eventId: number, newStatus: EventStatus) => {
     try {
@@ -157,6 +164,21 @@ const AdminEvents = () => {
     loadEvents();
   };
 
+  // Toggle function to show/hide cancelled events
+  const toggleCancelledEvents = () => {
+    setHideCancelledEvents(!hideCancelledEvents);
+    toast({
+      title: hideCancelledEvents ? "Mostrando todos os eventos" : "Ocultando eventos cancelados",
+      description: hideCancelledEvents 
+        ? "Agora você está vendo todos os eventos, incluindo os cancelados." 
+        : "Os eventos cancelados foram ocultados da lista.",
+      variant: "default"
+    });
+  };
+
+  // Count how many cancelled events are being filtered
+  const cancelledEventsCount = events.filter(event => event.status === "cancelled").length;
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -181,9 +203,25 @@ const AdminEvents = () => {
           <>
             <div className="flex items-center justify-between">
               <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Eventos</h1>
-              <Button onClick={handleNewEvent}>
-                <Plus className="mr-2 h-4 w-4" /> Novo Evento
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  variant={hideCancelledEvents ? "default" : "outline"} 
+                  onClick={toggleCancelledEvents}
+                  className="flex items-center gap-2"
+                  disabled={cancelledEventsCount === 0}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {hideCancelledEvents ? "Mostrar Cancelados" : "Ocultar Cancelados"}
+                  {!hideCancelledEvents && cancelledEventsCount > 0 && (
+                    <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
+                      {cancelledEventsCount}
+                    </span>
+                  )}
+                </Button>
+                <Button onClick={handleNewEvent}>
+                  <Plus className="mr-2 h-4 w-4" /> Novo Evento
+                </Button>
+              </div>
             </div>
             
             <div className="border rounded-lg">
