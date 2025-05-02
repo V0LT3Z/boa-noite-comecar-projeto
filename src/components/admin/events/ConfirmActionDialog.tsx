@@ -96,7 +96,9 @@ export const ConfirmActionDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel 
             disabled={disabled} 
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               if (!isProcessingRef.current) {
                 onOpenChange(false);
               }

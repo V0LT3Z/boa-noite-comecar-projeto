@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EventStatusBadge } from "./EventStatusBadge";
 import { EventItem } from "@/types/admin";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 interface EventsTableProps {
   events: EventItem[];
@@ -26,8 +26,11 @@ interface EventsTableProps {
 }
 
 export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: EventsTableProps) => {
-  // Use ref to track which dropdown is open
-  const activeDropdownRef = useRef<number | null>(null);
+  // Track open dropdown state with useState instead of ref
+  const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
+  
+  // Use ref to track if we're in the middle of an action to prevent double clicks
+  const actionInProgressRef = useRef(false);
   
   const formatDate = (dateString: string) => {
     try {
@@ -47,13 +50,21 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
     event.preventDefault();
     event.stopPropagation();
     
+    // Prevent duplicate actions
+    if (actionInProgressRef.current) {
+      console.log("Action already in progress, ignoring click");
+      return;
+    }
+    
+    actionInProgressRef.current = true;
+    
     // Create deep copies of any objects to prevent state mutation
     const clonedArgs = args.map(arg => 
       typeof arg === 'object' && arg !== null ? JSON.parse(JSON.stringify(arg)) : arg
     );
     
-    // Close all dropdowns first
-    activeDropdownRef.current = null;
+    // Close dropdown first
+    setActiveDropdownId(null);
     
     // Small delay to ensure UI is updated before callback executes
     setTimeout(() => {
@@ -61,6 +72,11 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
         callback(...clonedArgs);
       } catch (error) {
         console.error("Error in action handler:", error);
+      } finally {
+        // Reset action flag after a short delay
+        setTimeout(() => {
+          actionInProgressRef.current = false;
+        }, 100);
       }
     }, 10);
   };
@@ -90,17 +106,29 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
               </TableCell>
               <TableCell>
                 <DropdownMenu 
-                  open={activeDropdownRef.current === event.id}
+                  open={activeDropdownId === event.id}
                   onOpenChange={(open) => {
-                    activeDropdownRef.current = open ? event.id : null;
+                    if (actionInProgressRef.current) return;
+                    setActiveDropdownId(open ? event.id : null);
                   }}
                 >
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0"
+                      onClick={(e) => {
+                        // Prevent event from bubbling to the table row
+                        e.stopPropagation();
+                        if (actionInProgressRef.current) return;
+                        setActiveDropdownId(activeDropdownId === event.id ? null : event.id);
+                      }}
+                    >
+                      <span className="sr-only">Abrir menu</span>
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="bg-white">
                     <DropdownMenuItem 
                       onClick={(e) => handleAction(e, onEdit, event)}
                     >
