@@ -50,8 +50,6 @@ const eventSchema = z.object({
   }),
   time: z.string().default("19:00"),
   minimumAge: z.string().default("0"),
-  price: z.coerce.number().min(0, "O preço não pode ser negativo"),
-  capacity: z.coerce.number().min(1, "A capacidade deve ser pelo menos 1"),
   bannerUrl: z.string().optional(),
   venue: z.string().default(""), // Added venue field to match AdminEventForm type
   status: z.enum(["active", "paused", "cancelled"]).default("active"),
@@ -82,8 +80,6 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
       date: event?.date ? new Date(event.date) : new Date(),
       time: event?.time || "19:00",
       minimumAge: event?.minimumAge?.toString() || "0",
-      price: event?.price || 0,
-      capacity: event?.capacity || 100,
       bannerUrl: event?.bannerUrl || "",
       venue: event?.venue || "",
       status: event?.status || "active",
@@ -398,43 +394,6 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
           )}
         />
 
-        {/* Event price and capacity */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Preço (R$)</FormLabel>
-                <FormControl>
-                  <Input type="number" min="0" step="0.01" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Defina 0 para eventos gratuitos
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="capacity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Capacidade</FormLabel>
-                <FormControl>
-                  <Input type="number" min="1" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Número máximo de ingressos disponíveis
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
         {/* Event minimum age */}
         <FormField
           control={form.control}
