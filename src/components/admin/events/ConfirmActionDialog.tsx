@@ -10,7 +10,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EventItem } from "@/types/admin";
-import { useEffect } from "react";
 
 interface ConfirmActionDialogProps {
   open: boolean;
@@ -36,21 +35,20 @@ export const ConfirmActionDialog = ({
     const newStatus = 
       actionType === "pause" ? "paused" : 
       actionType === "cancel" ? "cancelled" : "active";
-      
-    onConfirm(selectedEvent, newStatus as "active" | "paused" | "cancelled");
+    
+    // Create a new object to prevent state mutation issues
+    const eventCopy = {...selectedEvent};
+    
+    // Close the dialog first to prevent UI freezing
+    onOpenChange(false);
+    
+    // Small timeout to ensure UI updates before heavy processing
+    setTimeout(() => {
+      onConfirm(eventCopy, newStatus as "active" | "paused" | "cancelled");
+    }, 10);
   };
   
-  // Reset state when dialog closes
-  useEffect(() => {
-    // Esta função só é executada quando o open muda
-    return () => {
-      // Cleanup quando o componente é desmontado ou quando open muda
-      // Não precisamos fazer nada específico aqui, mas o efeito
-      // garante que o componente rerenderize corretamente
-    };
-  }, [open]);
-  
-  // Se não houver evento selecionado, não renderizar o diálogo
+  // If no event is selected, don't render the dialog
   if (!selectedEvent) {
     return null;
   }
@@ -77,7 +75,12 @@ export const ConfirmActionDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={disabled}>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel 
+            disabled={disabled} 
+            onClick={() => onOpenChange(false)}
+          >
+            Cancelar
+          </AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleConfirm}
             disabled={disabled}

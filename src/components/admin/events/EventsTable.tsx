@@ -33,19 +33,23 @@ export const EventsTable = ({ events, onEdit, onStatusAction, onDeleteEvent }: E
     }
   };
 
-  // Função para lidar com ações de forma segura
+  // Improved action handler with better event handling
   const handleAction = (
     event: React.MouseEvent, 
     callback: Function, 
     ...args: any[]
   ) => {
-    // Evita propagação para garantir que apenas esta ação seja executada
+    // Prevent event bubbling
     event.preventDefault();
     event.stopPropagation();
     
-    // Executa a callback com args após um pequeno delay para garantir
-    // que o menu dropdown seja fechado antes da ação
-    setTimeout(() => callback(...args), 10);
+    // Clone any objects to prevent state mutation
+    const clonedArgs = args.map(arg => 
+      typeof arg === 'object' && arg !== null ? {...arg} : arg
+    );
+    
+    // Close dropdown first to prevent UI freezing
+    setTimeout(() => callback(...clonedArgs), 10);
   };
 
   return (

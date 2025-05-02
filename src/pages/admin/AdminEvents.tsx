@@ -27,7 +27,7 @@ const AdminEvents = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Use useCallback para evitar re-renderizações desnecessárias
+  // Use useCallback for functions to prevent unnecessary re-renders
   const loadEvents = useCallback(async () => {
     try {
       setLoadingEvents(true);
@@ -69,6 +69,7 @@ const AdminEvents = () => {
     return event.title.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
+  // Improved state handling during status changes
   const handleStatusChange = async (eventId: number, newStatus: EventStatus) => {
     try {
       setIsProcessingAction(true);
@@ -101,12 +102,15 @@ const AdminEvents = () => {
     } finally {
       setIsProcessingAction(false);
       setConfirmDialogOpen(false);
-      setSelectedEvent(null);
+      // Use setTimeout to ensure dialog is fully closed before resetting state
+      setTimeout(() => {
+        setSelectedEvent(null);
+      }, 300);
     }
   };
 
-  const handleDelete = async (event: EventItem) => {
-    // Importante: fornecer uma nova referência de objeto para evitar problemas de estado
+  const handleDelete = (event: EventItem) => {
+    // Create a new object to prevent mutations
     setSelectedEvent({...event});
     setDeleteDialogOpen(true);
   };
@@ -136,12 +140,15 @@ const AdminEvents = () => {
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
-      setSelectedEvent(null);
+      // Use setTimeout to ensure dialog is fully closed before resetting state
+      setTimeout(() => {
+        setSelectedEvent(null);
+      }, 300);
     }
   };
 
   const openConfirmDialog = (event: EventItem, action: "pause" | "cancel" | "activate") => {
-    // Importante: fornecer uma nova referência de objeto para evitar problemas de estado
+    // Create a new object to prevent mutations
     setSelectedEvent({...event});
     setActionType(action);
     setConfirmDialogOpen(true);
@@ -191,6 +198,17 @@ const AdminEvents = () => {
     setEditingEvent(null);
     loadEvents();
   };
+
+  // Clear dialogs and reset state when exiting the page
+  useEffect(() => {
+    return () => {
+      setSelectedEvent(null);
+      setConfirmDialogOpen(false);
+      setDeleteDialogOpen(false);
+      setIsProcessingAction(false);
+      setIsDeleting(false);
+    };
+  }, []);
 
   return (
     <AdminLayout>
@@ -257,7 +275,7 @@ const AdminEvents = () => {
           if (!isProcessingAction) {
             setConfirmDialogOpen(open);
             if (!open) {
-              // Limpar o estado ao fechar
+              // Clear state after dialog closes
               setTimeout(() => setSelectedEvent(null), 300);
             }
           }
@@ -273,7 +291,7 @@ const AdminEvents = () => {
         if (!isDeleting) {
           setDeleteDialogOpen(open);
           if (!open) {
-            // Limpar o estado ao fechar
+            // Clear state after dialog closes
             setTimeout(() => setSelectedEvent(null), 300);
           }
         }
