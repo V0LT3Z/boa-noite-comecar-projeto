@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -90,8 +91,8 @@ const SearchBar = ({ onSearch, defaultQuery = "", suggestions = [] }: SearchBarP
                     setSearchQuery(e.target.value)
                     setOpen(e.target.value.length > 0)
                   }}
-                  placeholder="Buscar eventos..."
-                  className="pl-10 py-2 bg-white border border-gray-200 text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/50 rounded-lg shadow-sm transition-all duration-300"
+                  placeholder="Busque por eventos ou artistas"
+                  className="pl-10 py-1.5 bg-white border border-gray-200 text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/50 rounded-lg shadow-sm transition-all duration-300 h-9 text-sm"
                 />
                 <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
                   <Search className="w-4 h-4" />

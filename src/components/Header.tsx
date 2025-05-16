@@ -93,9 +93,9 @@ const Header = () => {
             )}
           </div>
 
-          {/* Barra de pesquisa centralizada */}
+          {/* Barra de pesquisa centralizada com tamanho reduzido */}
           {location.pathname === '/' && (
-            <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-[40%]">
+            <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-[280px]">
               <SearchBar 
                 onSearch={handleSearch}
                 defaultQuery={searchQuery}
