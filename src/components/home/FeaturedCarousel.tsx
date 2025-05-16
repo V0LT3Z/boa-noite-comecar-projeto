@@ -9,7 +9,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import useEmblaCarousel from 'embla-carousel-react';
-import { Calendar, MapPin, Info, ChevronRight, CircleDot } from 'lucide-react';
+import { Calendar, MapPin, ChevronRight, CircleDot } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -94,8 +94,8 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-soft-purple/10 to-soft-blue/10 p-6 rounded-xl">
-      {/* Carousel section - left side */}
-      <div className="lg:col-span-6">
+      {/* Carousel section - larger size */}
+      <div className="lg:col-span-8">
         <div className="relative">
           <Carousel className="relative overflow-hidden rounded-3xl shadow-xl">
             <div className="relative">
@@ -103,7 +103,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
                 {events.map((event) => (
                   <CarouselItem key={event.id} className="cursor-pointer">
                     <Link to={`/evento/${event.id}`}>
-                      <div className="relative group h-[350px]">
+                      <div className="relative group h-[380px]">
                         <img 
                           src={event.image} 
                           alt={event.title}
@@ -158,30 +158,20 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
         </div>
       </div>
       
-      {/* Event details panel - right side */}
-      <div className="lg:col-span-6">
-        <Card className="h-[350px] border-none shadow-lg bg-white p-6 flex flex-col justify-between">
+      {/* Event details panel - smaller right side */}
+      <div className="lg:col-span-4">
+        <Card className="h-[380px] border-none shadow-lg bg-white p-6 flex flex-col justify-between">
           <div>
-            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-              Evento em destaque
-            </span>
-            <h3 className="text-2xl font-bold mb-4">{currentEvent.title}</h3>
-            <p className="text-gray-600 text-sm mb-6">
-              Uma experiência imperdível que você precisa conferir!
-            </p>
+            <h3 className="text-xl font-bold mb-3">{currentEvent.title}</h3>
             
-            <div className="space-y-4">
+            <div className="space-y-3 mt-4">
               <div className="flex items-center gap-3 text-sm">
                 <Calendar className="h-4 w-4 text-primary" />
                 <span className="text-gray-700">{currentEvent.date}</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <MapPin className="h-4 w-4 text-primary" />
-                <span className="text-gray-700">{currentEvent.location}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Info className="h-4 w-4 text-primary" />
-                <span className="text-gray-700">Classificação: Livre</span>
+                <span className="text-gray-700 line-clamp-2">{currentEvent.location}</span>
               </div>
             </div>
           </div>

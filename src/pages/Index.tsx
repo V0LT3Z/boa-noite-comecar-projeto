@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -114,20 +115,11 @@ const Index = () => {
     
   // Eventos em destaque para o carrossel
   const featuredEvents = useMemo(() => {
-    const activeEvents = events.filter(event => event.status === "active");
+    const activeEvents = formattedEvents.filter(event => event.status === "active");
     console.log("Eventos para o carrossel:", activeEvents.length);
     
-    return activeEvents
-      .slice(0, 5)
-      .map(event => ({
-        id: event.id,
-        title: event.title,
-        date: format(new Date(event.date), "dd 'de' MMMM yyyy", { locale: ptBR }),
-        location: event.location,
-        image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
-        status: event.status
-      }));
-  }, [events]);
+    return activeEvents.slice(0, 5);
+  }, [formattedEvents]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20">
