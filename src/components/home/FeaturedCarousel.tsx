@@ -33,16 +33,36 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   });
   const autoplayTimerRef = useRef<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   
   console.log("FeaturedCarousel received events:", events);
   
   // Preload all images to prevent white flashes
   useEffect(() => {
-    events.forEach(event => {
-      if (event.image) {
-        const img = new Image();
-        img.src = event.image;
-      }
+    let loadedCount = 0;
+    const totalImages = events.length;
+    
+    const preloadImages = events.map(event => {
+      return new Promise((resolve) => {
+        if (event.image) {
+          const img = new Image();
+          img.onload = () => {
+            loadedCount++;
+            if (loadedCount === totalImages) {
+              setImagesLoaded(true);
+            }
+            resolve(null);
+          };
+          img.onerror = () => resolve(null);
+          img.src = event.image;
+        } else {
+          resolve(null);
+        }
+      });
+    });
+    
+    Promise.all(preloadImages).then(() => {
+      setImagesLoaded(true);
     });
   }, [events]);
   
@@ -116,6 +136,21 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     }
   };
 
+  if (!imagesLoaded) {
+    return (
+      <div className="relative mx-auto px-8 md:px-16 lg:px-20 max-w-[1400px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-soft-purple/10 to-soft-blue/10 p-6 rounded-xl">
+          <div className="lg:col-span-8">
+            <div className="h-[420px] rounded-3xl bg-gray-200 animate-pulse"></div>
+          </div>
+          <div className="lg:col-span-4">
+            <div className="h-[420px] rounded-3xl bg-gray-100 animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative mx-auto px-8 md:px-16 lg:px-20 max-w-[1400px]">
       {/* External navigation arrows */}
@@ -131,17 +166,14 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
         <div className="lg:col-span-8">
           <div>
             <Carousel className="relative overflow-hidden rounded-3xl shadow-xl">
-              <div className="relative">
-                <CarouselContent ref={emblaRef}>
-                  {events.map((event, index) => (
-                    <CarouselItem key={event.id} className="cursor-pointer">
-                      <EventSlide 
-                        {...event} 
-                        isActive={index === selectedIndex}
-                      />
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
+              <div className="relative h-[420px]">
+                {events.map((event, index) => (
+                  <EventSlide 
+                    key={event.id}
+                    {...event} 
+                    isActive={index === selectedIndex}
+                  />
+                ))}
               </div>
             </Carousel>
           </div>
