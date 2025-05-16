@@ -92,8 +92,8 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   };
 
   return (
-    <div className="relative mx-auto px-8 md:px-16 lg:px-20 max-w-[1200px]">
-      {/* External navigation arrows - posicionadas dentro do container de 1200px */}
+    <div className="relative mx-auto px-8 md:px-16 lg:px-20 max-w-[1400px]">
+      {/* External navigation arrows - posicionadas dentro do container de 1400px */}
       {events.length > 1 && (
         <div className="flex justify-between absolute -left-4 -right-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
           <button 
@@ -125,7 +125,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
                   {events.map((event) => (
                     <CarouselItem key={event.id} className="cursor-pointer">
                       <Link to={`/evento/${event.id}`}>
-                        <div className="relative group h-[380px]">
+                        <div className="relative group h-[420px]">
                           <img 
                             src={event.image} 
                             alt={event.title}
@@ -155,25 +155,25 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
         
         {/* Event details panel - smaller right side */}
         <div className="lg:col-span-4">
-          <Card className="h-[380px] border-none shadow-lg bg-white p-6 flex flex-col justify-between">
+          <Card className="h-[420px] border-none shadow-lg bg-white p-6 flex flex-col justify-between">
             <div>
-              <h3 className="text-xl font-bold mb-3">{currentEvent.title}</h3>
+              <h3 className="text-2xl font-bold mb-4">{currentEvent.title}</h3>
               
-              <div className="space-y-3 mt-4">
+              <div className="space-y-4 mt-6">
                 <div className="flex items-center gap-3 text-sm">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  <span className="text-gray-700">{currentEvent.date}</span>
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <span className="text-gray-700 text-base">{currentEvent.date}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <span className="text-gray-700 line-clamp-2">{currentEvent.location}</span>
+                  <MapPin className="h-5 w-5 text-primary" />
+                  <span className="text-gray-700 text-base line-clamp-2">{currentEvent.location}</span>
                 </div>
               </div>
             </div>
             
-            <div className="space-y-3 mt-auto">
+            <div className="space-y-4 mt-auto">
               <Button 
-                className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-md"
+                className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-md py-6"
                 asChild
               >
                 <Link to={`/evento/${currentEvent.id}`}>
@@ -183,7 +183,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
               
               <Button 
                 variant="outline"
-                className="w-full border-primary/30 text-primary hover:bg-primary/5"
+                className="w-full border-primary/30 text-primary hover:bg-primary/5 py-6"
                 asChild
               >
                 <Link to={`/evento/${currentEvent.id}`} className="flex items-center justify-center">
