@@ -17,7 +17,7 @@ const CarouselControls = ({ onPrev, onNext, eventsLength }: CarouselControlsProp
       <Button
         variant="ghost"
         size="icon"
-        className="h-10 w-10 rounded-full bg-white/80 shadow-md text-primary hover:bg-white ml-4 pointer-events-auto"
+        className="h-10 w-10 rounded-full bg-white/80 shadow-md text-primary hover:bg-white ml-4 pointer-events-auto font-gooddog"
         onClick={onPrev}
       >
         <ChevronLeft className="h-6 w-6" />
@@ -27,7 +27,7 @@ const CarouselControls = ({ onPrev, onNext, eventsLength }: CarouselControlsProp
       <Button
         variant="ghost"
         size="icon"
-        className="h-10 w-10 rounded-full bg-white/80 shadow-md text-primary hover:bg-white mr-4 pointer-events-auto"
+        className="h-10 w-10 rounded-full bg-white/80 shadow-md text-primary hover:bg-white mr-4 pointer-events-auto font-gooddog"
         onClick={onNext}
       >
         <ChevronRight className="h-6 w-6" />
