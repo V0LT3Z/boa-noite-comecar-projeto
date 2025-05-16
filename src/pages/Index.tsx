@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -17,7 +18,6 @@ const Index = () => {
   const searchQuery = searchParams.get('q') || '';
   
   const [showAllEvents, setShowAllEvents] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventsLoaded, setEventsLoaded] = useState(false);
@@ -103,21 +103,27 @@ const Index = () => {
 
   const filteredEvents = useMemo(() => {
     return formattedEvents.filter(event => {
-      // Filter by category if selected
-      const matchesCategory = selectedCategory 
-        ? event.category === selectedCategory
-        : true;
-      
       // Filter by search query if provided
       const matchesSearch = searchQuery 
         ? event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
-      return matchesCategory && matchesSearch;
+      return matchesSearch;
     });
-  }, [formattedEvents, selectedCategory, searchQuery]);
+  }, [formattedEvents, searchQuery]);
     
+  // Destacar os 5 primeiros eventos para o carrossel da Hero
+  const heroEvents = formattedEvents
+    .filter(event => event.status !== "cancelled")
+    .slice(0, 5)
+    .map(event => ({
+      id: event.id,
+      title: event.title,
+      date: event.date,
+      image: event.image
+    }));
+
   const searchSuggestions = useMemo(() => {
     return formattedEvents.map(event => ({
       id: event.id,
@@ -127,29 +133,19 @@ const Index = () => {
     }));
   }, [formattedEvents]);
 
-  const carouselEvents = filteredEvents.filter(event => event.status !== "cancelled").slice(0, 4);
-
   return (
     <div className="min-h-screen bg-white">
       <Header />
       
-      <HeroSection
-        selectedCategory={selectedCategory}
-        onCategorySelect={setSelectedCategory}
-      />
+      <HeroSection events={heroEvents} />
 
       <main className="container mx-auto px-4 space-y-12 mt-12 mb-20">
-        {formattedEvents.length > 0 && searchQuery === '' && !loading && carouselEvents.length > 0 && (
-          <FeaturedCarousel events={carouselEvents} />
-        )}
-
         <EventsGrid
           loading={loading}
           events={filteredEvents}
           showAllEvents={showAllEvents}
           setShowAllEvents={setShowAllEvents}
           searchQuery={searchQuery}
-          selectedCategory={selectedCategory}
         />
       </main>
     </div>

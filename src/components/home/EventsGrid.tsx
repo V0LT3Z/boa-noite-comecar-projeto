@@ -1,8 +1,9 @@
 
 import React from 'react';
-import EventCard from "@/components/EventCard";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import EventCard from '@/components/EventCard';
 
 interface EventItem {
   id: number;
@@ -10,95 +11,104 @@ interface EventItem {
   date: string;
   location: string;
   image: string;
-  category: string;
   status?: string;
 }
 
 interface EventsGridProps {
-  loading: boolean;
   events: EventItem[];
+  loading: boolean;
   showAllEvents: boolean;
-  setShowAllEvents: (show: boolean) => void;
-  searchQuery: string | null;
-  selectedCategory: string | null;
+  setShowAllEvents: (value: boolean) => void;
+  searchQuery: string;
 }
 
 const EventsGrid = ({
-  loading,
   events,
+  loading,
   showAllEvents,
   setShowAllEvents,
-  searchQuery,
-  selectedCategory
+  searchQuery
 }: EventsGridProps) => {
-  const displayedEvents = showAllEvents ? events : events.slice(0, 6);
-  const hasSearchResults = searchQuery && events.length > 0;
-  const noSearchResults = searchQuery && events.length === 0;
-
-  return (
-    <section className="relative">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-          {hasSearchResults 
-            ? `Eventos encontrados (${events.length})`
-            : selectedCategory 
-              ? `Eventos de ${selectedCategory}` 
-              : "Todos os Eventos"}
-        </h2>
-        {selectedCategory && (
-          <Button 
-            variant="outline" 
-            onClick={() => setShowAllEvents(false)}
-            className="text-primary hover:text-primary/80 border-primary/30 hover:border-primary/50 hover:bg-primary/5"
-          >
-            Ver todos
-          </Button>
-        )}
-      </div>
-      
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-48 w-full rounded-xl" />
+  // Se estiver carregando, mostra os skeletons
+  if (loading) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Eventos</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, index) => (
+            <div key={index} className="flex flex-col">
+              <Skeleton className="w-full h-48 rounded-lg" />
+              <Skeleton className="w-3/4 h-4 mt-4" />
+              <Skeleton className="w-1/2 h-4 mt-2" />
+            </div>
           ))}
         </div>
-      ) : events.length > 0 ? (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {displayedEvents.map((event) => (
-              <EventCard
-                key={event.id}
-                id={event.id}
-                title={event.title}
-                date={event.date}
-                location={event.location}
-                image={event.image}
-                category={event.category}
-                status={event.status}
-              />
-            ))}
-          </div>
-          {!showAllEvents && events.length > 6 && (
-            <div className="flex justify-center mt-10">
-              <Button 
-                onClick={() => setShowAllEvents(true)}
-                className="text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 px-8 py-6 text-lg rounded-full"
-              >
-                Ver mais eventos
-              </Button>
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="py-16 text-center bg-white rounded-3xl shadow-sm border border-purple-100">
-          <p className="text-muted-foreground text-lg">
-            {noSearchResults 
-              ? "Tente ajustar sua busca para encontrar eventos."
-              : "Nenhum evento encontrado para esta categoria."}
-          </p>
+      </div>
+    );
+  }
+
+  // Se não há eventos para mostrar
+  if (events.length === 0) {
+    return (
+      <div className="text-center py-12">
+        {searchQuery ? (
+          <>
+            <h2 className="text-2xl font-semibold mb-2">Nenhum evento encontrado</h2>
+            <p className="text-muted-foreground mb-6">
+              Não encontramos eventos relacionados a "{searchQuery}"
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className="text-2xl font-semibold mb-2">Nenhum evento disponível</h2>
+            <p className="text-muted-foreground mb-6">
+              No momento não há eventos cadastrados.
+            </p>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Limita o número de eventos exibidos, a menos que showAllEvents seja true
+  const displayEvents = showAllEvents ? events : events.slice(0, 8);
+
+  return (
+    <div>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+        <h2 className="text-2xl font-bold mb-2 md:mb-0">
+          {searchQuery ? `Resultados para "${searchQuery}"` : "Todos os eventos"}
+        </h2>
+        <div className="flex gap-4">
+          {/* Outros filtros podem ser adicionados aqui */}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {displayEvents.map(event => (
+          <Link key={event.id} to={`/evento/${event.id}`}>
+            <EventCard
+              title={event.title}
+              date={event.date}
+              location={event.location}
+              image={event.image}
+            />
+          </Link>
+        ))}
+      </div>
+
+      {events.length > 8 && (
+        <div className="mt-8 text-center">
+          <Button
+            onClick={() => setShowAllEvents(!showAllEvents)}
+            variant="outline"
+            className="px-8"
+          >
+            {showAllEvents ? "Mostrar menos" : `Ver mais ${events.length - 8} eventos`}
+          </Button>
         </div>
       )}
-    </section>
+    </div>
   );
 };
 
