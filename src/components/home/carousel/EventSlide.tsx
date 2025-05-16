@@ -14,8 +14,11 @@ interface EventSlideProps {
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
   return (
     <div 
-      className={`relative group h-[420px] ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'} absolute inset-0 transition-opacity duration-500 ease-in-out`}
-      style={{ willChange: 'opacity, transform' }}
+      className={`relative group h-[420px] absolute inset-0 ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+      style={{ 
+        willChange: 'opacity',
+        transition: 'opacity 400ms ease-in-out' 
+      }}
     >
       <img 
         src={image} 

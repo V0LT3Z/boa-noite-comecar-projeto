@@ -34,11 +34,14 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   const autoplayTimerRef = useRef<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const slidesRef = useRef<HTMLDivElement>(null);
   
   console.log("FeaturedCarousel received events:", events);
   
   // Preload all images to prevent white flashes
   useEffect(() => {
+    if (!events || events.length === 0) return;
+    
     let loadedCount = 0;
     const totalImages = events.length;
     
@@ -53,7 +56,10 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
             }
             resolve(null);
           };
-          img.onerror = () => resolve(null);
+          img.onerror = () => {
+            console.log("Failed to load image:", event.image);
+            resolve(null);
+          };
           img.src = event.image;
         } else {
           resolve(null);
@@ -61,9 +67,15 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
       });
     });
     
-    Promise.all(preloadImages).then(() => {
-      setImagesLoaded(true);
-    });
+    Promise.all(preloadImages)
+      .then(() => {
+        console.log("All images preloaded successfully");
+        setImagesLoaded(true);
+      })
+      .catch(err => {
+        console.error("Error preloading images:", err);
+        setImagesLoaded(true); // Continue anyway
+      });
   }, [events]);
   
   // Handle carousel slide selection
@@ -71,7 +83,9 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     if (!emblaApi) return;
     
     const onSelect = () => {
-      setSelectedIndex(emblaApi.selectedScrollSnap());
+      const index = emblaApi.selectedScrollSnap();
+      console.log("Embla selected index:", index);
+      setSelectedIndex(index);
     };
     
     emblaApi.on('select', onSelect);
@@ -117,26 +131,32 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   // Current selected event for the info panel
   const currentEvent = events[selectedIndex] || events[0];
   
-  // Navigation functions - Simplified for direct index manipulation
+  // Improved navigation functions
   const scrollNext = () => {
     console.log("scrollNext called, current index:", selectedIndex);
+    
+    // Calculate next index and update state
     const nextIndex = (selectedIndex + 1) % events.length;
     setSelectedIndex(nextIndex);
     console.log("New index set to:", nextIndex);
-    // Optional: Manually update emblaApi if needed
+    
+    // Sync with embla carousel
     if (emblaApi) {
-      emblaApi.scrollTo(nextIndex);
+      emblaApi.scrollTo(nextIndex, true);
     }
   };
   
   const scrollPrev = () => {
     console.log("scrollPrev called, current index:", selectedIndex);
+    
+    // Calculate previous index and update state
     const prevIndex = selectedIndex === 0 ? events.length - 1 : selectedIndex - 1;
     setSelectedIndex(prevIndex);
     console.log("New index set to:", prevIndex);
-    // Optional: Manually update emblaApi if needed
+    
+    // Sync with embla carousel
     if (emblaApi) {
-      emblaApi.scrollTo(prevIndex);
+      emblaApi.scrollTo(prevIndex, true);
     }
   };
 
@@ -169,8 +189,8 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
         {/* Carousel section - larger size */}
         <div className="lg:col-span-8">
           <div>
-            <Carousel className="relative overflow-hidden rounded-3xl shadow-xl">
-              <div className="relative h-[420px]">
+            <div className="relative overflow-hidden rounded-3xl shadow-xl h-[420px]">
+              <div className="relative h-full w-full" ref={slidesRef}>
                 {events.map((event, index) => (
                   <EventSlide 
                     key={event.id}
@@ -179,7 +199,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
                   />
                 ))}
               </div>
-            </Carousel>
+            </div>
           </div>
         </div>
         
