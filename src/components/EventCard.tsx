@@ -82,14 +82,14 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
           
           {/* Adicionar badge de categoria */}
           {category && (
-            <div className="absolute top-2 left-2 bg-white/80 px-2 py-1 rounded-full text-xs font-semibold text-primary">
+            <div className="absolute top-2 left-2 bg-white/80 px-2 py-1 rounded-full text-xs font-semibold text-primary font-gooddog">
               {category}
             </div>
           )}
 
           {/* Adicionar badge de status se for cancelado */}
           {eventStatus === "cancelled" && (
-            <div className="absolute top-2 right-2 bg-red-500/90 px-2 py-1 rounded-full text-xs font-bold text-white">
+            <div className="absolute top-2 right-2 bg-red-500/90 px-2 py-1 rounded-full text-xs font-bold text-white font-gooddog">
               Cancelado
             </div>
           )}
@@ -101,15 +101,15 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
         
         <div className="flex flex-1 items-center p-4 justify-between gap-4">
           <div className="space-y-2 flex-grow">
-            <h3 className="font-bold text-xl text-primary line-clamp-2">{title}</h3>
+            <h3 className="font-bold text-xl text-primary line-clamp-2 font-gooddog">{title}</h3>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-gray-400">
               <div className="flex items-center">
                 <Calendar className="h-4 w-4 mr-2 text-secondary" />
-                <span className="truncate">{date}</span>
+                <span className="truncate font-gooddog">{date}</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-2 text-secondary" />
-                <span className="truncate">{location}</span>
+                <span className="truncate font-gooddog">{location}</span>
               </div>
             </div>
           </div>
@@ -126,7 +126,7 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
             <Button 
               className={`${eventStatus === "cancelled" 
                 ? "bg-gray-400 hover:bg-gray-500"
-                : "bg-gradient-to-r from-primary to-secondary hover:opacity-90"} text-white whitespace-nowrap`}
+                : "bg-gradient-to-r from-primary to-secondary hover:opacity-90"} text-white whitespace-nowrap font-gooddog`}
               disabled={eventStatus === "cancelled"}
             >
               {eventStatus === "cancelled" ? "Indisponível" : "Ver ingressos"}

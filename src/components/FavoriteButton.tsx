@@ -115,7 +115,7 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
             isFavorite 
               ? "bg-soft-pink text-destructive" 
               : "bg-white/80 hover:bg-soft-pink/50"
-          }`}
+          } font-gooddog`}
           onClick={handleToggleFavorite}
           disabled={isLoading}
         >
@@ -141,7 +141,7 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
           isFavorite && variant === "outline" 
             ? "border-destructive text-destructive hover:bg-destructive/10" 
             : ""
-        }`}
+        } font-gooddog`}
         onClick={handleToggleFavorite}
         disabled={isLoading}
       >

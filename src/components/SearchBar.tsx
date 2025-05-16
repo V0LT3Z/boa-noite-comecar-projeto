@@ -92,7 +92,7 @@ const SearchBar = ({ onSearch, defaultQuery = "", suggestions = [] }: SearchBarP
                     setOpen(e.target.value.length > 0)
                   }}
                   placeholder="Busque por eventos ou artistas"
-                  className="pl-10 py-1.5 bg-white border border-gray-200 text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/50 rounded-lg shadow-sm transition-all duration-300 h-9 text-sm"
+                  className="pl-10 py-1.5 bg-white border border-gray-200 text-black placeholder-gray-500 focus:ring-2 focus:ring-primary/50 rounded-lg shadow-sm transition-all duration-300 h-9 text-sm font-gooddog"
                 />
                 <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
                   <Search className="w-4 h-4" />
@@ -100,21 +100,21 @@ const SearchBar = ({ onSearch, defaultQuery = "", suggestions = [] }: SearchBarP
               </div>
             </PopoverTrigger>
             {suggestions && suggestions.length > 0 && (
-              <PopoverContent className="w-[300px] p-0 bg-white border border-gray-200 shadow-md" align="start">
+              <PopoverContent className="w-[300px] p-0 bg-white border border-gray-200 shadow-md font-gooddog" align="start">
                 <Command>
                   <CommandList>
-                    <CommandEmpty>Nenhum evento encontrado.</CommandEmpty>
+                    <CommandEmpty className="font-gooddog">Nenhum evento encontrado.</CommandEmpty>
                     <CommandGroup>
                       {filteredSuggestions.map((event) => (
                         <CommandItem
                           key={event.id}
                           value={event.title}
                           onSelect={handleSelect}
-                          className="cursor-pointer hover:bg-gray-100"
+                          className="cursor-pointer hover:bg-gray-100 font-gooddog"
                         >
                           <div className="flex flex-col">
-                            <span className="font-medium">{event.title}</span>
-                            <span className="text-sm text-gray-500">
+                            <span className="font-medium font-gooddog">{event.title}</span>
+                            <span className="text-sm text-gray-500 font-gooddog">
                               {event.date} • {event.location}
                             </span>
                           </div>

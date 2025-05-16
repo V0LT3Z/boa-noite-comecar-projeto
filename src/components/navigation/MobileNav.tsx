@@ -43,17 +43,17 @@ export const MobileNav: React.FC<MobileNavProps> = ({
       </SheetTrigger>
       <SheetContent className="sm:max-w-sm">
         <SheetHeader className="text-left">
-          <SheetTitle>Menu</SheetTitle>
+          <SheetTitle className="font-gooddog">Menu</SheetTitle>
         </SheetHeader>
         <div className="py-4">
           {isAuthenticated ? (
             <div className="flex items-center gap-4 mb-6 pb-6 border-b">
               <Avatar className="h-10 w-10">
-                <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
+                <AvatarFallback className="font-gooddog">{getInitials(user?.fullName)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{user?.fullName || 'Usuário'}</p>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                <p className="font-medium font-gooddog">{user?.fullName || 'Usuário'}</p>
+                <p className="text-sm text-muted-foreground font-gooddog">{user?.email}</p>
               </div>
             </div>
           ) : null}
@@ -63,7 +63,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                 <Link to={item.href}>
                   <Button 
                     variant="ghost" 
-                    className="w-full justify-start gap-2"
+                    className="w-full justify-start gap-2 font-gooddog"
                     onClick={() => setIsOpen(false)}
                   >
                     <item.icon className="h-4 w-4" />
@@ -79,7 +79,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                     <Link to={item.href}>
                       <Button 
                         variant="ghost" 
-                        className="w-full justify-start gap-2"
+                        className="w-full justify-start gap-2 font-gooddog"
                         onClick={() => setIsOpen(false)}
                       >
                         <item.icon className="h-4 w-4" />
@@ -90,7 +90,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                 ))}
                 <Button 
                   variant="ghost" 
-                  className="w-full justify-start text-destructive hover:text-destructive gap-2"
+                  className="w-full justify-start text-destructive hover:text-destructive gap-2 font-gooddog"
                   onClick={() => {
                     signOut();
                     setIsOpen(false);
@@ -104,7 +104,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
               <>
                 <Button 
                   variant="ghost" 
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 font-gooddog"
                   onClick={() => {
                     setIsAuthDialogOpen(true);
                     setIsOpen(false);
@@ -113,7 +113,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                   Entrar
                 </Button>
                 <Button 
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 font-gooddog"
                   onClick={() => {
                     setIsAuthDialogOpen(true);
                     setIsOpen(false);

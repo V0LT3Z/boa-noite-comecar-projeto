@@ -17,7 +17,7 @@ export const SidebarLink = ({ to, icon: Icon, label, active }: SidebarLinkProps)
     <Button
       variant={active ? "default" : "ghost"}
       className={cn(
-        "w-full justify-start gap-3 h-10 font-medium", 
+        "w-full justify-start gap-3 h-10 font-medium font-gooddog", 
         active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
       )}
     >

@@ -22,7 +22,7 @@ export const MobileSidebar = ({ navigationItems, currentPath, onLogout }: Mobile
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="mr-2">
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Abrir menu</span>
+            <span className="sr-only font-gooddog">Abrir menu</span>
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
@@ -36,7 +36,7 @@ export const MobileSidebar = ({ navigationItems, currentPath, onLogout }: Mobile
                   <Button
                     variant={currentPath === item.path ? "default" : "ghost"}
                     className={cn(
-                      "w-full justify-start gap-3", 
+                      "w-full justify-start gap-3 font-gooddog", 
                       currentPath === item.path ? "bg-primary text-primary-foreground" : ""
                     )}
                   >

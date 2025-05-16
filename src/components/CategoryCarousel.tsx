@@ -43,7 +43,7 @@ const CategoryCarousel = ({ selectedCategory, onCategorySelect }: CategoryCarous
             <CarouselItem key={category} className="basis-1/3 md:basis-1/4 lg:basis-1/6">
               <Button
                 variant={selectedCategory === category ? "default" : "outline"}
-                className={`w-full whitespace-nowrap text-sm ${
+                className={`w-full whitespace-nowrap text-sm font-gooddog ${
                   selectedCategory === category 
                     ? "bg-primary text-white" 
                     : "bg-white hover:bg-primary hover:text-white"

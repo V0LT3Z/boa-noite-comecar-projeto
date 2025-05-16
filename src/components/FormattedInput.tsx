@@ -35,7 +35,7 @@ const FormattedInput = React.forwardRef<HTMLInputElement, FormattedInputProps>(
       }
     };
 
-    const inputClasses = isValid === false ? "border-destructive" : className;
+    const inputClasses = isValid === false ? "border-destructive font-gooddog" : cn(className, "font-gooddog");
 
     return (
       <Input

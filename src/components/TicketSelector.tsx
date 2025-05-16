@@ -47,12 +47,12 @@ const TicketSelector = ({ tickets, onPurchase, isPurchasing = false }: TicketSel
   };
 
   if (!tickets || tickets.length === 0) {
-    return <div className="p-4">Nenhum ingresso disponível</div>;
+    return <div className="p-4 font-gooddog">Nenhum ingresso disponível</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Ingressos</h2>
+      <h2 className="text-2xl font-bold font-gooddog">Ingressos</h2>
       {tickets.map(ticket => {
         const selectedTicket = selectedTickets.find(item => item.ticketId === ticket.id);
         const quantity = selectedTicket ? selectedTicket.quantity : 0;
@@ -63,17 +63,17 @@ const TicketSelector = ({ tickets, onPurchase, isPurchasing = false }: TicketSel
           <div key={ticket.id} className="p-4 rounded-lg space-y-3">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-semibold text-lg">{ticket.name}</h3>
+                <h3 className="font-semibold text-lg font-gooddog">{ticket.name}</h3>
                 {ticket.description && (
-                  <p className="text-sm text-gray-500">{ticket.description}</p>
+                  <p className="text-sm text-gray-500 font-gooddog">{ticket.description}</p>
                 )}
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 mt-1 font-gooddog">
                   Máximo: {ticket.maxPerPurchase} por pessoa
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-lg">R$ {ticket.price.toFixed(2)}</p>
-                <p className="text-sm text-gray-500">
+                <p className="font-semibold text-lg font-gooddog">R$ {ticket.price.toFixed(2)}</p>
+                <p className="text-sm text-gray-500 font-gooddog">
                   {ticket.availableQuantity} disponíveis
                 </p>
               </div>
@@ -90,7 +90,7 @@ const TicketSelector = ({ tickets, onPurchase, isPurchasing = false }: TicketSel
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="w-8 text-center">{quantity}</span>
+                <span className="w-8 text-center font-gooddog">{quantity}</span>
                 <Button
                   variant="outline"
                   size="icon"
@@ -111,22 +111,22 @@ const TicketSelector = ({ tickets, onPurchase, isPurchasing = false }: TicketSel
         <div className="space-y-2">
           <Button 
             onClick={handlePurchaseClick}
-            className="w-full bg-primary text-white"
+            className="w-full bg-primary text-white font-gooddog"
             disabled={!selectedTickets.some(item => item.quantity > 0) || isPurchasing}
             size="lg"
           >
             {isPurchasing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processando...
+                <span className="font-gooddog">Processando...</span>
               </>
             ) : (
-              'Comprar Ingressos'
+              <span className="font-gooddog">Comprar Ingressos</span>
             )}
           </Button>
           <Button 
             variant="outline"
-            className="w-full"
+            className="w-full font-gooddog"
             size="lg"
             disabled={isPurchasing}
           >

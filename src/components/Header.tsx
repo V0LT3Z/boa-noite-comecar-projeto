@@ -63,10 +63,10 @@ const Header = () => {
               variant="ghost" 
               size="icon" 
               onClick={handleBackButton}
-              className="mr-2"
+              className="mr-2 font-gooddog"
             >
               <ArrowLeft className="h-5 w-5" />
-              <span className="sr-only">
+              <span className="sr-only font-gooddog">
                 {isAuthenticated ? 'Voltar para Dashboard' : 'Voltar para início'}
               </span>
             </Button>
@@ -87,7 +87,7 @@ const Header = () => {
                     href={item.href}
                     active={location.pathname === item.href}
                   >
-                    {item.label}
+                    <span className="font-gooddog">{item.label}</span>
                   </NavLink>
                 ))}
               </nav>
@@ -118,13 +118,13 @@ const Header = () => {
                 <Button 
                   variant="ghost"
                   onClick={() => setIsAuthDialogOpen(true)}
-                  className="text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-200"
+                  className="text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-200 font-gooddog"
                 >
                   Entrar
                 </Button>
                 <Button
                   onClick={() => setIsAuthDialogOpen(true)}
-                  className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90"
+                  className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 font-gooddog"
                 >
                   Cadastrar
                 </Button>

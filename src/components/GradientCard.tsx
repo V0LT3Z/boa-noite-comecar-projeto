@@ -22,7 +22,7 @@ export default function GradientCard({
   return (
     <div
       className={cn(
-        "relative rounded-2xl shadow-md bg-white/90 border border-transparent overflow-hidden transition-colors",
+        "relative rounded-2xl shadow-md bg-white/90 border border-transparent overflow-hidden transition-colors font-gooddog",
         className
       )}
     >
