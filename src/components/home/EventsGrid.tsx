@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -77,10 +76,10 @@ const EventsGrid = ({
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8">
         <div>
           <h2 className="text-2xl font-bold mb-1">
-            {searchQuery ? `Resultados para "${searchQuery}"` : "Próximos Eventos"}
+            {searchQuery ? `Resultados para "${searchQuery}"` : "Eventos em Destaque"}
           </h2>
           <p className="text-muted-foreground text-sm">
-            {events.length} {events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}
+            {searchQuery ? `${events.length} ${events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}` : "Os mais procurados"}
           </p>
         </div>
       </div>
