@@ -45,3 +45,41 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* Remove max-width from App.css, we'll handle it in container classes */
+#root {
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Add responsive container classes */
+.container {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+/* Custom breakpoints for better responsiveness */
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1200px;
+  }
+}

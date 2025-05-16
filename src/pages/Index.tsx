@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -124,9 +125,9 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20">
       <Header />
       
-      <main className="container mx-auto px-4 pb-12">
+      <main className="container mx-auto px-4 pb-12 max-w-7xl">
         {/* Hero section com banner principal e informações */}
-        <div className="pt-8">
+        <div className="pt-8 px-4 md:px-8">
           {!loading && featuredEvents.length > 0 && (
             <FeaturedCarousel events={featuredEvents} />
           )}
@@ -134,7 +135,7 @@ const Index = () => {
         
         {/* Lista de eventos */}
         {!loading && (
-          <section className="mt-16">
+          <section className="mt-16 px-4 md:px-8">
             <EventsGrid 
               events={filteredEvents} 
               loading={loading} 
