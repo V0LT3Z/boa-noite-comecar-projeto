@@ -84,11 +84,17 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   
   // Navigation functions
   const scrollNext = () => {
-    if (emblaApi) emblaApi.scrollNext();
+    if (emblaApi) {
+      emblaApi.scrollNext();
+      // Não precisamos atualizar o selectedIndex aqui, pois o efeito onSelect já faz isso
+    }
   };
   
   const scrollPrev = () => {
-    if (emblaApi) emblaApi.scrollPrev();
+    if (emblaApi) {
+      emblaApi.scrollPrev();
+      // Não precisamos atualizar o selectedIndex aqui, pois o efeito onSelect já faz isso
+    }
   };
 
   return (
