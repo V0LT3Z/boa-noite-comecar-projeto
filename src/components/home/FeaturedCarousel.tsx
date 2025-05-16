@@ -86,13 +86,19 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   // Navigation functions
   const scrollNext = () => {
     if (emblaApi) {
-      emblaApi.scrollNext();
+      // Manually update the index for immediate UI update
+      const nextIndex = (selectedIndex + 1) % events.length;
+      setSelectedIndex(nextIndex);
+      emblaApi.scrollTo(nextIndex);
     }
   };
   
   const scrollPrev = () => {
     if (emblaApi) {
-      emblaApi.scrollPrev();
+      // Manually update the index for immediate UI update
+      const prevIndex = selectedIndex === 0 ? events.length - 1 : selectedIndex - 1;
+      setSelectedIndex(prevIndex);
+      emblaApi.scrollTo(prevIndex);
     }
   };
 
@@ -115,7 +121,10 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
                 <CarouselContent ref={emblaRef}>
                   {events.map((event) => (
                     <CarouselItem key={event.id} className="cursor-pointer">
-                      <EventSlide {...event} />
+                      <EventSlide 
+                        {...event} 
+                        isActive={events[selectedIndex].id === event.id}
+                      />
                     </CarouselItem>
                   ))}
                 </CarouselContent>

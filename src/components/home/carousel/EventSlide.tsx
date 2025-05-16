@@ -8,9 +8,14 @@ interface EventSlideProps {
   date: string;
   location: string;
   image: string;
+  isActive?: boolean;
 }
 
-const EventSlide = ({ id, title, date, location, image }: EventSlideProps) => {
+const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
+  if (!isActive) {
+    return null; // Don't render if not active
+  }
+  
   return (
     <div className="relative group h-[420px]">
       <img 
