@@ -179,13 +179,15 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
 
   if (preloadedImages.length < events.length) {
     return (
-      <div className="relative mx-auto px-8 md:px-16 lg:px-20 max-w-[1400px]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-soft-purple/10 to-soft-blue/10 p-6 rounded-xl">
-          <div className="lg:col-span-8">
-            <div className="h-[420px] rounded-3xl bg-gray-200 animate-pulse"></div>
-          </div>
-          <div className="lg:col-span-4">
-            <div className="h-[420px] rounded-3xl bg-gray-100 animate-pulse"></div>
+      <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
+        <div className="mx-auto max-w-[1400px] px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 rounded-xl">
+            <div className="lg:col-span-8">
+              <div className="h-[420px] rounded-3xl bg-gray-200 animate-pulse"></div>
+            </div>
+            <div className="lg:col-span-4">
+              <div className="h-[420px] rounded-3xl bg-gray-100 animate-pulse"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -193,36 +195,38 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   }
 
   return (
-    <div className="relative mx-auto px-8 md:px-16 lg:px-20 max-w-[1400px]">
-      {/* External navigation arrows */}
-      <CarouselControls 
-        onPrev={scrollPrev}
-        onNext={scrollNext}
-        eventsLength={events.length}
-      />
+    <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
+      <div className="mx-auto max-w-[1400px] px-4 relative">
+        {/* External navigation arrows */}
+        <CarouselControls 
+          onPrev={scrollPrev}
+          onNext={scrollNext}
+          eventsLength={events.length}
+        />
 
-      {/* Main content grid - banner and details */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-soft-purple/10 to-soft-blue/10 p-6 rounded-xl">
-        {/* Carousel section - larger size */}
-        <div className="lg:col-span-8">
-          <div>
-            <div className="relative overflow-hidden rounded-3xl shadow-xl h-[420px]">
-              <div className="relative h-full w-full" ref={slidesRef}>
-                {events.map((event, index) => (
-                  <EventSlide 
-                    key={`event-slide-${event.id}`}
-                    {...event} 
-                    isActive={index === selectedIndex}
-                  />
-                ))}
+        {/* Main content grid - banner and details */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 rounded-xl">
+          {/* Carousel section - larger size */}
+          <div className="lg:col-span-8">
+            <div>
+              <div className="relative overflow-hidden rounded-3xl shadow-xl h-[420px]">
+                <div className="relative h-full w-full" ref={slidesRef}>
+                  {events.map((event, index) => (
+                    <EventSlide 
+                      key={`event-slide-${event.id}`}
+                      {...event} 
+                      isActive={index === selectedIndex}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        {/* Event details panel - smaller right side */}
-        <div className="lg:col-span-4">
-          <EventInfoPanel {...currentEvent} />
+          
+          {/* Event details panel - smaller right side */}
+          <div className="lg:col-span-4">
+            <EventInfoPanel {...currentEvent} />
+          </div>
         </div>
       </div>
     </div>
