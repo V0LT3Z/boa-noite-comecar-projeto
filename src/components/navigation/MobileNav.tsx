@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Home, LogOut, Store, Avatar, Bell, Heart } from 'lucide-react';
+import { Menu, Home, LogOut, Store, Bell, Heart } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface MobileNavProps {
   navItems: { label: string; href: string; icon: React.ElementType }[];
