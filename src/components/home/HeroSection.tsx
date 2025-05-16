@@ -21,16 +21,15 @@ const HeroSection = ({ events }: HeroSectionProps) => {
   const hasEvents = events && events.length > 0;
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
+  const autoplayIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   const scrollTo = (index: number) => {
     if (emblaApi) {
       emblaApi.scrollTo(index);
-      setSelectedIndex(index);
     }
   };
   
-  // Track the selected index for the dots indicator
+  // Monitorar o índice selecionado para os indicadores
   useEffect(() => {
     if (!emblaApi) return;
     
@@ -39,15 +38,14 @@ const HeroSection = ({ events }: HeroSectionProps) => {
     };
     
     emblaApi.on('select', onSelect);
-    // Initial call to set the current slide
-    onSelect();
+    onSelect(); // Chama inicialmente para definir o slide atual
     
     return () => {
       emblaApi.off('select', onSelect);
     };
   }, [emblaApi]);
   
-  // Set up autoplay for the carousel
+  // Configurar autoplay do carrossel
   useEffect(() => {
     if (!emblaApi || !hasEvents) return;
     
@@ -59,17 +57,20 @@ const HeroSection = ({ events }: HeroSectionProps) => {
       }
     };
     
-    // Clear any existing interval
-    if (autoplayRef.current) {
-      clearInterval(autoplayRef.current);
+    // Limpar qualquer intervalo existente
+    if (autoplayIntervalRef.current) {
+      clearInterval(autoplayIntervalRef.current);
+      autoplayIntervalRef.current = null;
     }
     
-    // Set up new interval
-    autoplayRef.current = setInterval(autoplay, 5000);
+    // Configurar novo intervalo
+    autoplayIntervalRef.current = setInterval(autoplay, 5000);
     
+    // Função de limpeza
     return () => {
-      if (autoplayRef.current) {
-        clearInterval(autoplayRef.current);
+      if (autoplayIntervalRef.current) {
+        clearInterval(autoplayIntervalRef.current);
+        autoplayIntervalRef.current = null;
       }
     };
   }, [emblaApi, hasEvents]);
