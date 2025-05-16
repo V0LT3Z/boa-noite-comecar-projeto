@@ -20,7 +20,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        'gooddog': ['"Good Dog"', 'cursive'],
+        'gooddog': ['Good Dog', 'cursive'],
       },
       colors: {
         border: 'hsl(var(--border))',
