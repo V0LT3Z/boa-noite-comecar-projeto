@@ -156,22 +156,22 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
         {/* Event details panel - smaller right side */}
         <div className="lg:col-span-4">
           <Card className="h-[420px] border-none shadow-lg bg-white p-6 flex flex-col justify-between">
-            <div>
-              <h3 className="text-2xl font-bold mb-4 line-clamp-3 overflow-hidden">{currentEvent.title}</h3>
+            <div className="flex flex-col h-full">
+              <h3 className="text-xl font-bold mb-4 break-words">{currentEvent.title}</h3>
               
-              <div className="space-y-4 mt-6">
-                <div className="flex items-start gap-3 text-sm">
+              <div className="space-y-4 mt-4">
+                <div className="flex items-start gap-3">
                   <Calendar className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <span className="text-gray-700 text-base">{currentEvent.date}</span>
                 </div>
-                <div className="flex items-start gap-3 text-sm">
+                <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700 text-base line-clamp-3 overflow-hidden">{currentEvent.location}</span>
+                  <span className="text-gray-700 text-base break-words">{currentEvent.location}</span>
                 </div>
               </div>
             </div>
             
-            <div className="space-y-4 mt-auto">
+            <div className="space-y-4 mt-auto pt-4">
               <Button 
                 className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-md py-6"
                 asChild
