@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import EventCard from '@/components/EventCard';
+import { Separator } from '@/components/ui/separator';
 
 interface EventItem {
   id: number;
@@ -33,6 +34,7 @@ const EventsGrid = ({
   if (loading) {
     return (
       <div>
+        <div className="h-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 w-full my-8" />
         <h2 className="text-2xl font-bold mb-6">Eventos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {[...Array(8)].map((_, index) => (
@@ -50,22 +52,25 @@ const EventsGrid = ({
   // Se não há eventos para mostrar
   if (events.length === 0) {
     return (
-      <div className="text-center py-12">
-        {searchQuery ? (
-          <>
-            <h2 className="text-2xl font-semibold mb-2">Nenhum evento encontrado</h2>
-            <p className="text-muted-foreground mb-6">
-              Não encontramos eventos relacionados a "{searchQuery}"
-            </p>
-          </>
-        ) : (
-          <>
-            <h2 className="text-2xl font-semibold mb-2">Nenhum evento disponível</h2>
-            <p className="text-muted-foreground mb-6">
-              No momento não há eventos cadastrados.
-            </p>
-          </>
-        )}
+      <div>
+        <div className="h-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 w-full my-8" />
+        <div className="text-center py-12">
+          {searchQuery ? (
+            <>
+              <h2 className="text-2xl font-semibold mb-2">Nenhum evento encontrado</h2>
+              <p className="text-muted-foreground mb-6">
+                Não encontramos eventos relacionados a "{searchQuery}"
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-semibold mb-2">Nenhum evento disponível</h2>
+              <p className="text-muted-foreground mb-6">
+                No momento não há eventos cadastrados.
+              </p>
+            </>
+          )}
+        </div>
       </div>
     );
   }
@@ -75,6 +80,8 @@ const EventsGrid = ({
 
   return (
     <div>
+      <div className="h-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 w-full my-8" />
+      
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
         <h2 className="text-2xl font-bold mb-2 md:mb-0">
           {searchQuery ? `Resultados para "${searchQuery}"` : "Todos os eventos"}
