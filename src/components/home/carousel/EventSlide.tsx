@@ -12,13 +12,16 @@ interface EventSlideProps {
 }
 
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
-  // Instead of not rendering, we'll render but with conditional visibility
   return (
-    <div className={`relative group h-[420px] ${isActive ? 'block' : 'hidden'}`}>
+    <div 
+      className={`relative group h-[420px] ${isActive ? 'block' : 'hidden'}`}
+      style={{ willChange: 'opacity, transform' }}
+    >
       <img 
         src={image} 
         alt={title}
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        loading="eager"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
       <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black/90 to-transparent">

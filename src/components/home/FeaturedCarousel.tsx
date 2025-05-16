@@ -26,11 +26,25 @@ interface FeaturedCarouselProps {
 }
 
 const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    loop: true,
+    skipSnaps: false,
+    dragFree: false
+  });
   const autoplayTimerRef = useRef<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   
   console.log("FeaturedCarousel received events:", events);
+  
+  // Preload all images to prevent white flashes
+  useEffect(() => {
+    events.forEach(event => {
+      if (event.image) {
+        const img = new Image();
+        img.src = event.image;
+      }
+    });
+  }, [events]);
   
   // Handle carousel slide selection
   useEffect(() => {
