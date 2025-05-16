@@ -19,18 +19,23 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
         willChange: 'opacity, transform',
       }}
     >
-      <div className="relative h-[420px] w-full overflow-hidden">
+      <div className="relative h-[420px] w-full overflow-hidden group">
         <img 
           src={image} 
           alt={title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-500"
           loading="eager"
           style={{
             transition: 'transform 500ms ease-in-out',
             transform: isActive ? 'scale(1)' : 'scale(1.05)'
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
+        <div 
+          className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" 
+        />
+        <div 
+          className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300"
+        />
         <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black/90 to-transparent">
           <span className="inline-block px-4 py-1 bg-primary/80 text-white text-sm rounded-full mb-4">
             Em destaque
