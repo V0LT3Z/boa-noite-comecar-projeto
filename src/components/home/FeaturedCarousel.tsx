@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import {
@@ -197,7 +196,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   return (
     <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
       <div className="mx-auto max-w-[1400px] px-4 relative">
-        {/* External navigation arrows */}
+        {/* External navigation arrows - moved outside the grid and adjusted positioning */}
         <CarouselControls 
           onPrev={scrollPrev}
           onNext={scrollNext}
