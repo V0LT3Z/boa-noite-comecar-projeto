@@ -88,10 +88,12 @@ const EventsGrid = ({
         {displayEvents.map(event => (
           <Link key={event.id} to={`/evento/${event.id}`}>
             <EventCard
+              id={event.id}
               title={event.title}
               date={event.date}
               location={event.location}
               image={event.image}
+              status={event.status}
             />
           </Link>
         ))}
