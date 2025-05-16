@@ -89,26 +89,26 @@ const HeroSection = ({ events }: HeroSectionProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Banner principal - carrossel (ocupando 2/3 do espaço) */}
-      <div className="lg:col-span-2">
-        <div className="relative rounded-xl overflow-hidden shadow-lg">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-soft-purple to-soft-blue p-6 rounded-xl shadow-md">
+      {/* Banner principal - carrossel (ocupando metade do espaço) */}
+      <div className="lg:col-span-6">
+        <div className="relative rounded-xl overflow-hidden shadow-lg h-[350px]">
           <Carousel>
             <div className="relative">
               <CarouselContent ref={emblaRef}>
                 {events.map((event) => (
                   <CarouselItem key={event.id} className="cursor-pointer">
                     <Link to={`/evento/${event.id}`}>
-                      <div className="relative h-[300px] md:h-[400px] group">
+                      <div className="relative h-[350px] group">
                         <img 
                           src={event.image} 
                           alt={event.title}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80" />
-                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{event.title}</h2>
-                          <p className="text-white/90 text-sm md:text-base">
+                        <div className="absolute bottom-0 left-0 right-0 p-6">
+                          <h2 className="text-2xl font-bold text-white mb-2">{event.title}</h2>
+                          <p className="text-white/90 text-sm">
                             {event.date}
                           </p>
                         </div>
@@ -147,16 +147,16 @@ const HeroSection = ({ events }: HeroSectionProps) => {
         </div>
       </div>
       
-      {/* Detalhes do evento - (ocupando 1/3 do espaço) */}
+      {/* Detalhes do evento - mesmo tamanho que o carrossel */}
       {currentEvent && (
-        <div className="lg:col-span-1">
-          <Card className="h-full border-none shadow-lg bg-white p-6 flex flex-col justify-between">
+        <div className="lg:col-span-6">
+          <Card className="h-[350px] border-none shadow-lg bg-white p-6 flex flex-col justify-between">
             <div>
-              <div className="mb-6">
+              <div>
                 <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
                   Evento em destaque
                 </span>
-                <h3 className="text-xl font-bold mb-4">{currentEvent.title}</h3>
+                <h3 className="text-2xl font-bold mb-4">{currentEvent.title}</h3>
                 <p className="text-gray-600 text-sm mb-6">
                   Uma experiência imperdível que você precisa conferir!
                 </p>
@@ -178,7 +178,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
               </div>
             </div>
             
-            <div className="space-y-3 mt-6">
+            <div className="space-y-3 mt-auto">
               <Button 
                 className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-md"
                 asChild

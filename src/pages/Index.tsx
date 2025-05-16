@@ -113,18 +113,20 @@ const Index = () => {
   }, [formattedEvents, searchQuery]);
     
   // Destacar os 5 primeiros eventos para o carrossel da Hero
-  const heroEvents = formattedEvents
-    .filter(event => event.status !== "cancelled")
-    .slice(0, 5)
-    .map(event => ({
-      id: event.id,
-      title: event.title,
-      date: event.date,
-      image: event.image
-    }));
+  const heroEvents = useMemo(() => {
+    return events
+      .filter(event => event.status !== "cancelled")
+      .slice(0, 5)
+      .map(event => ({
+        id: event.id,
+        title: event.title,
+        date: format(new Date(event.date), "dd 'de' MMMM yyyy", { locale: ptBR }),
+        image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500"
+      }));
+  }, [events]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-white via-soft-gray to-soft-purple/20">
       <Header />
       
       <main className="container mx-auto px-4 pb-12">
