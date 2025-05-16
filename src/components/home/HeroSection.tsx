@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Link } from 'react-router-dom';
 import useEmblaCarousel from 'embla-carousel-react';
+import { CircleDot } from 'lucide-react';
 
 interface EventBanner {
   id: number;
@@ -19,6 +20,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
   // Se não houver eventos, exibimos um banner genérico
   const hasEvents = events && events.length > 0;
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
 
   // Set up autoplay for the carousel
   useEffect(() => {
@@ -34,6 +36,27 @@ const HeroSection = ({ events }: HeroSectionProps) => {
 
     return () => clearInterval(autoplayInterval);
   }, [emblaApi]);
+  
+  // Track the selected index for the dots indicator
+  useEffect(() => {
+    if (!emblaApi) return;
+    
+    const onSelect = () => {
+      setSelectedIndex(emblaApi.selectedScrollSnap());
+    };
+    
+    emblaApi.on('select', onSelect);
+    // Initial call to set the current slide
+    onSelect();
+    
+    return () => {
+      emblaApi.off('select', onSelect);
+    };
+  }, [emblaApi]);
+  
+  const scrollTo = (index: number) => {
+    if (emblaApi) emblaApi.scrollTo(index);
+  };
   
   return (
     <section className="relative bg-gradient-to-r from-purple-100 to-blue-100 pt-16 pb-16 overflow-hidden">
@@ -75,14 +98,34 @@ const HeroSection = ({ events }: HeroSectionProps) => {
                     ))}
                   </CarouselContent>
                   
-                  {/* Navigation arrows positioned correctly inside the Carousel context */}
+                  {/* Navigation arrows positioned with more spacing */}
                   <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between z-20 pointer-events-none">
-                    <div className="pointer-events-auto -ml-5 lg:-ml-10">
+                    <div className="pointer-events-auto -ml-6 lg:-ml-12">
                       <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
                     </div>
-                    <div className="pointer-events-auto -mr-5 lg:-mr-10">
+                    <div className="pointer-events-auto -mr-6 lg:-mr-12">
                       <CarouselNext className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
                     </div>
+                  </div>
+                  
+                  {/* Dots indicator */}
+                  <div className="flex justify-center gap-2 mt-4">
+                    {events.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => scrollTo(index)}
+                        className="focus:outline-none"
+                        aria-label={`Go to slide ${index + 1}`}
+                      >
+                        <CircleDot 
+                          className={`h-3 w-3 transition-all ${
+                            selectedIndex === index 
+                              ? 'text-primary fill-primary' 
+                              : 'text-gray-400'
+                          }`}
+                        />
+                      </button>
+                    ))}
                   </div>
                 </div>
               </Carousel>
