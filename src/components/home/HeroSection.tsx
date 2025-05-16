@@ -21,23 +21,13 @@ const HeroSection = ({ events }: HeroSectionProps) => {
   const hasEvents = events && events.length > 0;
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const autoplayRef = useRef<NodeJS.Timeout>();
   
-  // Set up autoplay for the carousel
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    const autoplayInterval = setInterval(() => {
-      if (emblaApi.canScrollNext()) {
-        emblaApi.scrollNext();
-      } else {
-        emblaApi.scrollTo(0);
-      }
-    }, 5000); // Change slide every 5 seconds
-
-    return () => clearInterval(autoplayInterval);
-  }, [emblaApi]);
+  const scrollTo = (index: number) => {
+    if (emblaApi) emblaApi.scrollTo(index);
+  };
   
-  // Track the selected index for the dots indicator - improved to work with autoplay
+  // Track the selected index for the dots indicator
   useEffect(() => {
     if (!emblaApi) return;
     
@@ -54,9 +44,32 @@ const HeroSection = ({ events }: HeroSectionProps) => {
     };
   }, [emblaApi]);
   
-  const scrollTo = (index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index);
-  };
+  // Set up autoplay for the carousel - corrigido para funcionar corretamente
+  useEffect(() => {
+    if (!emblaApi) return;
+    
+    const autoplay = () => {
+      if (emblaApi.canScrollNext()) {
+        emblaApi.scrollNext();
+      } else {
+        emblaApi.scrollTo(0);
+      }
+    };
+    
+    // Clear any existing interval
+    if (autoplayRef.current) {
+      clearInterval(autoplayRef.current);
+    }
+    
+    // Set up new interval
+    autoplayRef.current = setInterval(autoplay, 5000);
+    
+    return () => {
+      if (autoplayRef.current) {
+        clearInterval(autoplayRef.current);
+      }
+    };
+  }, [emblaApi]);
   
   return (
     <section className="relative bg-gradient-to-r from-purple-100 to-blue-100 pt-16 pb-16 overflow-hidden">
@@ -70,48 +83,50 @@ const HeroSection = ({ events }: HeroSectionProps) => {
         <div className="max-w-5xl mx-auto">
           {hasEvents ? (
             <div className="relative">
-              <Carousel>
-                <div className="relative">
-                  <CarouselContent ref={emblaRef}>
-                    {events.map((event) => (
-                      <CarouselItem key={event.id} className="cursor-pointer">
-                        <Link to={`/evento/${event.id}`}>
-                          <div className="relative h-[350px] md:h-[450px] group">
-                            <img 
-                              src={event.image} 
-                              alt={event.title}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
-                            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 bg-gradient-to-t from-black/90 to-transparent">
-                              <span className="inline-block px-4 py-1 bg-primary/80 text-white text-xs md:text-sm rounded-full mb-2 md:mb-4">
-                                Em destaque
-                              </span>
-                              <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">{event.title}</h2>
-                              <p className="text-white/90 text-sm md:text-base">
-                                {event.date}
-                              </p>
+              <div className="relative">
+                <Carousel>
+                  <div className="relative">
+                    <CarouselContent ref={emblaRef}>
+                      {events.map((event) => (
+                        <CarouselItem key={event.id} className="cursor-pointer">
+                          <Link to={`/evento/${event.id}`}>
+                            <div className="relative h-[350px] md:h-[450px] group">
+                              <img 
+                                src={event.image} 
+                                alt={event.title}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
+                              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 bg-gradient-to-t from-black/90 to-transparent">
+                                <span className="inline-block px-4 py-1 bg-primary/80 text-white text-xs md:text-sm rounded-full mb-2 md:mb-4">
+                                  Em destaque
+                                </span>
+                                <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">{event.title}</h2>
+                                <p className="text-white/90 text-sm md:text-base">
+                                  {event.date}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </Link>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  
-                  {/* Navigation arrows positioned with more spacing from the carousel */}
-                  <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between z-20 pointer-events-none">
-                    <div className="pointer-events-auto -ml-10 lg:-ml-16">
-                      <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
-                    </div>
-                    <div className="pointer-events-auto -mr-10 lg:-mr-16">
-                      <CarouselNext className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                          </Link>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    
+                    {/* Espaçamento das setas corrigido */}
+                    <div className="absolute inset-y-0 -left-8 -right-8 flex items-center justify-between z-20 pointer-events-none">
+                      <div className="pointer-events-auto">
+                        <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                      </div>
+                      <div className="pointer-events-auto">
+                        <CarouselNext className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Carousel>
+                </Carousel>
+              </div>
               
-              {/* Dots indicator moved outside the Carousel but inside the container for better positioning */}
-              <div className="flex justify-center gap-3 mt-6">
+              {/* Indicadores de pontos corrigidos para acompanhar o slide atual */}
+              <div className="flex justify-center gap-2 mt-4">
                 {events.map((_, index) => (
                   <button
                     key={index}
@@ -120,7 +135,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
                     aria-label={`Go to slide ${index + 1}`}
                   >
                     <CircleDot 
-                      className={`h-4 w-4 transition-all ${
+                      className={`h-3 w-3 transition-all ${
                         selectedIndex === index 
                           ? 'text-primary fill-primary' 
                           : 'text-gray-400'
