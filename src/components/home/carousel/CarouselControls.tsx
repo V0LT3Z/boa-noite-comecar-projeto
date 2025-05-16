@@ -14,7 +14,11 @@ const CarouselControls = ({ onPrev, onNext, eventsLength }: CarouselControlsProp
   return (
     <div className="flex justify-between absolute -left-4 -right-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
       <button 
-        onClick={onPrev}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onPrev();
+        }}
         className="bg-white p-3 rounded-full shadow-md hover:bg-white/90 transition-colors pointer-events-auto"
         aria-label="Evento anterior"
       >
@@ -22,7 +26,11 @@ const CarouselControls = ({ onPrev, onNext, eventsLength }: CarouselControlsProp
       </button>
       
       <button 
-        onClick={onNext}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onNext();
+        }}
         className="bg-white p-3 rounded-full shadow-md hover:bg-white/90 transition-colors pointer-events-auto"
         aria-label="Próximo evento"
       >
