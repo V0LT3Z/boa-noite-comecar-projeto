@@ -14,21 +14,24 @@ const CarouselControls = ({ onPrev, onNext, eventsLength }: CarouselControlsProp
   const handlePrevClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log("Prev button clicked");
     onPrev();
   };
 
   const handleNextClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log("Next button clicked");
     onNext();
   };
   
   return (
-    <div className="flex justify-between absolute -left-4 -right-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+    <div className="flex justify-between absolute -left-4 -right-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none">
       <button 
         onClick={handlePrevClick}
         className="bg-white p-3 rounded-full shadow-md hover:bg-white/90 transition-colors pointer-events-auto"
         aria-label="Evento anterior"
+        type="button"
       >
         <ArrowLeft className="h-5 w-5 text-primary" />
       </button>
@@ -37,6 +40,7 @@ const CarouselControls = ({ onPrev, onNext, eventsLength }: CarouselControlsProp
         onClick={handleNextClick}
         className="bg-white p-3 rounded-full shadow-md hover:bg-white/90 transition-colors pointer-events-auto"
         aria-label="Próximo evento"
+        type="button"
       >
         <ArrowRight className="h-5 w-5 text-primary" />
       </button>

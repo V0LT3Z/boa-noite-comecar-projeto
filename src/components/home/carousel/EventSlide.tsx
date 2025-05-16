@@ -14,13 +14,13 @@ interface EventSlideProps {
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
   return (
     <div 
-      className={`relative group h-[420px] ${isActive ? 'opacity-100' : 'opacity-0'} absolute inset-0 transition-opacity duration-300`}
+      className={`relative group h-[420px] ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'} absolute inset-0 transition-opacity duration-500 ease-in-out`}
       style={{ willChange: 'opacity, transform' }}
     >
       <img 
         src={image} 
         alt={title}
-        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="eager"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />

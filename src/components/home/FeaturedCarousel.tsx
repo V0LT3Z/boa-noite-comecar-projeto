@@ -117,21 +117,25 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   // Current selected event for the info panel
   const currentEvent = events[selectedIndex] || events[0];
   
-  // Navigation functions
+  // Navigation functions - Simplified for direct index manipulation
   const scrollNext = () => {
+    console.log("scrollNext called, current index:", selectedIndex);
+    const nextIndex = (selectedIndex + 1) % events.length;
+    setSelectedIndex(nextIndex);
+    console.log("New index set to:", nextIndex);
+    // Optional: Manually update emblaApi if needed
     if (emblaApi) {
-      // Manually update the index for immediate UI update
-      const nextIndex = (selectedIndex + 1) % events.length;
-      setSelectedIndex(nextIndex);
       emblaApi.scrollTo(nextIndex);
     }
   };
   
   const scrollPrev = () => {
+    console.log("scrollPrev called, current index:", selectedIndex);
+    const prevIndex = selectedIndex === 0 ? events.length - 1 : selectedIndex - 1;
+    setSelectedIndex(prevIndex);
+    console.log("New index set to:", prevIndex);
+    // Optional: Manually update emblaApi if needed
     if (emblaApi) {
-      // Manually update the index for immediate UI update
-      const prevIndex = selectedIndex === 0 ? events.length - 1 : selectedIndex - 1;
-      setSelectedIndex(prevIndex);
       emblaApi.scrollTo(prevIndex);
     }
   };
