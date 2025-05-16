@@ -14,8 +14,8 @@ interface EventInfoPanelProps {
 
 const EventInfoPanel = ({ id, title, date, location }: EventInfoPanelProps) => {
   return (
-    <Card className="h-[420px] border-none shadow-lg bg-white p-6 flex flex-col justify-between">
-      <div className="flex flex-col h-full">
+    <Card className="h-[420px] border-none shadow-lg bg-white p-6 flex flex-col">
+      <div className="flex flex-col flex-grow overflow-auto mb-4">
         <h3 className="text-xl font-bold mb-4 break-words">{title}</h3>
         
         <div className="space-y-4 mt-4">
@@ -30,7 +30,7 @@ const EventInfoPanel = ({ id, title, date, location }: EventInfoPanelProps) => {
         </div>
       </div>
       
-      <div className="space-y-4 mt-auto pt-4">
+      <div className="space-y-4 mt-auto flex-shrink-0">
         <Button 
           className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-md py-6"
           asChild
