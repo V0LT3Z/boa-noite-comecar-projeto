@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Link } from 'react-router-dom';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -20,11 +20,14 @@ const HeroSection = ({ events }: HeroSectionProps) => {
   // Se não houver eventos, exibimos um banner genérico
   const hasEvents = events && events.length > 0;
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
-  const autoplayRef = useRef<NodeJS.Timeout>();
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   
   const scrollTo = (index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index);
+    if (emblaApi) {
+      emblaApi.scrollTo(index);
+      setSelectedIndex(index);
+    }
   };
   
   // Track the selected index for the dots indicator
@@ -44,9 +47,9 @@ const HeroSection = ({ events }: HeroSectionProps) => {
     };
   }, [emblaApi]);
   
-  // Set up autoplay for the carousel - corrigido para funcionar corretamente
+  // Set up autoplay for the carousel
   useEffect(() => {
-    if (!emblaApi) return;
+    if (!emblaApi || !hasEvents) return;
     
     const autoplay = () => {
       if (emblaApi.canScrollNext()) {
@@ -69,7 +72,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
         clearInterval(autoplayRef.current);
       }
     };
-  }, [emblaApi]);
+  }, [emblaApi, hasEvents]);
   
   return (
     <section className="relative bg-gradient-to-r from-purple-100 to-blue-100 pt-16 pb-16 overflow-hidden">
@@ -112,7 +115,6 @@ const HeroSection = ({ events }: HeroSectionProps) => {
                       ))}
                     </CarouselContent>
                     
-                    {/* Espaçamento das setas corrigido */}
                     <div className="absolute inset-y-0 -left-8 -right-8 flex items-center justify-between z-20 pointer-events-none">
                       <div className="pointer-events-auto">
                         <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
@@ -125,7 +127,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
                 </Carousel>
               </div>
               
-              {/* Indicadores de pontos corrigidos para acompanhar o slide atual */}
+              {/* Indicadores de pontos para acompanhar o slide atual */}
               <div className="flex justify-center gap-2 mt-4">
                 {events.map((_, index) => (
                   <button
