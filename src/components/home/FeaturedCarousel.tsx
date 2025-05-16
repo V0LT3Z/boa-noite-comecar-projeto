@@ -33,7 +33,8 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   });
   const autoplayTimerRef = useRef<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [preloadedImages, setPreloadedImages] = useState<string[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const slidesRef = useRef<HTMLDivElement>(null);
   
   console.log("FeaturedCarousel received events:", events);
@@ -42,39 +43,31 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   useEffect(() => {
     if (!events || events.length === 0) return;
     
-    let loadedCount = 0;
-    const totalImages = events.length;
+    // Preload all event images
+    const imagesToPreload = events.map(event => event.image);
     
-    const preloadImages = events.map(event => {
-      return new Promise((resolve) => {
-        if (event.image) {
-          const img = new Image();
-          img.onload = () => {
-            loadedCount++;
-            if (loadedCount === totalImages) {
-              setImagesLoaded(true);
-            }
-            resolve(null);
-          };
-          img.onerror = () => {
-            console.log("Failed to load image:", event.image);
-            resolve(null);
-          };
-          img.src = event.image;
-        } else {
-          resolve(null);
-        }
-      });
-    });
-    
-    Promise.all(preloadImages)
-      .then(() => {
-        console.log("All images preloaded successfully");
-        setImagesLoaded(true);
+    Promise.all(
+      imagesToPreload.map(
+        (src) =>
+          new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => resolve(src);
+            img.onerror = () => {
+              console.error(`Failed to preload image: ${src}`);
+              reject(new Error(`Failed to preload image: ${src}`));
+            };
+          })
+      )
+    )
+      .then((loadedImages) => {
+        console.log("All images preloaded successfully:", loadedImages);
+        setPreloadedImages(loadedImages as string[]);
       })
-      .catch(err => {
-        console.error("Error preloading images:", err);
-        setImagesLoaded(true); // Continue anyway
+      .catch((error) => {
+        console.error("Error during image preloading:", error);
+        // Still set the preloaded images we have
+        setPreloadedImages(preloadedImages);
       });
   }, [events]);
   
@@ -101,10 +94,18 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     if (!emblaApi || events.length <= 1) return;
     
     const autoplay = () => {
-      if (emblaApi.canScrollNext()) {
+      if (!isTransitioning && emblaApi.canScrollNext()) {
+        setIsTransitioning(true);
         emblaApi.scrollNext();
-      } else {
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 500); // Match this with transition duration
+      } else if (!isTransitioning) {
+        setIsTransitioning(true);
         emblaApi.scrollTo(0);
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 500); // Match this with transition duration
       }
     };
     
@@ -114,7 +115,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     }
     
     // Set new interval for auto-sliding
-    autoplayTimerRef.current = window.setInterval(autoplay, 5000);
+    autoplayTimerRef.current = window.setInterval(autoplay, 6000);
     
     // Cleanup function
     return () => {
@@ -122,7 +123,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
         window.clearInterval(autoplayTimerRef.current);
       }
     };
-  }, [emblaApi, events.length]);
+  }, [emblaApi, events.length, isTransitioning]);
 
   if (events.length === 0) {
     return null;
@@ -133,7 +134,10 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   
   // Improved navigation functions
   const scrollNext = () => {
+    if (isTransitioning) return;
+    
     console.log("scrollNext called, current index:", selectedIndex);
+    setIsTransitioning(true);
     
     // Calculate next index and update state
     const nextIndex = (selectedIndex + 1) % events.length;
@@ -142,12 +146,20 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     
     // Sync with embla carousel
     if (emblaApi) {
-      emblaApi.scrollTo(nextIndex, true);
+      emblaApi.scrollTo(nextIndex);
     }
+    
+    // Reset transition flag after animation completes
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 500); // Match this with CSS transition duration
   };
   
   const scrollPrev = () => {
+    if (isTransitioning) return;
+    
     console.log("scrollPrev called, current index:", selectedIndex);
+    setIsTransitioning(true);
     
     // Calculate previous index and update state
     const prevIndex = selectedIndex === 0 ? events.length - 1 : selectedIndex - 1;
@@ -156,11 +168,16 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     
     // Sync with embla carousel
     if (emblaApi) {
-      emblaApi.scrollTo(prevIndex, true);
+      emblaApi.scrollTo(prevIndex);
     }
+    
+    // Reset transition flag after animation completes
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 500); // Match this with CSS transition duration
   };
 
-  if (!imagesLoaded) {
+  if (preloadedImages.length < events.length) {
     return (
       <div className="relative mx-auto px-8 md:px-16 lg:px-20 max-w-[1400px]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-soft-purple/10 to-soft-blue/10 p-6 rounded-xl">
@@ -193,7 +210,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
               <div className="relative h-full w-full" ref={slidesRef}>
                 {events.map((event, index) => (
                   <EventSlide 
-                    key={event.id}
+                    key={`event-slide-${event.id}`}
                     {...event} 
                     isActive={index === selectedIndex}
                   />
