@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Calendar } from 'lucide-react';
 
 interface EventSlideProps {
   id: number;
@@ -37,10 +38,11 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
           className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300"
         />
         
-        {/* Date display at the bottom of the banner */}
-        <div className="absolute bottom-8 left-8 z-20">
-          <div className="bg-primary/80 text-white px-4 py-2 rounded-lg shadow-md">
-            <p className="text-xl font-medium font-gooddog">{date}</p>
+        {/* Discrete date display with calendar icon */}
+        <div className="absolute bottom-6 left-6 z-20">
+          <div className="bg-black/30 backdrop-blur-sm text-white px-3 py-2 rounded-lg shadow-md flex items-center gap-2 border border-white/10">
+            <Calendar className="h-4 w-4 text-primary-light" />
+            <p className="text-sm font-medium">{date}</p>
           </div>
         </div>
       </div>
