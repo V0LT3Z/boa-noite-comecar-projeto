@@ -44,6 +44,7 @@ const Index = () => {
       } else {
         // Filter out cancelled events
         const activeEvents = eventData.filter(event => event.status !== "cancelled");
+        console.log("Eventos ativos:", activeEvents.length);
         setEvents(activeEvents);
       }
       
@@ -113,8 +114,10 @@ const Index = () => {
     
   // Destacar os 5 primeiros eventos para o carrossel da Hero
   const heroEvents = useMemo(() => {
-    return events
-      .filter(event => event.status !== "cancelled")
+    const activeEvents = events.filter(event => event.status !== "cancelled");
+    console.log("Eventos para o carrossel:", activeEvents.length);
+    
+    return activeEvents
       .slice(0, 5)
       .map(event => ({
         id: event.id,
@@ -131,7 +134,14 @@ const Index = () => {
       <main className="container mx-auto px-4 pb-12">
         {/* Hero section com banner principal e informações */}
         <div className="pt-8">
-          {!loading && <HeroSection events={heroEvents} />}
+          {!loading && heroEvents.length > 0 && (
+            <>
+              <HeroSection events={heroEvents} />
+              <div className="mt-2 text-xs text-right text-muted-foreground">
+                *Alteração automática a cada 5 segundos
+              </div>
+            </>
+          )}
         </div>
         
         {/* Lista de eventos */}
