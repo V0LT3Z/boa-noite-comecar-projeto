@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 // Imported refactored components
 import HeroSection from "@/components/home/HeroSection";
 import EventsGrid from "@/components/home/EventsGrid";
+import FeaturedCarousel from "@/components/home/FeaturedCarousel";
 
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -112,8 +113,8 @@ const Index = () => {
     });
   }, [formattedEvents, searchQuery]);
     
-  // Destacar os 5 primeiros eventos para o carrossel da Hero
-  const heroEvents = useMemo(() => {
+  // Eventos em destaque para o carrossel
+  const featuredEvents = useMemo(() => {
     const activeEvents = events.filter(event => event.status === "active");
     console.log("Eventos para o carrossel:", activeEvents.length);
     
@@ -123,7 +124,9 @@ const Index = () => {
         id: event.id,
         title: event.title,
         date: format(new Date(event.date), "dd 'de' MMMM yyyy", { locale: ptBR }),
-        image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500"
+        location: event.location,
+        image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
+        status: event.status
       }));
   }, [events]);
 
@@ -134,9 +137,10 @@ const Index = () => {
       <main className="container mx-auto px-4 pb-12">
         {/* Hero section com banner principal e informações */}
         <div className="pt-8">
-          {!loading && heroEvents.length > 0 && (
+          {!loading && featuredEvents.length > 0 && (
             <>
-              <HeroSection events={heroEvents} />
+              {/* Substituímos o HeroSection por um componente mais simples: FeaturedCarousel */}
+              <FeaturedCarousel events={featuredEvents} />
               <div className="mt-2 text-xs text-right text-muted-foreground">
                 *Alteração automática a cada 5 segundos
               </div>
