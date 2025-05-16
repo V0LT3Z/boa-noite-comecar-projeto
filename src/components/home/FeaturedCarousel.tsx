@@ -1,15 +1,16 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import useEmblaCarousel from 'embla-carousel-react';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import useEmblaCarousel from 'embla-carousel-react';
-import { Calendar, MapPin, ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+
+// Componentes refatorados
+import CarouselControls from './carousel/CarouselControls';
+import EventSlide from './carousel/EventSlide';
+import EventInfoPanel from './carousel/EventInfoPanel';
 
 interface EventItem {
   id: number;
@@ -86,39 +87,23 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   const scrollNext = () => {
     if (emblaApi) {
       emblaApi.scrollNext();
-      // Não precisamos atualizar o selectedIndex aqui, pois o efeito onSelect já faz isso
     }
   };
   
   const scrollPrev = () => {
     if (emblaApi) {
       emblaApi.scrollPrev();
-      // Não precisamos atualizar o selectedIndex aqui, pois o efeito onSelect já faz isso
     }
   };
 
   return (
     <div className="relative mx-auto px-8 md:px-16 lg:px-20 max-w-[1400px]">
-      {/* External navigation arrows - posicionadas dentro do container de 1400px */}
-      {events.length > 1 && (
-        <div className="flex justify-between absolute -left-4 -right-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
-          <button 
-            onClick={scrollPrev}
-            className="bg-white p-3 rounded-full shadow-md hover:bg-white/90 transition-colors pointer-events-auto"
-            aria-label="Evento anterior"
-          >
-            <ArrowLeft className="h-5 w-5 text-primary" />
-          </button>
-          
-          <button 
-            onClick={scrollNext}
-            className="bg-white p-3 rounded-full shadow-md hover:bg-white/90 transition-colors pointer-events-auto"
-            aria-label="Próximo evento"
-          >
-            <ArrowRight className="h-5 w-5 text-primary" />
-          </button>
-        </div>
-      )}
+      {/* External navigation arrows */}
+      <CarouselControls 
+        onPrev={scrollPrev}
+        onNext={scrollNext}
+        eventsLength={events.length}
+      />
 
       {/* Main content grid - banner and details */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-soft-purple/10 to-soft-blue/10 p-6 rounded-xl">
@@ -130,27 +115,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
                 <CarouselContent ref={emblaRef}>
                   {events.map((event) => (
                     <CarouselItem key={event.id} className="cursor-pointer">
-                      <Link to={`/evento/${event.id}`}>
-                        <div className="relative group h-[420px]">
-                          <img 
-                            src={event.image} 
-                            alt={event.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
-                          <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black/90 to-transparent">
-                            <span className="inline-block px-4 py-1 bg-primary/80 text-white text-sm rounded-full mb-4">
-                              Em destaque
-                            </span>
-                            <h2 className="text-3xl font-bold text-white mb-3">{event.title}</h2>
-                            <div className="flex items-center gap-4 text-white/90">
-                              <p className="font-medium">{event.date}</p>
-                              <p>•</p>
-                              <p>{event.location}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
+                      <EventSlide {...event} />
                     </CarouselItem>
                   ))}
                 </CarouselContent>
@@ -161,43 +126,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
         
         {/* Event details panel - smaller right side */}
         <div className="lg:col-span-4">
-          <Card className="h-[420px] border-none shadow-lg bg-white p-6 flex flex-col justify-between">
-            <div className="flex flex-col h-full">
-              <h3 className="text-xl font-bold mb-4 break-words">{currentEvent.title}</h3>
-              
-              <div className="space-y-4 mt-4">
-                <div className="flex items-start gap-3">
-                  <Calendar className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700 text-base">{currentEvent.date}</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700 text-base break-words">{currentEvent.location}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-4 mt-auto pt-4">
-              <Button 
-                className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-md py-6"
-                asChild
-              >
-                <Link to={`/evento/${currentEvent.id}`}>
-                  Comprar ingresso
-                </Link>
-              </Button>
-              
-              <Button 
-                variant="outline"
-                className="w-full border-primary/30 text-primary hover:bg-primary/5 py-6"
-                asChild
-              >
-                <Link to={`/evento/${currentEvent.id}`} className="flex items-center justify-center">
-                  Mais detalhes <ChevronRight className="ml-1 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </Card>
+          <EventInfoPanel {...currentEvent} />
         </div>
       </div>
     </div>
