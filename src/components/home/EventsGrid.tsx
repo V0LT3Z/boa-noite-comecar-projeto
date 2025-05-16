@@ -71,7 +71,7 @@ const EventsGrid = ({
   }
 
   // Limita o número de eventos exibidos, a menos que showAllEvents seja true
-  const displayEvents = showAllEvents ? events : events.slice(0, 8);
+  const displayEvents = showAllEvents ? events : events.slice(0, 9);
 
   return (
     <div>
@@ -84,7 +84,7 @@ const EventsGrid = ({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
         {displayEvents.map(event => (
           <Link key={event.id} to={`/evento/${event.id}`}>
             <EventCard
@@ -99,14 +99,14 @@ const EventsGrid = ({
         ))}
       </div>
 
-      {events.length > 8 && (
+      {events.length > 9 && (
         <div className="mt-12 text-center">
           <Button
             onClick={() => setShowAllEvents(!showAllEvents)}
             variant="outline"
             className="px-8 border-primary/30 text-primary hover:bg-primary/5"
           >
-            {showAllEvents ? "Mostrar menos" : `Ver mais ${events.length - 8} eventos`}
+            {showAllEvents ? "Mostrar menos" : `Ver mais ${events.length - 9} eventos`}
           </Button>
         </div>
       )}
