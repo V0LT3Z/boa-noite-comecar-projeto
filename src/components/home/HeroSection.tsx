@@ -89,7 +89,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
               <div className="relative">
                 <Carousel>
                   <div className="relative">
-                    <CarouselContent ref={emblaRef} className="rounded-3xl overflow-hidden">
+                    <CarouselContent ref={emblaRef} className="rounded-3xl border-2 border-primary overflow-hidden">
                       {events.map((event) => (
                         <CarouselItem key={event.id} className="cursor-pointer">
                           <Link to={`/evento/${event.id}`}>
@@ -148,7 +148,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
               </div>
             </div>
           ) : (
-            <div className="relative h-[350px] md:h-[450px] rounded-3xl overflow-hidden">
+            <div className="relative h-[350px] md:h-[450px] rounded-3xl border-2 border-primary overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-80"></div>
               <div className="flex items-center justify-center h-full">
                 <div className="text-center px-6">
