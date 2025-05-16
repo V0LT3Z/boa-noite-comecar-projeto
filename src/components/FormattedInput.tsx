@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface FormattedInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   format: (value: string) => string;
