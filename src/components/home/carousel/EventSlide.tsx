@@ -29,14 +29,20 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
             transform: isActive ? 'scale(1)' : 'scale(1.05)'
           }}
         />
-        {/* Subtle overlay to enhance image visibility without text */}
+        {/* Subtle overlay to enhance image visibility */}
         <div 
           className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-50 mix-blend-multiply" 
         />
         <div 
           className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300"
         />
-        {/* Removed text overlay elements */}
+        
+        {/* Date display at the bottom of the banner */}
+        <div className="absolute bottom-8 left-8 z-20">
+          <div className="bg-primary/80 text-white px-4 py-2 rounded-lg shadow-md">
+            <p className="text-xl font-medium font-gooddog">{date}</p>
+          </div>
+        </div>
       </div>
     </div>
   );
