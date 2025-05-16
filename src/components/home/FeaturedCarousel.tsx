@@ -93,9 +93,9 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
 
   return (
     <div className="relative">
-      {/* External navigation arrows - completely outside the banner */}
+      {/* External navigation arrows - completely outside the banner with more spacing */}
       {events.length > 1 && (
-        <div className="flex justify-between absolute -left-4 -right-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+        <div className="flex justify-between absolute -left-12 -right-12 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
           <button 
             onClick={scrollPrev}
             className="bg-white p-3 rounded-full shadow-md hover:bg-white/90 transition-colors pointer-events-auto"
