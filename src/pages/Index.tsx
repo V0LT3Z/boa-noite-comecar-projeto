@@ -143,16 +143,29 @@ const Index = () => {
   const carouselEvents = filteredEvents.filter(event => event.status !== "cancelled").slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-white to-purple-50">
       <Header />
       
-      <section className="relative bg-soft-gray pt-20 pb-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-bold text-primary mb-3 text-center">
+      <section className="relative bg-gradient-to-r from-purple-100 to-blue-100 pt-24 pb-16 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -left-10 top-10 w-40 h-40 rounded-full bg-purple-300 opacity-20 blur-3xl"></div>
+          <div className="absolute right-10 top-40 w-60 h-60 rounded-full bg-blue-300 opacity-20 blur-3xl"></div>
+          <div className="absolute left-1/2 bottom-0 w-80 h-80 rounded-full bg-pink-300 opacity-10 blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="mb-6 flex justify-center">
+              <img 
+                src="/lovable-uploads/efc2028f-817a-4367-bfd1-0e95034651dc.png" 
+                alt="NOKTA TICKETS" 
+                className="h-24"
+              />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-5">
               Encontre eventos para você
             </h1>
-            <p className="text-muted-foreground text-center mb-6">
+            <p className="text-muted-foreground text-lg mb-8">
               Shows, festivais, workshops e muito mais
             </p>
             <SearchBar 
@@ -160,7 +173,7 @@ const Index = () => {
               defaultQuery={searchQuery}
               suggestions={searchSuggestions}
             />
-            <div className="mt-4">
+            <div className="mt-6">
               <CategoryCarousel 
                 selectedCategory={selectedCategory} 
                 onCategorySelect={setSelectedCategory} 
@@ -170,10 +183,10 @@ const Index = () => {
         </div>
       </section>
 
-      <main className="container mx-auto px-4 space-y-10 mt-10">
+      <main className="container mx-auto px-4 space-y-12 mt-12 mb-20">
         {searchQuery && (
           <div className="text-center">
-            <h2 className="text-xl font-semibold text-primary">
+            <h2 className="text-2xl font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
               {noSearchResults 
                 ? `Não encontramos resultados para "${searchQuery}"` 
                 : `Resultados para "${searchQuery}"`}
@@ -187,39 +200,53 @@ const Index = () => {
         )}
       
         {formattedEvents.length > 0 && !noSearchResults && !loading && carouselEvents.length > 0 && (
-          <Carousel className="relative rounded-2xl overflow-hidden">
-            <CarouselContent>
-              {carouselEvents.map((event) => (
-                <CarouselItem key={event.id} className="cursor-pointer">
-                  <Link to={`/evento/${event.id}`}>
-                    <div className="relative group">
-                      <img 
-                        src={event.image} 
-                        alt={event.title}
-                        className="w-full h-[400px] object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-primary opacity-50 mix-blend-multiply" />
-                      <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/50 to-transparent">
-                        <h2 className="text-4xl font-bold text-white mb-2">{event.title}</h2>
-                        <div className="flex items-center gap-4 text-white/90">
-                          <p>{event.date}</p>
-                          <p>•</p>
-                          <p>{event.location}</p>
+          <div className="relative">
+            <div className="absolute inset-0 -z-10 overflow-hidden">
+              <div className="absolute -right-10 top-1/4 w-80 h-80 rounded-full bg-purple-200 opacity-30 blur-3xl"></div>
+              <div className="absolute -left-10 bottom-1/4 w-80 h-80 rounded-full bg-blue-200 opacity-30 blur-3xl"></div>
+            </div>
+            
+            <Carousel className="relative overflow-hidden rounded-3xl shadow-xl">
+              <CarouselContent>
+                {carouselEvents.map((event) => (
+                  <CarouselItem key={event.id} className="cursor-pointer">
+                    <Link to={`/evento/${event.id}`}>
+                      <div className="relative group h-[450px]">
+                        <img 
+                          src={event.image} 
+                          alt={event.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
+                        <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black/90 to-transparent">
+                          <span className="inline-block px-4 py-1 bg-primary/80 text-white text-sm rounded-full mb-4">
+                            Em destaque
+                          </span>
+                          <h2 className="text-4xl font-bold text-white mb-3">{event.title}</h2>
+                          <div className="flex items-center gap-4 text-white/90">
+                            <p className="font-medium">{event.date}</p>
+                            <p>•</p>
+                            <p>{event.location}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="left-4" />
-            <CarouselNext className="right-4" />
-          </Carousel>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-6 bg-white/90 hover:bg-white" />
+              <CarouselNext className="right-6 bg-white/90 hover:bg-white" />
+            </Carousel>
+          </div>
         )}
 
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-primary">
+        <section className="relative">
+          <div className="absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute right-1/4 top-1/3 w-64 h-64 rounded-full bg-pink-200 opacity-20 blur-3xl"></div>
+          </div>
+          
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
               {hasSearchResults 
                 ? `Eventos encontrados (${filteredEvents.length})`
                 : selectedCategory 
@@ -228,9 +255,9 @@ const Index = () => {
             </h2>
             {selectedCategory && (
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 onClick={() => setSelectedCategory(null)}
-                className="text-primary hover:text-primary/80"
+                className="text-primary hover:text-primary/80 border-primary/30 hover:border-primary/50 hover:bg-primary/5"
               >
                 Ver todos
               </Button>
@@ -238,14 +265,14 @@ const Index = () => {
           </div>
           
           {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-32 w-full rounded-lg" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-48 w-full rounded-xl" />
               ))}
             </div>
           ) : filteredEvents.length > 0 ? (
             <>
-              <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {displayedEvents.map((event) => (
                   <EventCard
                     key={event.id}
@@ -260,10 +287,10 @@ const Index = () => {
                 ))}
               </div>
               {!showAllEvents && filteredEvents.length > 6 && (
-                <div className="flex justify-center mt-6">
+                <div className="flex justify-center mt-10">
                   <Button 
                     onClick={() => setShowAllEvents(true)}
-                    className="bg-gradient-primary text-white hover:opacity-90"
+                    className="text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 px-8 py-6 text-lg rounded-full"
                   >
                     Ver mais eventos
                   </Button>
@@ -271,8 +298,8 @@ const Index = () => {
               )}
             </>
           ) : (
-            <div className="py-10 text-center">
-              <p className="text-muted-foreground">
+            <div className="py-16 text-center bg-white/50 backdrop-blur-sm rounded-3xl shadow-sm border border-purple-100">
+              <p className="text-muted-foreground text-lg">
                 {noSearchResults 
                   ? "Tente ajustar sua busca para encontrar eventos."
                   : "Nenhum evento encontrado para esta categoria."}
