@@ -153,8 +153,8 @@ const Header = () => {
         </div>
       )}
       
-      {/* Gradient separator bar */}
-      <div className="h-1.5 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500"></div>
+      {/* Gradient separator bar - thinner and more vibrant colors */}
+      <div className="h-[3px] bg-gradient-to-r from-[#8B5CF6] via-[#D946EF] to-[#0EA5E9]"></div>
 
       <AuthDialog 
         open={isAuthDialogOpen} 
