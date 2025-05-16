@@ -8,7 +8,6 @@ import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 
 // Imported refactored components
-import HeroSection from "@/components/home/HeroSection";
 import EventsGrid from "@/components/home/EventsGrid";
 import FeaturedCarousel from "@/components/home/FeaturedCarousel";
 
@@ -139,7 +138,6 @@ const Index = () => {
         <div className="pt-8">
           {!loading && featuredEvents.length > 0 && (
             <>
-              {/* Substituímos o HeroSection por um componente mais simples: FeaturedCarousel */}
               <FeaturedCarousel events={featuredEvents} />
               <div className="mt-2 text-xs text-right text-muted-foreground">
                 *Alteração automática a cada 5 segundos
