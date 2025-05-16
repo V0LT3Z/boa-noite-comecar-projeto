@@ -114,7 +114,7 @@ const Index = () => {
     
   // Destacar os 5 primeiros eventos para o carrossel da Hero
   const heroEvents = useMemo(() => {
-    const activeEvents = events.filter(event => event.status !== "cancelled");
+    const activeEvents = events.filter(event => event.status === "active");
     console.log("Eventos para o carrossel:", activeEvents.length);
     
     return activeEvents

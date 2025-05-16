@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Carousel,
@@ -8,6 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import useEmblaCarousel from 'embla-carousel-react';
 
 interface EventItem {
   id: number;
@@ -23,6 +24,33 @@ interface FeaturedCarouselProps {
 }
 
 const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const autoplayTimerRef = useRef<number | null>(null);
+  
+  useEffect(() => {
+    if (!emblaApi) return;
+    
+    const autoplay = () => {
+      if (emblaApi.canScrollNext()) {
+        emblaApi.scrollNext();
+      } else {
+        emblaApi.scrollTo(0);
+      }
+    };
+    
+    if (autoplayTimerRef.current !== null) {
+      window.clearInterval(autoplayTimerRef.current);
+    }
+    
+    autoplayTimerRef.current = window.setInterval(autoplay, 5000);
+    
+    return () => {
+      if (autoplayTimerRef.current !== null) {
+        window.clearInterval(autoplayTimerRef.current);
+      }
+    };
+  }, [emblaApi]);
+
   if (events.length === 0) {
     return null;
   }
@@ -30,7 +58,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   return (
     <div className="relative">
       <Carousel className="relative overflow-hidden rounded-3xl shadow-xl">
-        <CarouselContent>
+        <CarouselContent ref={emblaRef}>
           {events.map((event) => (
             <CarouselItem key={event.id} className="cursor-pointer">
               <Link to={`/evento/${event.id}`}>
