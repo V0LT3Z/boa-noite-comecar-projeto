@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Link } from 'react-router-dom';
+import useEmblaCarousel from 'embla-carousel-react';
 
 interface EventBanner {
   id: number;
@@ -17,6 +18,22 @@ interface HeroSectionProps {
 const HeroSection = ({ events }: HeroSectionProps) => {
   // Se não houver eventos, exibimos um banner genérico
   const hasEvents = events && events.length > 0;
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+
+  // Set up autoplay for the carousel
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const autoplayInterval = setInterval(() => {
+      if (emblaApi.canScrollNext()) {
+        emblaApi.scrollNext();
+      } else {
+        emblaApi.scrollTo(0);
+      }
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(autoplayInterval);
+  }, [emblaApi]);
   
   return (
     <section className="relative bg-gradient-to-r from-purple-100 to-blue-100 pt-16 pb-16 overflow-hidden">
@@ -29,35 +46,44 @@ const HeroSection = ({ events }: HeroSectionProps) => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-5xl mx-auto">
           {hasEvents ? (
-            <Carousel className="relative overflow-hidden rounded-xl shadow-xl">
-              <CarouselContent>
-                {events.map((event) => (
-                  <CarouselItem key={event.id} className="cursor-pointer">
-                    <Link to={`/evento/${event.id}`}>
-                      <div className="relative h-[350px] md:h-[450px] group">
-                        <img 
-                          src={event.image} 
-                          alt={event.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
-                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 bg-gradient-to-t from-black/90 to-transparent">
-                          <span className="inline-block px-4 py-1 bg-primary/80 text-white text-xs md:text-sm rounded-full mb-2 md:mb-4">
-                            Em destaque
-                          </span>
-                          <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">{event.title}</h2>
-                          <p className="text-white/90 text-sm md:text-base">
-                            {event.date}
-                          </p>
+            <div className="relative">
+              <Carousel 
+                className="overflow-hidden rounded-xl shadow-xl"
+                ref={emblaRef}
+              >
+                <CarouselContent>
+                  {events.map((event) => (
+                    <CarouselItem key={event.id} className="cursor-pointer">
+                      <Link to={`/evento/${event.id}`}>
+                        <div className="relative h-[350px] md:h-[450px] group">
+                          <img 
+                            src={event.image} 
+                            alt={event.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
+                          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 bg-gradient-to-t from-black/90 to-transparent">
+                            <span className="inline-block px-4 py-1 bg-primary/80 text-white text-xs md:text-sm rounded-full mb-2 md:mb-4">
+                              Em destaque
+                            </span>
+                            <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">{event.title}</h2>
+                            <p className="text-white/90 text-sm md:text-base">
+                              {event.date}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </Link>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-4 md:left-6 bg-white/90 hover:bg-white" />
-              <CarouselNext className="right-4 md:right-6 bg-white/90 hover:bg-white" />
-            </Carousel>
+                      </Link>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                
+                {/* Navigation arrows positioned outside the carousel */}
+                <div className="flex justify-between absolute -left-12 -right-12 top-1/2 transform -translate-y-1/2 z-20">
+                  <CarouselPrevious className="relative left-0 bg-white/90 hover:bg-white" />
+                  <CarouselNext className="relative right-0 bg-white/90 hover:bg-white" />
+                </div>
+              </Carousel>
+            </div>
           ) : (
             <div className="relative h-[350px] md:h-[450px] rounded-xl overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-80"></div>
