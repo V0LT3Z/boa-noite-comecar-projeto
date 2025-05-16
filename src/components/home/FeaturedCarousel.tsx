@@ -7,7 +7,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import useEmblaCarousel from 'embla-carousel-react';
-import { Calendar, MapPin, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -81,12 +81,32 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
 
   // Current selected event for the info panel
   const currentEvent = events[selectedIndex] || events[0];
+  
+  // Navigation functions
+  const scrollNext = () => {
+    if (emblaApi) emblaApi.scrollNext();
+  };
+  
+  const scrollPrev = () => {
+    if (emblaApi) emblaApi.scrollPrev();
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-soft-purple/10 to-soft-blue/10 p-6 rounded-xl">
-      {/* Carousel section - larger size */}
-      <div className="lg:col-span-8">
-        <div className="relative">
+      {/* Carousel section with external navigation - larger size */}
+      <div className="lg:col-span-8 relative">
+        {/* Left Navigation Arrow */}
+        {events.length > 1 && (
+          <button 
+            onClick={scrollPrev}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/80 p-2 rounded-full shadow-md hover:bg-white transition-colors"
+            aria-label="Evento anterior"
+          >
+            <ArrowLeft className="h-5 w-5 text-primary" />
+          </button>
+        )}
+        
+        <div>
           <Carousel className="relative overflow-hidden rounded-3xl shadow-xl">
             <div className="relative">
               <CarouselContent ref={emblaRef}>
@@ -119,6 +139,17 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
             </div>
           </Carousel>
         </div>
+        
+        {/* Right Navigation Arrow */}
+        {events.length > 1 && (
+          <button 
+            onClick={scrollNext}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/80 p-2 rounded-full shadow-md hover:bg-white transition-colors"
+            aria-label="Próximo evento"
+          >
+            <ArrowRight className="h-5 w-5 text-primary" />
+          </button>
+        )}
       </div>
       
       {/* Event details panel - smaller right side */}
