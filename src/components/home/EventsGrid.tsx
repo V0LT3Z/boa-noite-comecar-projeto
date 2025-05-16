@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -73,15 +74,13 @@ const EventsGrid = ({
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-bold mb-1">
-            {searchQuery ? `Resultados para "${searchQuery}"` : "Eventos em Destaque"}
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            {searchQuery ? `${events.length} ${events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}` : "Os mais procurados"}
-          </p>
-        </div>
+      <div className="mb-8 text-left">
+        <h2 className="text-2xl font-bold">
+          {searchQuery ? `Resultados para "${searchQuery}"` : "Eventos em Destaque"}
+        </h2>
+        <p className="text-muted-foreground text-sm mt-1">
+          {searchQuery ? `${events.length} ${events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}` : "Os mais procurados"}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
