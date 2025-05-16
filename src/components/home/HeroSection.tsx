@@ -1,22 +1,15 @@
 
 import React from 'react';
-import SearchBar from "@/components/SearchBar";
 import CategoryCarousel from "@/components/CategoryCarousel";
 
 interface HeroSectionProps {
-  searchQuery: string;
-  onSearch: (query: string) => void;
   selectedCategory: string | null;
   onCategorySelect: (category: string | null) => void;
-  searchSuggestions: Array<{ id: number; title: string; date: string; location: string }>;
 }
 
 const HeroSection = ({ 
-  searchQuery, 
-  onSearch, 
   selectedCategory, 
-  onCategorySelect,
-  searchSuggestions
+  onCategorySelect
 }: HeroSectionProps) => {
   return (
     <section className="relative bg-gradient-to-r from-purple-100 to-blue-100 pt-24 pb-16 overflow-hidden">
@@ -34,11 +27,6 @@ const HeroSection = ({
           <p className="text-muted-foreground text-lg mb-8">
             Shows, festivais, workshops e muito mais
           </p>
-          <SearchBar 
-            onSearch={onSearch} 
-            defaultQuery={searchQuery}
-            suggestions={searchSuggestions}
-          />
           <div className="mt-6">
             <CategoryCarousel 
               selectedCategory={selectedCategory} 

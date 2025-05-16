@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -135,11 +134,8 @@ const Index = () => {
       <Header />
       
       <HeroSection
-        searchQuery={searchQuery}
-        onSearch={handleSearch}
         selectedCategory={selectedCategory}
         onCategorySelect={setSelectedCategory}
-        searchSuggestions={searchSuggestions}
       />
 
       <main className="container mx-auto px-4 space-y-12 mt-12 mb-20">

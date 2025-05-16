@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import SearchBar from '@/components/SearchBar';
+import { useSearchParams } from 'react-router-dom';
 
 // Import refactored components
 import UserMenu from '@/components/navigation/UserMenu';
@@ -13,6 +15,9 @@ import MobileNav from '@/components/navigation/MobileNav';
 import NavLink from '@/components/navigation/NavLink';
 
 const Header = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get('q') || '';
+  
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { isAuthenticated, user, logout, isProducer } = useAuth();
   const isMobile = useIsMobile();
@@ -27,6 +32,11 @@ const Header = () => {
     }
   };
 
+  const handleSearch = (query: string) => {
+    // Update URL with search query
+    setSearchParams(query ? { q: query } : {});
+  };
+
   const navItems = [
     { label: 'Início', href: '/', icon: Home },
     { label: 'Marketplace', href: '/marketplace', icon: Store },
@@ -35,7 +45,7 @@ const Header = () => {
   const authenticatedItems = [
     { label: 'Meus Ingressos', href: '/meus-ingressos', icon: Bell },
     { label: 'Favoritos', href: '/favoritos', icon: Heart },
-    { label: 'Notificações', href: '/notificacoes', icon: Bell },
+    { label: 'Notificações', href: '/notificações', icon: Bell },
     { label: 'Minha Conta', href: '/minha-conta', icon: UserIcon },
   ];
 
@@ -83,6 +93,16 @@ const Header = () => {
             )}
           </div>
 
+          {/* Barra de pesquisa centralizada */}
+          {location.pathname === '/' && (
+            <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-[40%]">
+              <SearchBar 
+                onSearch={handleSearch}
+                defaultQuery={searchQuery}
+              />
+            </div>
+          )}
+
           <div className="flex items-center gap-4">
             {!isMobile && isAuthenticated && (
               <UserMenu 
@@ -121,6 +141,16 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      {/* Barra de pesquisa para dispositivos móveis */}
+      {isMobile && location.pathname === '/' && (
+        <div className="px-4 py-2">
+          <SearchBar 
+            onSearch={handleSearch}
+            defaultQuery={searchQuery}
+          />
+        </div>
+      )}
 
       <AuthDialog 
         open={isAuthDialogOpen} 
