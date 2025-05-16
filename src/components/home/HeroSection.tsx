@@ -92,7 +92,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-soft-purple to-soft-blue p-6 rounded-xl shadow-md">
       {/* Banner principal - carrossel (ocupando metade do espaço) */}
       <div className="lg:col-span-6">
-        <div className="relative rounded-xl overflow-hidden shadow-lg h-[350px]">
+        <div className="relative rounded-xl overflow-hidden shadow-lg h-[350px] bg-[url('/lovable-uploads/b72c264d-3301-45ed-8022-73fe75fd33d9.png')] bg-cover">
           <Carousel>
             <div className="relative">
               <CarouselContent ref={emblaRef}>
