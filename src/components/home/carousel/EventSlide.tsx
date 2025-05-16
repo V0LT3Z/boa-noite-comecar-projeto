@@ -23,7 +23,7 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
         <img 
           src={image} 
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-500"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="eager"
           style={{
             transition: 'transform 500ms ease-in-out',
