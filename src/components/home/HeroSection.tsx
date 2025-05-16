@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Link } from 'react-router-dom';
 import useEmblaCarousel from 'embla-carousel-react';
-import { CircleDot } from 'lucide-react';
+import { CircleDot, Calendar, MapPin, Info, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface EventBanner {
   id: number;
@@ -73,37 +74,31 @@ const HeroSection = ({ events }: HeroSectionProps) => {
       }
     };
   }, [emblaApi, hasEvents]);
+
+  const currentEvent = hasEvents ? events[selectedIndex] : null;
   
   return (
-    <section className="relative bg-gradient-to-r from-purple-100 to-blue-100 pt-16 pb-16 overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -left-10 top-10 w-40 h-40 rounded-full bg-purple-300 opacity-20 blur-3xl"></div>
-        <div className="absolute right-10 top-40 w-60 h-60 rounded-full bg-blue-300 opacity-20 blur-3xl"></div>
-        <div className="absolute left-1/2 bottom-0 w-80 h-80 rounded-full bg-pink-300 opacity-10 blur-3xl"></div>
-      </div>
-      
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-5xl mx-auto">
-          {hasEvents ? (
-            <div className="relative">
+    <section className="py-10 overflow-hidden">
+      <div className="container mx-auto px-4">
+        {hasEvents ? (
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Banner principal - lado esquerdo */}
+            <div className="w-full lg:w-3/4">
               <div className="relative">
                 <Carousel>
                   <div className="relative">
-                    <CarouselContent ref={emblaRef} className="rounded-3xl border-2 border-primary overflow-hidden">
+                    <CarouselContent ref={emblaRef} className="rounded-xl overflow-hidden">
                       {events.map((event) => (
                         <CarouselItem key={event.id} className="cursor-pointer">
                           <Link to={`/evento/${event.id}`}>
-                            <div className="relative h-[350px] md:h-[450px] group">
+                            <div className="relative h-[300px] md:h-[450px] group">
                               <img 
                                 src={event.image} 
                                 alt={event.title}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
                               <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 bg-gradient-to-t from-black/90 to-transparent">
-                                <span className="inline-block px-4 py-1 bg-primary/80 text-white text-xs md:text-sm rounded-full mb-2 md:mb-4">
-                                  Em destaque
-                                </span>
                                 <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">{event.title}</h2>
                                 <p className="text-white/90 text-sm md:text-base">
                                   {event.date}
@@ -115,7 +110,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
                       ))}
                     </CarouselContent>
                     
-                    <div className="absolute inset-y-0 -left-8 -right-8 flex items-center justify-between z-20 pointer-events-none">
+                    <div className="absolute inset-y-0 -left-5 -right-5 flex items-center justify-between z-20 pointer-events-none">
                       <div className="pointer-events-auto">
                         <CarouselPrevious className="bg-white/90 hover:bg-white border-0 h-10 w-10 md:h-12 md:w-12" />
                       </div>
@@ -147,18 +142,70 @@ const HeroSection = ({ events }: HeroSectionProps) => {
                 ))}
               </div>
             </div>
-          ) : (
-            <div className="relative h-[350px] md:h-[450px] rounded-3xl border-2 border-primary overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-80"></div>
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center px-6">
-                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Descubra os melhores eventos</h2>
-                  <p className="text-white/90 text-lg">Explore shows, festivais e muito mais!</p>
+            
+            {/* Informações do evento - lado direito */}
+            {currentEvent && (
+              <div className="w-full lg:w-1/4 bg-white rounded-xl shadow-md p-6">
+                <div className="flex flex-col h-full justify-between">
+                  <div>
+                    <div className="mb-6">
+                      <h3 className="text-2xl font-bold mb-2">{currentEvent.title}</h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        A incrível produção chega para uma noite épica de shows!
+                      </p>
+                    
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <Calendar className="h-5 w-5 text-primary" />
+                          <span className="text-gray-700">{currentEvent.date}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-5 w-5 text-primary" />
+                          <span className="text-gray-700">Espaço de Eventos</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Info className="h-5 w-5 text-primary" />
+                          <span className="text-gray-700">Classificação: 18 anos</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90"
+                      asChild
+                    >
+                      <Link to={`/evento/${currentEvent.id}`}>
+                        Comprar ingresso
+                      </Link>
+                    </Button>
+                    
+                    <Button 
+                      variant="outline"
+                      className="w-full border-primary text-primary hover:bg-primary/10"
+                      asChild
+                    >
+                      <Link to={`/evento/${currentEvent.id}`} className="flex items-center justify-center">
+                        Saiba mais <ChevronRight className="ml-1 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </div>
+            )}
+          </div>
+        ) : (
+          <div className="relative h-[350px] md:h-[450px] rounded-xl border-2 border-primary overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-80"></div>
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center px-6">
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Descubra os melhores eventos</h2>
+                <p className="text-white/90 text-lg">Explore shows, festivais e muito mais!</p>
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );

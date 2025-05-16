@@ -136,9 +136,25 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Empty main section with just minimal spacing */}
-      <main className="container mx-auto px-4">
-        {/* Header only - all other content removed */}
+      <main className="container mx-auto">
+        {/* Hero section com banner principal */}
+        {!loading && <HeroSection events={heroEvents} />}
+        
+        {/* Featured Events section - Eventos em destaque */}
+        {!loading && heroEvents.length > 0 && (
+          <section className="py-12 px-4">
+            <div className="mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold">Eventos em Destaque</h2>
+              <p className="text-gray-600 mt-1">Os eventos mais populares para você curtir</p>
+            </div>
+            <EventsGrid 
+              events={filteredEvents.slice(0, 6)} 
+              loading={loading} 
+              showAllEvents={showAllEvents}
+              toggleShowAll={() => setShowAllEvents(!showAllEvents)}
+            />
+          </section>
+        )}
       </main>
     </div>
   )
