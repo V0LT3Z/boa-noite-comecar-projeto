@@ -34,7 +34,7 @@ const EventsGrid = ({
   if (loading) {
     return (
       <div>
-        <div className="h-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 w-full my-8" />
+        <div className="h-1.5 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 rounded-full shadow-lg w-full my-12 opacity-90"></div>
         <h2 className="text-2xl font-bold mb-6">Eventos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {[...Array(8)].map((_, index) => (
@@ -53,7 +53,7 @@ const EventsGrid = ({
   if (events.length === 0) {
     return (
       <div>
-        <div className="h-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 w-full my-8" />
+        <div className="h-1.5 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 rounded-full shadow-lg w-full my-12 opacity-90"></div>
         <div className="text-center py-12">
           {searchQuery ? (
             <>
@@ -80,7 +80,7 @@ const EventsGrid = ({
 
   return (
     <div>
-      <div className="h-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 w-full my-8" />
+      <div className="h-1.5 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 rounded-full shadow-lg w-full my-12 opacity-90"></div>
       
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
         <h2 className="text-2xl font-bold mb-2 md:mb-0">
