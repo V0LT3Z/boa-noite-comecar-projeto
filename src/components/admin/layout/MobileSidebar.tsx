@@ -26,7 +26,7 @@ export const MobileSidebar = ({ navigationItems, currentPath, onLogout }: Mobile
           <div className="h-full flex flex-col">
             <div className="h-16 flex items-center px-4 border-b">
               <span className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                EventHub Admin
+                NOKTA TICKETS Admin
               </span>
             </div>
             <div className="flex-1 flex flex-col p-3 space-y-1 overflow-y-auto">
@@ -64,7 +64,7 @@ export const MobileSidebar = ({ navigationItems, currentPath, onLogout }: Mobile
           </div>
         </SheetContent>
       </Sheet>
-      <span className="text-lg font-semibold md:hidden">EventHub Admin</span>
+      <span className="text-lg font-semibold md:hidden">NOKTA TICKETS Admin</span>
     </div>
   );
 };

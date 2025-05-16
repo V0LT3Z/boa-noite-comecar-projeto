@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { useSearchParams, Link } from "react-router-dom"
 import Header from "@/components/Header"
@@ -143,9 +142,10 @@ const Index = () => {
   const carouselEvents = filteredEvents.filter(event => event.status !== "cancelled").slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-purple-50">
+    <div className="min-h-screen bg-white">
       <Header />
       
+      {/* Área de busca com gradiente */}
       <section className="relative bg-gradient-to-r from-purple-100 to-blue-100 pt-24 pb-16 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -left-10 top-10 w-40 h-40 rounded-full bg-purple-300 opacity-20 blur-3xl"></div>
@@ -183,6 +183,7 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Conteúdo principal com fundo claro */}
       <main className="container mx-auto px-4 space-y-12 mt-12 mb-20">
         {searchQuery && (
           <div className="text-center">
@@ -201,11 +202,6 @@ const Index = () => {
       
         {formattedEvents.length > 0 && !noSearchResults && !loading && carouselEvents.length > 0 && (
           <div className="relative">
-            <div className="absolute inset-0 -z-10 overflow-hidden">
-              <div className="absolute -right-10 top-1/4 w-80 h-80 rounded-full bg-purple-200 opacity-30 blur-3xl"></div>
-              <div className="absolute -left-10 bottom-1/4 w-80 h-80 rounded-full bg-blue-200 opacity-30 blur-3xl"></div>
-            </div>
-            
             <Carousel className="relative overflow-hidden rounded-3xl shadow-xl">
               <CarouselContent>
                 {carouselEvents.map((event) => (
@@ -241,10 +237,6 @@ const Index = () => {
         )}
 
         <section className="relative">
-          <div className="absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute right-1/4 top-1/3 w-64 h-64 rounded-full bg-pink-200 opacity-20 blur-3xl"></div>
-          </div>
-          
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
               {hasSearchResults 
@@ -298,7 +290,7 @@ const Index = () => {
               )}
             </>
           ) : (
-            <div className="py-16 text-center bg-white/50 backdrop-blur-sm rounded-3xl shadow-sm border border-purple-100">
+            <div className="py-16 text-center bg-white rounded-3xl shadow-sm border border-purple-100">
               <p className="text-muted-foreground text-lg">
                 {noSearchResults 
                   ? "Tente ajustar sua busca para encontrar eventos."

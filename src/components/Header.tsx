@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -221,7 +222,7 @@ const Header = () => {
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2">
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-bold text-xl">
-                EventHub
+                NOKTA TICKETS
               </span>
             </Link>
             
