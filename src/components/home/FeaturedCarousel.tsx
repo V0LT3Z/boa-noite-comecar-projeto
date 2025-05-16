@@ -87,18 +87,12 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   const scrollNext = () => {
     if (emblaApi) {
       emblaApi.scrollNext();
-      const nextIndex = (selectedIndex + 1) % events.length;
-      setSelectedIndex(nextIndex);
-      console.log("Scrolling to next slide, new index:", nextIndex);
     }
   };
   
   const scrollPrev = () => {
     if (emblaApi) {
       emblaApi.scrollPrev();
-      const prevIndex = selectedIndex === 0 ? events.length - 1 : selectedIndex - 1;
-      setSelectedIndex(prevIndex);
-      console.log("Scrolling to previous slide, new index:", prevIndex);
     }
   };
 

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, ChevronRight } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface EventInfoPanelProps {
   id: number;
@@ -15,7 +16,7 @@ interface EventInfoPanelProps {
 const EventInfoPanel = ({ id, title, date, location }: EventInfoPanelProps) => {
   return (
     <Card className="h-[420px] border-none shadow-lg bg-white p-6 flex flex-col">
-      <div className="flex flex-col flex-grow overflow-auto mb-4">
+      <ScrollArea className="flex-grow pr-4 mb-4">
         <h3 className="text-xl font-bold mb-4 break-words">{title}</h3>
         
         <div className="space-y-4 mt-4">
@@ -28,7 +29,7 @@ const EventInfoPanel = ({ id, title, date, location }: EventInfoPanelProps) => {
             <span className="text-gray-700 text-base break-words">{location}</span>
           </div>
         </div>
-      </div>
+      </ScrollArea>
       
       <div className="space-y-4 mt-auto flex-shrink-0">
         <Button 
