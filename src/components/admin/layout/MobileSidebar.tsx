@@ -1,10 +1,13 @@
 
-import { Link } from 'react-router-dom';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Home, LogOut } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NavigationItem } from '@/types/admin';
+import { Link } from 'react-router-dom';
+import Logo from './Logo';
+import SidebarFooter from './SidebarFooter';
 
 interface MobileSidebarProps {
   navigationItems: NavigationItem[];
@@ -25,9 +28,7 @@ export const MobileSidebar = ({ navigationItems, currentPath, onLogout }: Mobile
         <SheetContent side="left" className="w-64 p-0">
           <div className="h-full flex flex-col">
             <div className="h-16 flex items-center px-4 border-b">
-              <span className="text-lg font-gooddog bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                NOKTA TICKETS Admin
-              </span>
+              <Logo />
             </div>
             <div className="flex-1 flex flex-col p-3 space-y-1 overflow-y-auto">
               {navigationItems.map((item) => (
@@ -45,22 +46,7 @@ export const MobileSidebar = ({ navigationItems, currentPath, onLogout }: Mobile
                 </Link>
               ))}
             </div>
-            <div className="p-3 border-t">
-              <Link to="/">
-                <Button variant="outline" className="w-full justify-start gap-3">
-                  <Home size={18} />
-                  <span>Voltar ao site</span>
-                </Button>
-              </Link>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start gap-3 mt-2 text-destructive hover:text-destructive"
-                onClick={onLogout}
-              >
-                <LogOut size={18} />
-                <span>Sair</span>
-              </Button>
-            </div>
+            <SidebarFooter onLogout={onLogout} />
           </div>
         </SheetContent>
       </Sheet>
@@ -68,3 +54,5 @@ export const MobileSidebar = ({ navigationItems, currentPath, onLogout }: Mobile
     </div>
   );
 };
+
+export default MobileSidebar;
