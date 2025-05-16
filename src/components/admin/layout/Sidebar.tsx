@@ -16,7 +16,7 @@ export const Sidebar = ({ navigationItems, currentPath, onLogout }: SidebarProps
     <div className="h-full flex flex-col border-r bg-card">
       <div className="h-16 flex items-center px-4 border-b">
         <Link to="/admin" className="flex items-center">
-          <span className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <span className="text-lg font-gooddog bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             NOKTA TICKETS Admin
           </span>
         </Link>

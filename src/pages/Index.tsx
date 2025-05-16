@@ -155,13 +155,6 @@ const Index = () => {
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="mb-6 flex justify-center">
-              <img 
-                src="/lovable-uploads/efc2028f-817a-4367-bfd1-0e95034651dc.png" 
-                alt="NOKTA TICKETS" 
-                className="h-24"
-              />
-            </div>
             <h1 className="text-4xl md:text-5xl font-bold text-primary mb-5">
               Encontre eventos para você
             </h1>
