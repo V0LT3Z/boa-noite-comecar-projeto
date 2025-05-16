@@ -50,7 +50,7 @@ export const MobileSidebar = ({ navigationItems, currentPath, onLogout }: Mobile
           </div>
         </SheetContent>
       </Sheet>
-      <span className="text-lg font-gooddog md:hidden">NOKTA TICKETS Admin</span>
+      <span className="text-lg font-gooddog font-bold md:hidden">NOKTA TICKETS Admin</span>
     </div>
   );
 };
