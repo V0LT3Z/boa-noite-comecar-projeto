@@ -5,8 +5,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import useEmblaCarousel from 'embla-carousel-react';
 import { Calendar, MapPin, ChevronRight, CircleDot } from 'lucide-react';
@@ -69,8 +67,6 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     // Set new interval for auto-sliding
     autoplayTimerRef.current = window.setInterval(autoplay, 5000);
     
-    console.log("Carousel autoplay set up");
-    
     // Cleanup function
     return () => {
       if (autoplayTimerRef.current !== null) {
@@ -126,11 +122,6 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              
-              <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between z-10 px-4">
-                <CarouselPrevious className="left-6 bg-white/90 hover:bg-white" />
-                <CarouselNext className="right-6 bg-white/90 hover:bg-white" />
-              </div>
               
               {/* Indicator dots */}
               {events.length > 1 && (

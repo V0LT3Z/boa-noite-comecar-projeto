@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -129,12 +128,7 @@ const Index = () => {
         {/* Hero section com banner principal e informações */}
         <div className="pt-8">
           {!loading && featuredEvents.length > 0 && (
-            <>
-              <FeaturedCarousel events={featuredEvents} />
-              <div className="mt-2 text-xs text-right text-muted-foreground">
-                *Alteração automática a cada 5 segundos
-              </div>
-            </>
+            <FeaturedCarousel events={featuredEvents} />
           )}
         </div>
         
