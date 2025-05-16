@@ -7,7 +7,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import useEmblaCarousel from 'embla-carousel-react';
-import { Calendar, MapPin, ChevronRight, CircleDot } from 'lucide-react';
+import { Calendar, MapPin, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -75,12 +75,6 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     };
   }, [emblaApi, events.length]);
 
-  const scrollTo = (index: number) => {
-    if (emblaApi) {
-      emblaApi.scrollTo(index);
-    }
-  };
-
   if (events.length === 0) {
     return null;
   }
@@ -122,28 +116,6 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              
-              {/* Indicator dots */}
-              {events.length > 1 && (
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
-                  {events.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => scrollTo(index)}
-                      className="focus:outline-none"
-                      aria-label={`Ir para slide ${index + 1}`}
-                    >
-                      <CircleDot 
-                        className={`h-3 w-3 ${
-                          selectedIndex === index 
-                            ? 'text-white fill-white' 
-                            : 'text-white/40'
-                        }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </Carousel>
         </div>
