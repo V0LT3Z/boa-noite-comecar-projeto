@@ -93,9 +93,9 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
 
   return (
     <div className="relative mx-auto px-8 md:px-16 lg:px-20">
-      {/* External navigation arrows - increased spacing from content with absolute positioning */}
+      {/* External navigation arrows - aumentei significativamente a distância */}
       {events.length > 1 && (
-        <div className="flex justify-between absolute -left-20 -right-20 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+        <div className="flex justify-between absolute -left-32 -right-32 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
           <button 
             onClick={scrollPrev}
             className="bg-white p-3 rounded-full shadow-md hover:bg-white/90 transition-colors pointer-events-auto"
