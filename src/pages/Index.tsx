@@ -126,30 +126,32 @@ const Index = () => {
   }, [events]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-soft-gray to-soft-purple/20">
-      <Header />
-      
-      <main className="container mx-auto px-4 pb-12">
-        {/* Hero section com banner principal e informações */}
-        <div className="pt-8">
-          {!loading && <HeroSection events={heroEvents} />}
-        </div>
+    <div className="min-h-screen bg-[url('/lovable-uploads/b72c264d-3301-45ed-8022-73fe75fd33d9.png')] bg-cover bg-fixed bg-opacity-20 bg-blend-overlay">
+      <div className="min-h-screen bg-gradient-to-br from-white/90 via-white/80 to-soft-purple/20">
+        <Header />
         
-        {/* Lista de eventos */}
-        {!loading && (
-          <section className="mt-16">
-            <EventsGrid 
-              events={filteredEvents} 
-              loading={loading} 
-              showAllEvents={showAllEvents}
-              setShowAllEvents={setShowAllEvents}
-              searchQuery={searchQuery}
-            />
-          </section>
-        )}
-      </main>
+        <main className="container mx-auto px-4 pb-12">
+          {/* Hero section com banner principal e informações */}
+          <div className="pt-8">
+            {!loading && <HeroSection events={heroEvents} />}
+          </div>
+          
+          {/* Lista de eventos */}
+          {!loading && (
+            <section className="mt-16">
+              <EventsGrid 
+                events={filteredEvents} 
+                loading={loading} 
+                showAllEvents={showAllEvents}
+                setShowAllEvents={setShowAllEvents}
+                searchQuery={searchQuery}
+              />
+            </section>
+          )}
+        </main>
+      </div>
     </div>
-  )
+  );
 }
 
 export default Index;
