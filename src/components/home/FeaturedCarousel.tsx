@@ -119,11 +119,11 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
             <Carousel className="relative overflow-hidden rounded-3xl shadow-xl">
               <div className="relative">
                 <CarouselContent ref={emblaRef}>
-                  {events.map((event) => (
+                  {events.map((event, index) => (
                     <CarouselItem key={event.id} className="cursor-pointer">
                       <EventSlide 
                         {...event} 
-                        isActive={events[selectedIndex].id === event.id}
+                        isActive={index === selectedIndex}
                       />
                     </CarouselItem>
                   ))}

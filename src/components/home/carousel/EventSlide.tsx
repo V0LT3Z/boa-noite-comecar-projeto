@@ -12,12 +12,9 @@ interface EventSlideProps {
 }
 
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
-  if (!isActive) {
-    return null; // Don't render if not active
-  }
-  
+  // Instead of not rendering, we'll render but with conditional visibility
   return (
-    <div className="relative group h-[420px]">
+    <div className={`relative group h-[420px] ${isActive ? 'block' : 'hidden'}`}>
       <img 
         src={image} 
         alt={title}
