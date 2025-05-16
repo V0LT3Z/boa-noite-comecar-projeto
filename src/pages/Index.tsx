@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -137,16 +136,9 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Header />
       
-      <HeroSection events={heroEvents} />
-
-      <main className="container mx-auto px-4 space-y-12 mt-12 mb-20">
-        <EventsGrid
-          loading={loading}
-          events={filteredEvents}
-          showAllEvents={showAllEvents}
-          setShowAllEvents={setShowAllEvents}
-          searchQuery={searchQuery}
-        />
+      {/* Empty main section with just minimal spacing */}
+      <main className="container mx-auto px-4">
+        {/* Header only - all other content removed */}
       </main>
     </div>
   )
