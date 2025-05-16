@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Link } from 'react-router-dom';
@@ -21,7 +20,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
   const hasEvents = events && events.length > 0;
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const intervalRef = useRef<number | null>(null);
+  const autoplayTimerRef = useRef<number | null>(null);
   
   const scrollTo = (index: number) => {
     if (emblaApi) {
@@ -53,24 +52,23 @@ const HeroSection = ({ events }: HeroSectionProps) => {
       if (emblaApi.canScrollNext()) {
         emblaApi.scrollNext();
       } else {
-        emblaApi.scrollTo(0);
+        emblaApi.scrollTo(0); // Loop back to the first slide
       }
     };
     
-    // Clear any existing interval
-    if (intervalRef.current) {
-      window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    // Clear any existing interval when component updates
+    if (autoplayTimerRef.current !== null) {
+      window.clearInterval(autoplayTimerRef.current);
     }
     
-    // Set up new interval with window.setInterval
-    intervalRef.current = window.setInterval(autoplay, 5000);
+    // Set up new interval for auto-sliding every 5 seconds
+    autoplayTimerRef.current = window.setInterval(autoplay, 5000);
     
-    // Cleanup function
+    // Cleanup function to clear interval when component unmounts
     return () => {
-      if (intervalRef.current) {
-        window.clearInterval(intervalRef.current);
-        intervalRef.current = null;
+      if (autoplayTimerRef.current !== null) {
+        window.clearInterval(autoplayTimerRef.current);
+        autoplayTimerRef.current = null;
       }
     };
   }, [emblaApi, hasEvents]);
