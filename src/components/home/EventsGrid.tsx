@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import EventCard from '@/components/EventCard';
-import { Separator } from '@/components/ui/separator';
 
 interface EventItem {
   id: number;
@@ -34,14 +33,13 @@ const EventsGrid = ({
   if (loading) {
     return (
       <div>
-        <h2 className="text-2xl font-bold mb-6">Eventos</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {[...Array(8)].map((_, index) => (
-            <div key={index} className="flex flex-col">
-              <Skeleton className="w-full h-48 rounded-lg" />
-              <Skeleton className="w-3/4 h-4 mt-4" />
-              <Skeleton className="w-1/2 h-4 mt-2" />
-            </div>
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-8 w-32" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, index) => (
+            <Skeleton key={index} className="h-48 w-full rounded-lg" />
           ))}
         </div>
       </div>
@@ -51,24 +49,22 @@ const EventsGrid = ({
   // Se não há eventos para mostrar
   if (events.length === 0) {
     return (
-      <div>
-        <div className="text-center py-12">
-          {searchQuery ? (
-            <>
-              <h2 className="text-2xl font-semibold mb-2">Nenhum evento encontrado</h2>
-              <p className="text-muted-foreground mb-6">
-                Não encontramos eventos relacionados a "{searchQuery}"
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 className="text-2xl font-semibold mb-2">Nenhum evento disponível</h2>
-              <p className="text-muted-foreground mb-6">
-                No momento não há eventos cadastrados.
-              </p>
-            </>
-          )}
-        </div>
+      <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-100">
+        {searchQuery ? (
+          <>
+            <h2 className="text-2xl font-semibold mb-2">Nenhum evento encontrado</h2>
+            <p className="text-muted-foreground mb-6">
+              Não encontramos eventos relacionados a "{searchQuery}"
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className="text-2xl font-semibold mb-2">Nenhum evento disponível</h2>
+            <p className="text-muted-foreground mb-6">
+              No momento não há eventos cadastrados.
+            </p>
+          </>
+        )}
       </div>
     );
   }
@@ -78,16 +74,18 @@ const EventsGrid = ({
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
-        <h2 className="text-2xl font-bold mb-2 md:mb-0">
-          {searchQuery ? `Resultados para "${searchQuery}"` : "Todos os eventos"}
-        </h2>
-        <div className="flex gap-4">
-          {/* Outros filtros podem ser adicionados aqui */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8">
+        <div>
+          <h2 className="text-2xl font-bold mb-1">
+            {searchQuery ? `Resultados para "${searchQuery}"` : "Próximos Eventos"}
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            {events.length} {events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {displayEvents.map(event => (
           <Link key={event.id} to={`/evento/${event.id}`}>
             <EventCard
@@ -103,11 +101,11 @@ const EventsGrid = ({
       </div>
 
       {events.length > 8 && (
-        <div className="mt-8 text-center">
+        <div className="mt-12 text-center">
           <Button
             onClick={() => setShowAllEvents(!showAllEvents)}
             variant="outline"
-            className="px-8"
+            className="px-8 border-primary/30 text-primary hover:bg-primary/5"
           >
             {showAllEvents ? "Mostrar menos" : `Ver mais ${events.length - 8} eventos`}
           </Button>

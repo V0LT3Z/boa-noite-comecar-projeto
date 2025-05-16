@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 
 // Imported refactored components
 import HeroSection from "@/components/home/HeroSection";
-import FeaturedCarousel from "@/components/home/FeaturedCarousel";
 import EventsGrid from "@/components/home/EventsGrid";
 
 const Index = () => {
@@ -124,32 +123,21 @@ const Index = () => {
       image: event.image
     }));
 
-  const searchSuggestions = useMemo(() => {
-    return formattedEvents.map(event => ({
-      id: event.id,
-      title: event.title,
-      date: event.date,
-      location: event.location
-    }));
-  }, [formattedEvents]);
-
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container mx-auto">
-        {/* Hero section com banner principal */}
-        {!loading && <HeroSection events={heroEvents} />}
+      <main className="container mx-auto px-4 pb-12">
+        {/* Hero section com banner principal e informações */}
+        <div className="pt-8">
+          {!loading && <HeroSection events={heroEvents} />}
+        </div>
         
-        {/* Featured Events section - Eventos em destaque */}
-        {!loading && heroEvents.length > 0 && (
-          <section className="py-12 px-4">
-            <div className="mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold">Eventos em Destaque</h2>
-              <p className="text-gray-600 mt-1">Os eventos mais populares para você curtir</p>
-            </div>
+        {/* Lista de eventos */}
+        {!loading && (
+          <section className="mt-16">
             <EventsGrid 
-              events={filteredEvents.slice(0, 6)} 
+              events={filteredEvents} 
               loading={loading} 
               showAllEvents={showAllEvents}
               setShowAllEvents={setShowAllEvents}

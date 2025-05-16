@@ -3,8 +3,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Link } from 'react-router-dom';
 import useEmblaCarousel from 'embla-carousel-react';
-import { CircleDot, Calendar, MapPin, Info, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, Info, ChevronRight, CircleDot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 interface EventBanner {
   id: number;
@@ -18,7 +19,6 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ events }: HeroSectionProps) => {
-  // Se não houver eventos, exibimos um banner genérico
   const hasEvents = events && events.length > 0;
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -77,137 +77,131 @@ const HeroSection = ({ events }: HeroSectionProps) => {
 
   const currentEvent = hasEvents ? events[selectedIndex] : null;
   
+  if (!hasEvents) {
+    return (
+      <div className="bg-gradient-to-r from-primary to-secondary rounded-xl overflow-hidden h-[300px] flex items-center justify-center">
+        <div className="text-center text-white px-4">
+          <h2 className="text-3xl font-bold mb-2">Descubra eventos incríveis</h2>
+          <p>Os melhores shows, festivais e experiências culturais</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <section className="py-10 overflow-hidden">
-      <div className="container mx-auto px-4">
-        {hasEvents ? (
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Banner principal - lado esquerdo */}
-            <div className="w-full lg:w-3/4">
-              <div className="relative">
-                <Carousel>
-                  <div className="relative">
-                    <CarouselContent ref={emblaRef} className="rounded-xl overflow-hidden">
-                      {events.map((event) => (
-                        <CarouselItem key={event.id} className="cursor-pointer">
-                          <Link to={`/evento/${event.id}`}>
-                            <div className="relative h-[300px] md:h-[450px] group">
-                              <img 
-                                src={event.image} 
-                                alt={event.title}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
-                              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 bg-gradient-to-t from-black/90 to-transparent">
-                                <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">{event.title}</h2>
-                                <p className="text-white/90 text-sm md:text-base">
-                                  {event.date}
-                                </p>
-                              </div>
-                            </div>
-                          </Link>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    
-                    <div className="absolute inset-y-0 -left-5 -right-5 flex items-center justify-between z-20 pointer-events-none">
-                      <div className="pointer-events-auto">
-                        <CarouselPrevious className="bg-white/90 hover:bg-white border-0 h-10 w-10 md:h-12 md:w-12" />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Banner principal - carrossel (ocupando 2/3 do espaço) */}
+      <div className="lg:col-span-2">
+        <div className="relative rounded-xl overflow-hidden shadow-lg">
+          <Carousel>
+            <div className="relative">
+              <CarouselContent ref={emblaRef}>
+                {events.map((event) => (
+                  <CarouselItem key={event.id} className="cursor-pointer">
+                    <Link to={`/evento/${event.id}`}>
+                      <div className="relative h-[300px] md:h-[400px] group">
+                        <img 
+                          src={event.image} 
+                          alt={event.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80" />
+                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{event.title}</h2>
+                          <p className="text-white/90 text-sm md:text-base">
+                            {event.date}
+                          </p>
+                        </div>
                       </div>
-                      <div className="pointer-events-auto">
-                        <CarouselNext className="bg-white/90 hover:bg-white border-0 h-10 w-10 md:h-12 md:w-12" />
-                      </div>
-                    </div>
-                  </div>
-                </Carousel>
-              </div>
-              
-              {/* Indicadores de pontos para acompanhar o slide atual */}
-              <div className="flex justify-center gap-2 mt-4">
-                {events.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => scrollTo(index)}
-                    className="focus:outline-none"
-                    aria-label={`Go to slide ${index + 1}`}
-                  >
-                    <CircleDot 
-                      className={`h-3 w-3 transition-all ${
-                        selectedIndex === index 
-                          ? 'text-primary fill-primary' 
-                          : 'text-gray-400'
-                      }`}
-                    />
-                  </button>
+                    </Link>
+                  </CarouselItem>
                 ))}
+              </CarouselContent>
+              
+              <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between z-10 px-4">
+                <CarouselPrevious className="bg-white/90 hover:bg-white border-0 h-10 w-10" />
+                <CarouselNext className="bg-white/90 hover:bg-white border-0 h-10 w-10" />
               </div>
             </div>
-            
-            {/* Informações do evento - lado direito */}
-            {currentEvent && (
-              <div className="w-full lg:w-1/4 bg-white rounded-xl shadow-md p-6">
-                <div className="flex flex-col h-full justify-between">
-                  <div>
-                    <div className="mb-6">
-                      <h3 className="text-2xl font-bold mb-2">{currentEvent.title}</h3>
-                      <p className="text-sm text-gray-600 mb-4">
-                        A incrível produção chega para uma noite épica de shows!
-                      </p>
-                    
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                          <Calendar className="h-5 w-5 text-primary" />
-                          <span className="text-gray-700">{currentEvent.date}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <MapPin className="h-5 w-5 text-primary" />
-                          <span className="text-gray-700">Espaço de Eventos</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Info className="h-5 w-5 text-primary" />
-                          <span className="text-gray-700">Classificação: 18 anos</span>
-                        </div>
-                      </div>
-                    </div>
+          </Carousel>
+          
+          {/* Indicadores de slide */}
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
+            {events.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => scrollTo(index)}
+                className="focus:outline-none"
+                aria-label={`Ir para slide ${index + 1}`}
+              >
+                <CircleDot 
+                  className={`h-2 w-2 ${
+                    selectedIndex === index 
+                      ? 'text-white fill-white' 
+                      : 'text-white/40'
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      {/* Detalhes do evento - (ocupando 1/3 do espaço) */}
+      {currentEvent && (
+        <div className="lg:col-span-1">
+          <Card className="h-full border-none shadow-lg bg-white p-6 flex flex-col justify-between">
+            <div>
+              <div className="mb-6">
+                <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
+                  Evento em destaque
+                </span>
+                <h3 className="text-xl font-bold mb-4">{currentEvent.title}</h3>
+                <p className="text-gray-600 text-sm mb-6">
+                  Uma experiência imperdível que você precisa conferir!
+                </p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-sm">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <span className="text-gray-700">{currentEvent.date}</span>
                   </div>
-                  
-                  <div className="space-y-3">
-                    <Button 
-                      className="w-full bg-primary hover:bg-primary/90"
-                      asChild
-                    >
-                      <Link to={`/evento/${currentEvent.id}`}>
-                        Comprar ingresso
-                      </Link>
-                    </Button>
-                    
-                    <Button 
-                      variant="outline"
-                      className="w-full border-primary text-primary hover:bg-primary/10"
-                      asChild
-                    >
-                      <Link to={`/evento/${currentEvent.id}`} className="flex items-center justify-center">
-                        Saiba mais <ChevronRight className="ml-1 h-4 w-4" />
-                      </Link>
-                    </Button>
+                  <div className="flex items-center gap-3 text-sm">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <span className="text-gray-700">Local do evento</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <Info className="h-4 w-4 text-primary" />
+                    <span className="text-gray-700">Classificação: Livre</span>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="relative h-[350px] md:h-[450px] rounded-xl border-2 border-primary overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-80"></div>
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center px-6">
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Descubra os melhores eventos</h2>
-                <p className="text-white/90 text-lg">Explore shows, festivais e muito mais!</p>
-              </div>
             </div>
-          </div>
-        )}
-      </div>
-    </section>
+            
+            <div className="space-y-3 mt-6">
+              <Button 
+                className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-md"
+                asChild
+              >
+                <Link to={`/evento/${currentEvent.id}`}>
+                  Comprar ingresso
+                </Link>
+              </Button>
+              
+              <Button 
+                variant="outline"
+                className="w-full border-primary/30 text-primary hover:bg-primary/5"
+                asChild
+              >
+                <Link to={`/evento/${currentEvent.id}`} className="flex items-center justify-center">
+                  Mais detalhes <ChevronRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+    </div>
   );
 };
 
