@@ -33,7 +33,7 @@ const EventInfoPanel = ({ id, title, date, location }: EventInfoPanelProps) => {
       
       <div className="space-y-4 mt-auto flex-shrink-0">
         <Button 
-          className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-md py-6"
+          className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-md py-6 font-gooddog"
           asChild
         >
           <Link to={`/evento/${id}`}>
@@ -43,7 +43,7 @@ const EventInfoPanel = ({ id, title, date, location }: EventInfoPanelProps) => {
         
         <Button 
           variant="outline"
-          className="w-full border-primary/30 text-primary hover:bg-primary/5 py-6"
+          className="w-full border-primary/30 text-primary hover:bg-primary/5 py-6 font-gooddog"
           asChild
         >
           <Link to={`/evento/${id}`} className="flex items-center justify-center">

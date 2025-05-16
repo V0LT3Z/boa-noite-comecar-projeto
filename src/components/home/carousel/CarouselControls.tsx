@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface CarouselControlsProps {
   onPrev: () => void;
@@ -11,39 +12,27 @@ interface CarouselControlsProps {
 const CarouselControls = ({ onPrev, onNext, eventsLength }: CarouselControlsProps) => {
   if (eventsLength <= 1) return null;
   
-  const handlePrevClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Prev button clicked");
-    onPrev();
-  };
-
-  const handleNextClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Next button clicked");
-    onNext();
-  };
-  
   return (
-    <div className="flex justify-between absolute -left-4 -right-4 top-1/2 -translate-y-1/2 z-30 pointer-events-none">
-      <button 
-        onClick={handlePrevClick}
-        className="bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 transition-colors pointer-events-auto focus:outline-none focus:ring-2 focus:ring-primary/50"
-        aria-label="Evento anterior"
-        type="button"
+    <div className="absolute inset-y-0 left-0 right-0 z-10 pointer-events-none flex items-center justify-between">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-10 w-10 rounded-full bg-white/80 shadow-md text-primary hover:bg-white ml-4 pointer-events-auto"
+        onClick={onPrev}
       >
-        <ArrowLeft className="h-5 w-5 text-primary" />
-      </button>
+        <ChevronLeft className="h-6 w-6" />
+        <span className="sr-only font-gooddog">Anterior</span>
+      </Button>
       
-      <button 
-        onClick={handleNextClick}
-        className="bg-white p-3 rounded-full shadow-lg hover:bg-gray-100 transition-colors pointer-events-auto focus:outline-none focus:ring-2 focus:ring-primary/50"
-        aria-label="Próximo evento"
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-10 w-10 rounded-full bg-white/80 shadow-md text-primary hover:bg-white mr-4 pointer-events-auto"
+        onClick={onNext}
       >
-        <ArrowRight className="h-5 w-5 text-primary" />
-      </button>
+        <ChevronRight className="h-6 w-6" />
+        <span className="sr-only font-gooddog">Próximo</span>
+      </Button>
     </div>
   );
 };
