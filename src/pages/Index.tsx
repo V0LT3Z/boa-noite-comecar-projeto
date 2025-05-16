@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -151,7 +152,8 @@ const Index = () => {
               events={filteredEvents.slice(0, 6)} 
               loading={loading} 
               showAllEvents={showAllEvents}
-              toggleShowAll={() => setShowAllEvents(!showAllEvents)}
+              setShowAllEvents={setShowAllEvents}
+              searchQuery={searchQuery}
             />
           </section>
         )}
