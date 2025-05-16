@@ -47,11 +47,8 @@ const HeroSection = ({ events }: HeroSectionProps) => {
         <div className="max-w-5xl mx-auto">
           {hasEvents ? (
             <div className="relative">
-              <Carousel 
-                className="overflow-hidden rounded-xl shadow-xl"
-                ref={emblaRef}
-              >
-                <CarouselContent>
+              <Carousel>
+                <CarouselContent ref={emblaRef}>
                   {events.map((event) => (
                     <CarouselItem key={event.id} className="cursor-pointer">
                       <Link to={`/evento/${event.id}`}>
@@ -77,18 +74,16 @@ const HeroSection = ({ events }: HeroSectionProps) => {
                   ))}
                 </CarouselContent>
                 
-                {/* Move carousel navigation arrows outside the container */}
+                {/* Navigation arrows positioned with proper context */}
+                <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between z-20 pointer-events-none">
+                  <div className="pointer-events-auto -ml-5 lg:-ml-10">
+                    <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                  </div>
+                  <div className="pointer-events-auto -mr-5 lg:-mr-10">
+                    <CarouselNext className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                  </div>
+                </div>
               </Carousel>
-              
-              {/* Navigation arrows positioned outside the carousel with improved visibility */}
-              <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none">
-                <div className="pointer-events-auto -ml-5 lg:-ml-10">
-                  <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
-                </div>
-                <div className="pointer-events-auto -mr-5 lg:-mr-10">
-                  <CarouselNext className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
-                </div>
-              </div>
             </div>
           ) : (
             <div className="relative h-[350px] md:h-[450px] rounded-xl overflow-hidden">
