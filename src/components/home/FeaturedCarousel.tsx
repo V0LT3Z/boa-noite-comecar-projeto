@@ -90,7 +90,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   }
 
   // Current selected event for the info panel
-  const currentEvent = events[selectedIndex];
+  const currentEvent = events[selectedIndex] || events[0];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-soft-purple/10 to-soft-blue/10 p-6 rounded-xl">
