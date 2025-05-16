@@ -44,10 +44,6 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
     };
     
     checkEvent();
-    
-    return () => {
-      // Cleanup se necessário
-    };
   }, [id, eventExists, isChecking]);
   
   const handleVerIngressos = () => {
@@ -70,63 +66,65 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
   };
   
   return (
-    <Card className="overflow-hidden hover:shadow-event-card transition-shadow group relative">
-      <div className="flex">
-        <div className="w-48 h-32 relative flex-shrink-0">
+    <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">
+      <div className="relative">
+        {/* Image container with overlay */}
+        <div className="relative h-40 overflow-hidden">
           <img
             src={image}
             alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
-          <div className="absolute inset-0 bg-gradient-primary opacity-30 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80 mix-blend-multiply" />
           
-          {/* Adicionar badge de categoria */}
+          {/* Category badge */}
           {category && (
-            <div className="absolute top-2 left-2 bg-white/80 px-2 py-1 rounded-full text-xs font-semibold text-primary font-gooddog">
+            <div className="absolute top-3 left-3 bg-white/90 px-2 py-1 rounded-full text-xs font-semibold text-primary shadow-sm">
               {category}
             </div>
           )}
-
-          {/* Adicionar badge de status se for cancelado */}
+          
+          {/* Status badge - if cancelled */}
           {eventStatus === "cancelled" && (
-            <div className="absolute top-2 right-2 bg-red-500/90 px-2 py-1 rounded-full text-xs font-bold text-white font-gooddog">
+            <div className="absolute top-3 right-12 bg-red-500/90 px-2 py-1 rounded-full text-xs font-bold text-white shadow-sm">
               Cancelado
             </div>
           )}
           
+          {/* Favorite button */}
           <div className="absolute top-2 right-2 z-10">
             <FavoriteButton eventId={id} variant="icon" />
           </div>
+          
+          {/* Date block with top positioning */}
+          <div className="absolute bottom-0 left-0 bg-primary/85 text-white px-4 py-2 font-semibold flex items-center gap-2 rounded-tr-lg backdrop-blur-sm">
+            <Calendar className="h-4 w-4" />
+            <span className="text-sm">{date}</span>
+          </div>
         </div>
         
-        <div className="flex flex-1 items-center p-4 justify-between gap-4">
-          <div className="space-y-2 flex-grow">
-            <h3 className="font-bold text-xl text-primary line-clamp-2 font-gooddog">{title}</h3>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-gray-400">
-              <div className="flex items-center">
-                <Calendar className="h-4 w-4 mr-2 text-secondary" />
-                <span className="truncate font-gooddog">{date}</span>
-              </div>
-              <div className="flex items-center">
-                <MapPin className="h-4 w-4 mr-2 text-secondary" />
-                <span className="truncate font-gooddog">{location}</span>
-              </div>
-            </div>
+        {/* Card body */}
+        <div className="p-4">
+          <h3 className="font-bold text-lg text-primary mb-2 line-clamp-2 h-14">{title}</h3>
+          
+          <div className="flex items-center gap-1 text-sm text-gray-500 mb-4">
+            <MapPin className="h-4 w-4 text-secondary" />
+            <span className="truncate">{location}</span>
           </div>
           
           <Link 
             to={`/evento/${id}`} 
-            className="flex-shrink-0"
             onClick={(e) => {
               if (!handleVerIngressos()) {
                 e.preventDefault();
               }
             }}
+            className="block w-full"
           >
             <Button 
-              className={`${eventStatus === "cancelled" 
+              className={`w-full ${eventStatus === "cancelled" 
                 ? "bg-gray-400 hover:bg-gray-500"
-                : "bg-gradient-to-r from-primary to-secondary hover:opacity-90"} text-white whitespace-nowrap font-gooddog`}
+                : "bg-gradient-to-r from-primary to-secondary hover:opacity-90"} text-white`}
               disabled={eventStatus === "cancelled"}
             >
               {eventStatus === "cancelled" ? "Indisponível" : "Ver ingressos"}

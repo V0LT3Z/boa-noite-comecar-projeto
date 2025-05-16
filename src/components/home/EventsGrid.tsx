@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import EventCard from '@/components/EventCard';
+import GradientCard from '@/components/GradientCard';
 
 interface EventItem {
   id: number;
