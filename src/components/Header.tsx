@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import SearchBar from '@/components/SearchBar';
 import { useSearchParams } from 'react-router-dom';
+import { Separator } from '@/components/ui/separator';
 
 // Import refactored components
 import UserMenu from '@/components/navigation/UserMenu';
@@ -151,6 +152,9 @@ const Header = () => {
           />
         </div>
       )}
+      
+      {/* Gradient separator bar */}
+      <div className="h-1.5 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500"></div>
 
       <AuthDialog 
         open={isAuthDialogOpen} 
