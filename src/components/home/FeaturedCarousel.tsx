@@ -157,16 +157,16 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
         <div className="lg:col-span-4">
           <Card className="h-[420px] border-none shadow-lg bg-white p-6 flex flex-col justify-between">
             <div>
-              <h3 className="text-2xl font-bold mb-4">{currentEvent.title}</h3>
+              <h3 className="text-2xl font-bold mb-4 line-clamp-3 overflow-hidden">{currentEvent.title}</h3>
               
               <div className="space-y-4 mt-6">
-                <div className="flex items-center gap-3 text-sm">
-                  <Calendar className="h-5 w-5 text-primary" />
+                <div className="flex items-start gap-3 text-sm">
+                  <Calendar className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <span className="text-gray-700 text-base">{currentEvent.date}</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <span className="text-gray-700 text-base line-clamp-2">{currentEvent.location}</span>
+                <div className="flex items-start gap-3 text-sm">
+                  <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700 text-base line-clamp-3 overflow-hidden">{currentEvent.location}</span>
                 </div>
               </div>
             </div>
