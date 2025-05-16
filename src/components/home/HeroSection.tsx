@@ -48,39 +48,41 @@ const HeroSection = ({ events }: HeroSectionProps) => {
           {hasEvents ? (
             <div className="relative">
               <Carousel>
-                <CarouselContent ref={emblaRef}>
-                  {events.map((event) => (
-                    <CarouselItem key={event.id} className="cursor-pointer">
-                      <Link to={`/evento/${event.id}`}>
-                        <div className="relative h-[350px] md:h-[450px] group">
-                          <img 
-                            src={event.image} 
-                            alt={event.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
-                          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 bg-gradient-to-t from-black/90 to-transparent">
-                            <span className="inline-block px-4 py-1 bg-primary/80 text-white text-xs md:text-sm rounded-full mb-2 md:mb-4">
-                              Em destaque
-                            </span>
-                            <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">{event.title}</h2>
-                            <p className="text-white/90 text-sm md:text-base">
-                              {event.date}
-                            </p>
+                <div className="relative">
+                  <CarouselContent ref={emblaRef}>
+                    {events.map((event) => (
+                      <CarouselItem key={event.id} className="cursor-pointer">
+                        <Link to={`/evento/${event.id}`}>
+                          <div className="relative h-[350px] md:h-[450px] group">
+                            <img 
+                              src={event.image} 
+                              alt={event.title}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 mix-blend-multiply" />
+                            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 bg-gradient-to-t from-black/90 to-transparent">
+                              <span className="inline-block px-4 py-1 bg-primary/80 text-white text-xs md:text-sm rounded-full mb-2 md:mb-4">
+                                Em destaque
+                              </span>
+                              <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">{event.title}</h2>
+                              <p className="text-white/90 text-sm md:text-base">
+                                {event.date}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </Link>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                
-                {/* Navigation arrows positioned with proper context */}
-                <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between z-20 pointer-events-none">
-                  <div className="pointer-events-auto -ml-5 lg:-ml-10">
-                    <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
-                  </div>
-                  <div className="pointer-events-auto -mr-5 lg:-mr-10">
-                    <CarouselNext className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                        </Link>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  
+                  {/* Navigation arrows positioned correctly inside the Carousel context */}
+                  <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between z-20 pointer-events-none">
+                    <div className="pointer-events-auto -ml-5 lg:-ml-10">
+                      <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                    </div>
+                    <div className="pointer-events-auto -mr-5 lg:-mr-10">
+                      <CarouselNext className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                    </div>
                   </div>
                 </div>
               </Carousel>
