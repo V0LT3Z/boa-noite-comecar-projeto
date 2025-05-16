@@ -21,7 +21,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
   const hasEvents = events && events.length > 0;
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = React.useState(0);
-
+  
   // Set up autoplay for the carousel
   useEffect(() => {
     if (!emblaApi) return;
@@ -37,7 +37,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
     return () => clearInterval(autoplayInterval);
   }, [emblaApi]);
   
-  // Track the selected index for the dots indicator
+  // Track the selected index for the dots indicator - improved to work with autoplay
   useEffect(() => {
     if (!emblaApi) return;
     
@@ -98,37 +98,37 @@ const HeroSection = ({ events }: HeroSectionProps) => {
                     ))}
                   </CarouselContent>
                   
-                  {/* Navigation arrows positioned with more spacing */}
+                  {/* Navigation arrows positioned with more spacing from the carousel */}
                   <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between z-20 pointer-events-none">
-                    <div className="pointer-events-auto -ml-6 lg:-ml-12">
+                    <div className="pointer-events-auto -ml-10 lg:-ml-16">
                       <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
                     </div>
-                    <div className="pointer-events-auto -mr-6 lg:-mr-12">
+                    <div className="pointer-events-auto -mr-10 lg:-mr-16">
                       <CarouselNext className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
                     </div>
                   </div>
-                  
-                  {/* Dots indicator */}
-                  <div className="flex justify-center gap-2 mt-4">
-                    {events.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => scrollTo(index)}
-                        className="focus:outline-none"
-                        aria-label={`Go to slide ${index + 1}`}
-                      >
-                        <CircleDot 
-                          className={`h-3 w-3 transition-all ${
-                            selectedIndex === index 
-                              ? 'text-primary fill-primary' 
-                              : 'text-gray-400'
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
                 </div>
               </Carousel>
+              
+              {/* Dots indicator moved outside the Carousel but inside the container for better positioning */}
+              <div className="flex justify-center gap-3 mt-6">
+                {events.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => scrollTo(index)}
+                    className="focus:outline-none"
+                    aria-label={`Go to slide ${index + 1}`}
+                  >
+                    <CircleDot 
+                      className={`h-4 w-4 transition-all ${
+                        selectedIndex === index 
+                          ? 'text-primary fill-primary' 
+                          : 'text-gray-400'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="relative h-[350px] md:h-[450px] rounded-xl overflow-hidden">
