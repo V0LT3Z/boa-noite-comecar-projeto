@@ -21,7 +21,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
   const hasEvents = events && events.length > 0;
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const autoplayIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
   
   const scrollTo = (index: number) => {
     if (emblaApi) {
@@ -29,7 +29,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
     }
   };
   
-  // Monitorar o índice selecionado para os indicadores
+  // Monitor the selected index for the indicator dots
   useEffect(() => {
     if (!emblaApi) return;
     
@@ -38,14 +38,14 @@ const HeroSection = ({ events }: HeroSectionProps) => {
     };
     
     emblaApi.on('select', onSelect);
-    onSelect(); // Chama inicialmente para definir o slide atual
+    onSelect(); // Initialize with the current slide
     
     return () => {
       emblaApi.off('select', onSelect);
     };
   }, [emblaApi]);
   
-  // Configurar autoplay do carrossel
+  // Setup auto-sliding for the carousel
   useEffect(() => {
     if (!emblaApi || !hasEvents) return;
     
@@ -57,20 +57,20 @@ const HeroSection = ({ events }: HeroSectionProps) => {
       }
     };
     
-    // Limpar qualquer intervalo existente
-    if (autoplayIntervalRef.current) {
-      clearInterval(autoplayIntervalRef.current);
-      autoplayIntervalRef.current = null;
+    // Clear any existing interval
+    if (intervalRef.current) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
     
-    // Configurar novo intervalo
-    autoplayIntervalRef.current = setInterval(autoplay, 5000);
+    // Set up new interval with window.setInterval
+    intervalRef.current = window.setInterval(autoplay, 5000);
     
-    // Função de limpeza
+    // Cleanup function
     return () => {
-      if (autoplayIntervalRef.current) {
-        clearInterval(autoplayIntervalRef.current);
-        autoplayIntervalRef.current = null;
+      if (intervalRef.current) {
+        window.clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
   }, [emblaApi, hasEvents]);
