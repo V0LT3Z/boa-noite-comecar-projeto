@@ -89,7 +89,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
               <div className="relative">
                 <Carousel>
                   <div className="relative">
-                    <CarouselContent ref={emblaRef} className="rounded-3xl shadow-xl overflow-hidden">
+                    <CarouselContent ref={emblaRef} className="rounded-3xl overflow-hidden">
                       {events.map((event) => (
                         <CarouselItem key={event.id} className="cursor-pointer">
                           <Link to={`/evento/${event.id}`}>
@@ -117,10 +117,10 @@ const HeroSection = ({ events }: HeroSectionProps) => {
                     
                     <div className="absolute inset-y-0 -left-8 -right-8 flex items-center justify-between z-20 pointer-events-none">
                       <div className="pointer-events-auto">
-                        <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                        <CarouselPrevious className="bg-white/90 hover:bg-white border-0 h-10 w-10 md:h-12 md:w-12" />
                       </div>
                       <div className="pointer-events-auto">
-                        <CarouselNext className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                        <CarouselNext className="bg-white/90 hover:bg-white border-0 h-10 w-10 md:h-12 md:w-12" />
                       </div>
                     </div>
                   </div>
@@ -148,7 +148,7 @@ const HeroSection = ({ events }: HeroSectionProps) => {
               </div>
             </div>
           ) : (
-            <div className="relative h-[350px] md:h-[450px] rounded-3xl overflow-hidden shadow-xl">
+            <div className="relative h-[350px] md:h-[450px] rounded-3xl overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-80"></div>
               <div className="flex items-center justify-center h-full">
                 <div className="text-center px-6">
