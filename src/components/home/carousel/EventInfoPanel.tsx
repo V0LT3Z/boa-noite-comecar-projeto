@@ -17,16 +17,16 @@ const EventInfoPanel = ({ id, title, date, location }: EventInfoPanelProps) => {
   return (
     <Card className="h-[420px] border-none shadow-lg bg-white p-6 flex flex-col">
       <ScrollArea className="flex-grow pr-4 mb-4">
-        <h3 className="text-xl font-bold mb-4 break-words">{title}</h3>
+        <h3 className="text-xl font-bold mb-4 break-words font-gooddog">{title}</h3>
         
         <div className="space-y-4 mt-4">
           <div className="flex items-start gap-3">
             <Calendar className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-            <span className="text-gray-700 text-base">{date}</span>
+            <span className="text-gray-700 text-sm font-gooddog">{date}</span>
           </div>
           <div className="flex items-start gap-3">
             <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-            <span className="text-gray-700 text-base break-words">{location}</span>
+            <span className="text-gray-700 text-sm font-gooddog break-words">{location}</span>
           </div>
         </div>
       </ScrollArea>
