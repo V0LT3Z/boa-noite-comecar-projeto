@@ -77,12 +77,18 @@ const HeroSection = ({ events }: HeroSectionProps) => {
                   ))}
                 </CarouselContent>
                 
-                {/* Navigation arrows positioned outside the carousel */}
-                <div className="flex justify-between absolute -left-12 -right-12 top-1/2 transform -translate-y-1/2 z-20">
-                  <CarouselPrevious className="relative left-0 bg-white/90 hover:bg-white" />
-                  <CarouselNext className="relative right-0 bg-white/90 hover:bg-white" />
-                </div>
+                {/* Move carousel navigation arrows outside the container */}
               </Carousel>
+              
+              {/* Navigation arrows positioned outside the carousel with improved visibility */}
+              <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none">
+                <div className="pointer-events-auto -ml-5 lg:-ml-10">
+                  <CarouselPrevious className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                </div>
+                <div className="pointer-events-auto -mr-5 lg:-mr-10">
+                  <CarouselNext className="bg-white/90 hover:bg-white shadow-lg border-0 h-10 w-10 md:h-12 md:w-12" />
+                </div>
+              </div>
             </div>
           ) : (
             <div className="relative h-[350px] md:h-[450px] rounded-xl overflow-hidden">
