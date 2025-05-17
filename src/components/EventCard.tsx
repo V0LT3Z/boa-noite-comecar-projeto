@@ -105,7 +105,7 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
         
         {/* Card body */}
         <div className="p-4">
-          <h3 className="font-bold text-lg text-black mb-2 line-clamp-2 h-14">{title}</h3>
+          <h3 className="font-bold text-lg text-black mb-2 line-clamp-2 h-14 text-left">{title}</h3>
           
           <div className="flex items-center gap-1 text-sm text-black mb-4">
             <MapPin className="h-4 w-4 min-w-4 text-secondary" />
