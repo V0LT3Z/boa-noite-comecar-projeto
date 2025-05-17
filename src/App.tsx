@@ -2,7 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./components/ThemeProvider";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/hooks/use-toast";
 import Header from "./components/Header";
 import Index from "./pages/Index";
 import AllEvents from "./pages/AllEvents";

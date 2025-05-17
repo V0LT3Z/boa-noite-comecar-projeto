@@ -127,7 +127,7 @@ const Index = () => {
       <main className="flex-1 pb-12">
         {/* Hero section com banner principal e informações - full width */}
         <div className="w-full">
-          {!loading && featuredEvents.length > 0 && (
+          {!loading && filteredEvents.length > 0 && (
             <FeaturedCarousel events={featuredEvents} />
           )}
         </div>
