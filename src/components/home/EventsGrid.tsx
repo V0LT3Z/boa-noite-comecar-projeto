@@ -72,8 +72,8 @@ const EventsGrid = ({
     );
   }
 
-  // Limita o número de eventos exibidos, a menos que showAllEvents seja true
-  const displayEvents = showAllEvents ? events : events.slice(0, 9);
+  // Limita o número de eventos exibidos para 12 (4 linhas de 3 cards), a menos que showAllEvents seja true
+  const displayEvents = showAllEvents ? events : events.slice(0, 12);
 
   return (
     <div className="container px-4 mx-auto">
@@ -101,14 +101,14 @@ const EventsGrid = ({
         ))}
       </div>
 
-      {events.length > 9 && (
+      {events.length > 12 && (
         <div className="mt-12 text-center">
           <Button
             onClick={() => setShowAllEvents(!showAllEvents)}
             variant="outline"
             className="px-8 border-primary/30 text-primary hover:bg-primary/5"
           >
-            {showAllEvents ? "Mostrar menos" : `Ver mais ${events.length - 9} eventos`}
+            {showAllEvents ? "Mostrar menos" : `Ver mais ${events.length - 12} eventos`}
           </Button>
         </div>
       )}
