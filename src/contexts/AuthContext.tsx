@@ -201,17 +201,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Check if CPF already exists in user metadata
+  // Check if CPF already exists using our new database function
   const checkCPFExists = async (cpf: string): Promise<boolean> => {
     try {
       if (!cpf) return false;
       
-      // Create a custom function that queries user metadata for the CPF
-      // This is a placeholder since we can't directly query auth.users metadata
-      // In a real implementation, you'd need to use a database table to track CPFs
+      // Call our database function to check if CPF exists
+      const { data, error } = await supabase.rpc('check_cpf_exists', {
+        cpf_value: cpf
+      });
       
-      // For now, we'll return false since we need a proper database setup to check CPFs
-      return false;
+      if (error) {
+        console.error("Error checking CPF:", error);
+        return false;
+      }
+      
+      return data || false;
     } catch (error) {
       console.error("Error checking if CPF exists:", error);
       return false;
@@ -272,6 +277,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         return { success: false, requiresEmailConfirmation: false, error: errorMessage };
+      }
+      
+      // After successful signup, update profile with CPF and birth date
+      if (data.user && (userData.cpf || userData.birthDate)) {
+        try {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({
+              cpf: userData.cpf,
+              birth_date: userData.birthDate ? new Date(userData.birthDate).toISOString() : null
+            })
+            .eq('id', data.user.id);
+            
+          if (updateError) {
+            console.error("Error updating profile:", updateError);
+          }
+        } catch (profileError) {
+          console.error("Error updating profile after registration:", profileError);
+        }
       }
       
       // Verificar se o email precisa de confirmação

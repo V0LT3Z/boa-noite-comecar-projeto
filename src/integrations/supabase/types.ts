@@ -162,6 +162,33 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          birth_date: string | null
+          cpf: string | null
+          created_at: string
+          full_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          birth_date?: string | null
+          cpf?: string | null
+          created_at?: string
+          full_name: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          birth_date?: string | null
+          cpf?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ticket_types: {
         Row: {
           available_quantity: number
@@ -260,7 +287,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_cpf_exists: {
+        Args: { cpf_value: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
