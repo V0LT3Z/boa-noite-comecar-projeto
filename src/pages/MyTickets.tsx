@@ -56,7 +56,7 @@ const MyTickets = () => {
   if (isLoading || isLoadingTickets) {
     return (
       <div className="p-6 space-y-4">
-        <div className="flex items-center">
+        <div className="flex items-center justify-center">
           <Skeleton className="h-10 w-24" />
         </div>
         <Skeleton className="h-12 w-full" />
@@ -100,25 +100,23 @@ const MyTickets = () => {
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-dashboard-card pb-10">
-      <div className="max-w-4xl mx-auto px-4 pt-6">
-        {/* Header without logo */}
-        <div className="flex items-center mb-6">
-          <Link to="/minha-conta" className="mr-3">
-            <Button variant="ghost" size="sm" className="p-0 h-8 w-8 rounded-full text-primary hover:bg-primary/5">
-              <ArrowLeft className="h-5 w-5" />
-              <span className="sr-only">Voltar</span>
-            </Button>
-          </Link>
-          <div className="flex flex-1 items-center">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-primary">
-                Meus Ingressos
-              </h1>
-              <p className="text-sm text-dashboard-muted">
-                Gerencie todos os seus ingressos e produtos comprados
-              </p>
-            </div>
+      <div className="max-w-4xl mx-auto px-4 pt-6 text-center">
+        {/* Header - Centralized */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="mb-2 self-start">
+            <Link to="/minha-conta">
+              <Button variant="ghost" size="sm" className="p-0 h-8 w-8 rounded-full text-primary hover:bg-primary/5">
+                <ArrowLeft className="h-5 w-5" />
+                <span className="sr-only">Voltar</span>
+              </Button>
+            </Link>
           </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-primary">
+            Meus Ingressos
+          </h1>
+          <p className="text-sm text-dashboard-muted">
+            Gerencie todos os seus ingressos e produtos comprados
+          </p>
         </div>
 
         <Tabs defaultValue="ingressos" className="w-full">
@@ -147,7 +145,7 @@ const MyTickets = () => {
                     <h2 className="text-2xl font-semibold mb-4">Próximos Eventos</h2>
                     <div className="grid gap-4 md:grid-cols-2">
                       {upcomingEvents.map((eventGroup) => (
-                        <Card key={eventGroup.eventId} className="overflow-hidden bg-white border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
+                        <Card key={eventGroup.eventId} className="overflow-hidden bg-white border border-gray-200 shadow-md hover:shadow-lg transition-shadow text-left">
                           <CardHeader className="bg-gradient-primary text-white p-4">
                             <h3 className="text-xl font-bold">{eventGroup.eventTitle}</h3>
                             <div className="flex items-center text-sm opacity-90">
