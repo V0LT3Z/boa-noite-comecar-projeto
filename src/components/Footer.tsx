@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Copyright } from 'lucide-react';
@@ -17,9 +16,9 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-1">
             <Link to="/" className="flex items-center mb-4">
               <img 
-                src="/lovable-uploads/0887794c-542c-452d-926e-5334241599ca.png" 
+                src="/lovable-uploads/e173faec-c516-4d69-bca8-8be4cb8183c0.png" 
                 alt="NOKTA TICKETS" 
-                className="h-8 w-auto"
+                className="h-16 w-auto"
               />
             </Link>
             <p className="text-sm text-gray-600 mb-6">
