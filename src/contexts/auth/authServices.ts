@@ -96,7 +96,10 @@ export const handleRegister = async (userData: RegisterData): Promise<{success: 
 
     // Check if CPF already exists if provided
     if (userData.cpf) {
+      console.log("Verificando CPF na função handleRegister:", userData.cpf);
       const cpfExists = await checkCPFExists(userData.cpf);
+      console.log("Resultado da verificação de CPF:", cpfExists);
+      
       if (cpfExists) {
         return { 
           success: false, 

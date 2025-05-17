@@ -54,28 +54,37 @@ export default function useRegisterForm(onSuccess: () => void) {
     return () => clearTimeout(timeoutId);
   }, [formData.email, checkEmailExists]);
 
-  // Add effect for checking if CPF exists in database
+  // Efeito para verificar se o CPF existe no banco de dados
   useEffect(() => {
     const checkCpf = async () => {
-      // Only check if CPF is valid format (complete)
+      // Verificar apenas se o CPF tem um formato válido e completo
       if (formData.cpf && formData.cpf.length === 14 && validateCPF(formData.cpf)) {
         setIsCheckingCPF(true);
-        const exists = await checkCPFExists(formData.cpf);
-        setIsCPFAvailable(!exists);
-        
-        if (exists) {
-          setFormErrors(prev => ({
-            ...prev,
-            cpf: "Este CPF já está cadastrado. Não é possível criar múltiplas contas com o mesmo CPF."
-          }));
-        } else {
-          setFormErrors(prev => {
-            const newErrors = { ...prev };
-            delete newErrors.cpf;
-            return newErrors;
-          });
+        try {
+          const exists = await checkCPFExists(formData.cpf);
+          setIsCPFAvailable(!exists);
+          
+          if (exists) {
+            setFormErrors(prev => ({
+              ...prev,
+              cpf: "Este CPF já está cadastrado. Não é possível criar múltiplas contas com o mesmo CPF."
+            }));
+          } else {
+            setFormErrors(prev => {
+              const newErrors = { ...prev };
+              // Só remover o erro se for relacionado ao CPF existente
+              // Mantemos outros erros de CPF inválido se existirem
+              if (prev.cpf && prev.cpf.includes("já está cadastrado")) {
+                delete newErrors.cpf;
+              }
+              return newErrors;
+            });
+          }
+        } catch (error) {
+          console.error("Erro ao verificar CPF:", error);
+        } finally {
+          setIsCheckingCPF(false);
         }
-        setIsCheckingCPF(false);
       }
     };
     
@@ -92,6 +101,15 @@ export default function useRegisterForm(onSuccess: () => void) {
         setFormErrors(prev => ({ ...prev, cpf: "CPF inválido ou inexistente" }));
         return false;
       } else {
+        // Não limpar os erros aqui, apenas os relacionados à validação do formato
+        // O erro de CPF já cadastrado será gerenciado pelo useEffect acima
+        setFormErrors(prev => {
+          const newErrors = { ...prev };
+          if (prev.cpf && prev.cpf === "CPF inválido ou inexistente") {
+            delete newErrors.cpf;
+          }
+          return newErrors;
+        });
         return true;
       }
     } else {
@@ -125,8 +143,25 @@ export default function useRegisterForm(onSuccess: () => void) {
     setIsLoading(true);
     
     try {
-      // Perform validation and submission logic...
-      // Most of the original logic is kept with just minor refactoring
+      // Verificar explicitamente se o CPF já está cadastrado antes de prosseguir
+      if (formData.cpf && formData.cpf.length === 14) {
+        const cpfExists = await checkCPFExists(formData.cpf);
+        if (cpfExists) {
+          setFormErrors(prev => ({
+            ...prev,
+            cpf: "Este CPF já está cadastrado. Não é possível criar múltiplas contas com o mesmo CPF."
+          }));
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      // Verificar se há erros no formulário antes de enviar
+      if (Object.keys(formErrors).length > 0) {
+        console.log("Formulário contém erros:", formErrors);
+        setIsLoading(false);
+        return;
+      }
       
       const [day, month, year] = (formData.birthDate as string).split('/').map(Number);
       const birthDateISO = new Date(year, month - 1, day).toISOString();

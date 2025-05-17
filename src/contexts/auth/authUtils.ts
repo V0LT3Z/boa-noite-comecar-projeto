@@ -53,7 +53,7 @@ export const checkCPFExists = async (cpf: string): Promise<boolean> => {
     }
     
     console.log("CPF exists check result:", data);
-    return data || false;
+    return !!data; // Converte explicitamente para boolean
   } catch (error) {
     console.error("Error checking if CPF exists:", error);
     return false;
