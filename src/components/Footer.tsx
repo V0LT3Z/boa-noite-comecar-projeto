@@ -16,9 +16,11 @@ const Footer = () => {
           {/* Logo and about */}
           <div className="col-span-1 md:col-span-1">
             <Link to="/" className="flex items-center mb-4">
-              <span className="font-gooddog font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                NOKTA TICKETS
-              </span>
+              <img 
+                src="/lovable-uploads/0887794c-542c-452d-926e-5334241599ca.png" 
+                alt="NOKTA TICKETS" 
+                className="h-8 w-auto"
+              />
             </Link>
             <p className="text-sm text-gray-600 mb-6">
               A plataforma mais segura para comprar e vender ingressos para 
