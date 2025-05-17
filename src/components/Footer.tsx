@@ -11,25 +11,6 @@ const Footer = () => {
       {/* Gradient separator bar - matches the header */}
       <div className="h-[3px] bg-gradient-to-r from-[#8B5CF6] via-[#D946EF] to-[#0EA5E9]"></div>
       
-      {/* Banner Section - New */}
-      <div className="w-full bg-gradient-to-br from-primary/10 to-secondary/10 py-6 px-4 flex justify-center">
-        <div className="flex flex-col md:flex-row items-center max-w-4xl">
-          <img 
-            src="/lovable-uploads/92bb6efe-56fa-4df8-be9e-662f4d3cf377.png" 
-            alt="Nokta Tickets"
-            className="h-40 md:h-48 object-contain mb-4 md:mb-0" 
-          />
-          <div className="text-center md:text-left md:ml-6 md:max-w-md">
-            <h3 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-              Compre seus ingressos com segurança
-            </h3>
-            <p className="text-sm md:text-base text-dashboard-muted">
-              Nosso sistema garante a autenticidade de todos os ingressos comercializados na plataforma.
-            </p>
-          </div>
-        </div>
-      </div>
-      
       <div className="container mx-auto px-4 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and about */}
