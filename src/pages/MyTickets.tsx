@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useProtectedRoute } from "@/hooks/use-protected-route"
@@ -102,19 +101,19 @@ const MyTickets = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-dashboard-card pb-10">
       <div className="max-w-4xl mx-auto px-4 pt-6">
-        {/* Improved header with back button integrated */}
-        <div className="flex items-center mb-8">
-          <Link to="/minha-conta">
-            <Button variant="ghost" size="icon" className="mr-4 rounded-full h-10 w-10 bg-white shadow-sm hover:bg-primary/10">
+        {/* Redesigned header inspired by the reference image */}
+        <div className="flex items-center mb-6">
+          <Link to="/minha-conta" className="mr-3">
+            <Button variant="ghost" size="sm" className="p-0 h-8 w-8 rounded-full text-primary hover:bg-primary/5">
               <ArrowLeft className="h-5 w-5" />
               <span className="sr-only">Voltar</span>
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-bold text-primary">
               Meus Ingressos
             </h1>
-            <p className="text-dashboard-muted">
+            <p className="text-sm text-dashboard-muted">
               Gerencie todos os seus ingressos e produtos comprados
             </p>
           </div>
