@@ -101,23 +101,23 @@ const MyTickets = () => {
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-dashboard-card pb-10">
-      <div className="p-4">
-        <Link to="/minha-conta">
-          <Button variant="outline" className="gap-2">
-            <ArrowLeft className="h-5 w-5" />
-            Voltar
-          </Button>
-        </Link>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
-            Meus Ingressos
-          </h1>
-          <p className="text-dashboard-muted">
-            Gerencie todos os seus ingressos e produtos comprados
-          </p>
+      <div className="max-w-4xl mx-auto px-4 pt-6">
+        {/* Improved header with back button integrated */}
+        <div className="flex items-center mb-8">
+          <Link to="/minha-conta">
+            <Button variant="ghost" size="icon" className="mr-4 rounded-full h-10 w-10 bg-white shadow-sm hover:bg-primary/10">
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Voltar</span>
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Meus Ingressos
+            </h1>
+            <p className="text-dashboard-muted">
+              Gerencie todos os seus ingressos e produtos comprados
+            </p>
+          </div>
         </div>
 
         <Tabs defaultValue="ingressos" className="w-full">
