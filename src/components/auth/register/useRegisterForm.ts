@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -53,25 +54,11 @@ export default function useRegisterForm(onSuccess: () => void) {
     return () => clearTimeout(timeoutId);
   }, [formData.email, checkEmailExists]);
 
-  // Enhanced CPF validation effect - Now shows error immediately when a CPF is already registered
+  // Enhanced CPF validation effect
   useEffect(() => {
     const checkCpf = async () => {
       // Only check if CPF has a valid format and is complete
-      if (formData.cpf && formData.cpf.length === 14) {
-        // First validate the CPF format
-        const isValidFormat = validateCPF(formData.cpf);
-        setIsCPFValid(isValidFormat);
-        
-        if (!isValidFormat) {
-          setFormErrors(prev => ({
-            ...prev,
-            cpf: "CPF inválido ou inexistente"
-          }));
-          setIsCPFAvailable(null);
-          return;
-        }
-        
-        // If format is valid, then check if it exists
+      if (formData.cpf && formData.cpf.length === 14 && validateCPF(formData.cpf)) {
         setIsCheckingCPF(true);
         try {
           // Check if CPF exists with better error handling
@@ -80,6 +67,7 @@ export default function useRegisterForm(onSuccess: () => void) {
           
           // Update state based on result
           setIsCPFAvailable(!exists);
+          setIsCPFValid(true); // If it passed validateCPF, it's valid format-wise
           
           if (exists) {
             setFormErrors(prev => ({
@@ -89,8 +77,8 @@ export default function useRegisterForm(onSuccess: () => void) {
           } else {
             setFormErrors(prev => {
               const newErrors = { ...prev };
-              // Only remove errors related to CPF already existing or format
-              if (prev.cpf) {
+              // Only remove errors related to CPF already existing
+              if (prev.cpf && prev.cpf.includes("já está cadastrado")) {
                 delete newErrors.cpf;
               }
               return newErrors;
@@ -109,15 +97,6 @@ export default function useRegisterForm(onSuccess: () => void) {
           ...prev,
           cpf: "CPF inválido ou inexistente"
         }));
-      } else {
-        // Reset states when CPF is incomplete
-        setIsCPFValid(null);
-        setIsCPFAvailable(null);
-        setFormErrors(prev => {
-          const newErrors = { ...prev };
-          delete newErrors.cpf;
-          return newErrors;
-        });
       }
     };
     
@@ -133,12 +112,20 @@ export default function useRegisterForm(onSuccess: () => void) {
       if (!isValid) {
         setFormErrors(prev => ({ ...prev, cpf: "CPF inválido ou inexistente" }));
         return false;
+      } else {
+        // Don't clear errors here, only those related to format validation
+        // The error about CPF already being registered will be managed by the useEffect above
+        setFormErrors(prev => {
+          const newErrors = { ...prev };
+          if (prev.cpf && prev.cpf === "CPF inválido ou inexistente") {
+            delete newErrors.cpf;
+          }
+          return newErrors;
+        });
+        return true;
       }
-      // Don't clear errors here - let the useEffect handle availability checks
-      return isValid;
     } else {
       setIsCPFValid(null);
-      setIsCPFAvailable(null);
       setFormErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors.cpf;
@@ -165,21 +152,6 @@ export default function useRegisterForm(onSuccess: () => void) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Check if there are any validation errors before proceeding
-    if (Object.keys(formErrors).length > 0) {
-      console.log("Form contains errors:", formErrors);
-      // Highlight the specific error
-      if (formErrors.cpf) {
-        toast({
-          title: "Erro no formulário",
-          description: formErrors.cpf,
-          variant: "destructive",
-        });
-      }
-      return;
-    }
-    
     setIsLoading(true);
     
     try {
@@ -197,6 +169,13 @@ export default function useRegisterForm(onSuccess: () => void) {
           setIsLoading(false);
           return;
         }
+      }
+      
+      // Check if there are any errors in the form before submitting
+      if (Object.keys(formErrors).length > 0) {
+        console.log("Form contains errors:", formErrors);
+        setIsLoading(false);
+        return;
       }
       
       const [day, month, year] = (formData.birthDate as string).split('/').map(Number);
