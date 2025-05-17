@@ -96,8 +96,8 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
             <FavoriteButton eventId={id} variant="icon" />
           </div>
           
-          {/* Date block with top positioning */}
-          <div className="absolute bottom-0 left-0 bg-primary/85 text-white px-4 py-2 font-semibold flex items-center gap-2 rounded-tr-lg backdrop-blur-sm">
+          {/* Date block with transparent background */}
+          <div className="absolute bottom-0 left-0 bg-transparent text-white px-4 py-2 font-semibold flex items-center gap-2 rounded-tr-lg backdrop-blur-sm">
             <Calendar className="h-4 w-4" />
             <span className="text-sm">{date}</span>
           </div>
