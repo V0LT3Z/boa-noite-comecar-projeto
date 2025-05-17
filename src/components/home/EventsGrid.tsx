@@ -74,7 +74,7 @@ const EventsGrid = ({
   const displayEvents = showAllEvents ? events : events.slice(0, 9);
 
   return (
-    <div>
+    <div className="container px-4 mx-auto">
       <div className="mb-8 text-left">
         <h2 className="text-2xl font-bold">
           {searchQuery ? `Resultados para "${searchQuery}"` : "Eventos em Destaque"}
@@ -115,3 +115,4 @@ const EventsGrid = ({
 };
 
 export default EventsGrid;
+
