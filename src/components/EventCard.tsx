@@ -1,4 +1,3 @@
-
 import { Calendar, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -122,14 +121,11 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
             className="block w-full"
           >
             <Button 
-              className={`w-full relative overflow-hidden bg-white text-primary border border-primary/30 hover:border-primary/50 ${
-                eventStatus === "cancelled" ? "bg-gray-100 text-gray-400 border-gray-300" : ""
+              className={`w-full relative overflow-hidden bg-white text-primary border border-primary/30 hover:bg-gradient-primary hover:text-white transition-all duration-300 ${
+                eventStatus === "cancelled" ? "bg-gray-100 text-gray-400 border-gray-300 hover:bg-gray-100" : ""
               }`}
               disabled={eventStatus === "cancelled"}
-            >
-              {/* Animated shine wave effect */}
-              <span className="absolute top-0 left-[-100%] h-full w-[50%] bg-gradient-to-r from-transparent via-primary/20 to-transparent transform skew-x-[-20deg] group-hover:animate-shine"></span>
-              
+            >              
               {/* Button text */}
               <span className="relative z-10">
                 {eventStatus === "cancelled" ? "Indisponível" : "Ver ingressos"}
