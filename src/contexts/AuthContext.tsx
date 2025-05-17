@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         console.error("Login error:", error);
 
-        // Handle specific error cases
+        // Traduzir mensagens de erro específicas
         if (error.message.includes("Email not confirmed")) {
           toast({
             title: "Email não confirmado",
@@ -117,9 +117,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return false;
         }
         
+        // Mapeamento de erros comuns para mensagens em português
+        let errorMessage = "Verifique suas credenciais e tente novamente.";
+        
+        if (error.message.includes("Invalid login credentials")) {
+          errorMessage = "Credenciais inválidas. Verifique seu email e senha.";
+        } else if (error.message.includes("User not found")) {
+          errorMessage = "Usuário não encontrado.";
+        } else if (error.message.includes("Invalid email")) {
+          errorMessage = "Formato de email inválido.";
+        }
+        
         toast({
           title: "Erro ao fazer login",
-          description: error.message || "Verifique suas credenciais e tente novamente.",
+          description: errorMessage,
           variant: "destructive",
         });
         return false;
