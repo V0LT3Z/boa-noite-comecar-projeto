@@ -54,19 +54,20 @@ export default function useRegisterForm(onSuccess: () => void) {
     return () => clearTimeout(timeoutId);
   }, [formData.email, checkEmailExists]);
 
-  // Improved CPF validation effect
+  // Enhanced CPF validation effect
   useEffect(() => {
     const checkCpf = async () => {
       // Only check if CPF has a valid format and is complete
       if (formData.cpf && formData.cpf.length === 14 && validateCPF(formData.cpf)) {
         setIsCheckingCPF(true);
         try {
-          // More reliable check if CPF exists
-          const cpfFormatted = formData.cpf.replace(/[^\d]/g, ""); // Remove non-numeric characters
+          // Check if CPF exists with better error handling
           const exists = await checkCPFExists(formData.cpf);
           console.log("CPF exists result:", exists, "for CPF:", formData.cpf);
           
+          // Update state based on result
           setIsCPFAvailable(!exists);
+          setIsCPFValid(true); // If it passed validateCPF, it's valid format-wise
           
           if (exists) {
             setFormErrors(prev => ({
@@ -76,8 +77,7 @@ export default function useRegisterForm(onSuccess: () => void) {
           } else {
             setFormErrors(prev => {
               const newErrors = { ...prev };
-              // Só remover o erro se for relacionado ao CPF existente
-              // Mantemos outros erros de CPF inválido se existirem
+              // Only remove errors related to CPF already existing
               if (prev.cpf && prev.cpf.includes("já está cadastrado")) {
                 delete newErrors.cpf;
               }
@@ -86,9 +86,17 @@ export default function useRegisterForm(onSuccess: () => void) {
           }
         } catch (error) {
           console.error("Error checking CPF:", error);
+          setIsCPFAvailable(null); // Reset on error
         } finally {
           setIsCheckingCPF(false);
         }
+      } else if (formData.cpf && formData.cpf.length === 14) {
+        // If CPF has the right length but is invalid
+        setIsCPFValid(false);
+        setFormErrors(prev => ({
+          ...prev,
+          cpf: "CPF inválido ou inexistente"
+        }));
       }
     };
     
@@ -147,9 +155,12 @@ export default function useRegisterForm(onSuccess: () => void) {
     setIsLoading(true);
     
     try {
-      // Explicitly check if CPF already exists before proceeding
+      // Double-check: explicitly verify if CPF exists before proceeding
       if (formData.cpf && formData.cpf.length === 14) {
+        // Force a fresh check regardless of cached state
         const cpfExists = await checkCPFExists(formData.cpf);
+        console.log("Final CPF check before submission:", cpfExists, "for CPF:", formData.cpf);
+        
         if (cpfExists) {
           setFormErrors(prev => ({
             ...prev,

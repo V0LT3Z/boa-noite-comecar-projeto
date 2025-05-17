@@ -42,27 +42,47 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
 };
 
 /**
+ * Normalize CPF by removing all non-digit characters
+ */
+const normalizeCPF = (cpf: string): string => {
+  return cpf.replace(/[^\d]/g, "");
+};
+
+/**
  * Checks if a CPF is already registered
  */
 export const checkCPFExists = async (cpf: string): Promise<boolean> => {
   try {
     if (!cpf) return false;
     
-    console.log("Checking if CPF exists:", cpf);
+    // Normalize CPF to remove formatting
+    const normalizedCPF = normalizeCPF(cpf);
     
-    // First try using the database function
+    console.log("Checking if CPF exists:", cpf, "Normalized:", normalizedCPF);
+    
+    // First try using the database function with normalized CPF
     const { data: exists, error } = await supabase.rpc('check_cpf_exists', {
-      cpf_value: cpf
+      cpf_value: normalizedCPF
     });
     
     if (error) {
       console.error("Error checking CPF with RPC:", error);
       
-      // As a fallback, we'll directly query the profiles table
+      // Try with the formatted CPF as fallback
+      const { data: existsFormatted, error: errorFormatted } = await supabase.rpc('check_cpf_exists', {
+        cpf_value: cpf
+      });
+      
+      if (!errorFormatted && existsFormatted === true) {
+        console.log("CPF exists with formatted version");
+        return true;
+      }
+      
+      // As a last resort fallback, directly query the profiles table with both formats
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('cpf', cpf)
+        .or(`cpf.eq.${normalizedCPF},cpf.eq.${cpf}`)
         .limit(1);
       
       if (profilesError) {
@@ -70,12 +90,12 @@ export const checkCPFExists = async (cpf: string): Promise<boolean> => {
         return false;
       }
       
-      console.log("CPF check direct query result:", profiles);
+      console.log("CPF direct query result:", profiles);
       return profiles && profiles.length > 0;
     }
     
     console.log("CPF exists check RPC result:", exists);
-    return !!exists; // Convert explicit to boolean
+    return !!exists;
   } catch (error) {
     console.error("Error checking if CPF exists:", error);
     return false;

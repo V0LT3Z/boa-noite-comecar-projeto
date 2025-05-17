@@ -100,9 +100,11 @@ export const handleRegister = async (userData: RegisterData): Promise<{success: 
       };
     }
 
-    // Check if CPF already exists if provided - with more reliable detection
+    // Check if CPF already exists if provided - with enhanced validation
     if (userData.cpf) {
       console.log("Checking CPF in handleRegister function:", userData.cpf);
+      
+      // Ensure we check with the actual value stored in userData
       const cpfExists = await checkCPFExists(userData.cpf);
       console.log("Result of CPF check:", cpfExists);
       
