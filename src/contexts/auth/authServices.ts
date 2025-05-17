@@ -2,13 +2,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { RegisterData } from "./types";
-import { checkCPFExists, checkEmailExists } from "./authUtils";
+import { checkCPFExists, checkEmailExists, cleanupAuthState } from "./authUtils";
 
 /**
  * Handles user login
  */
 export const handleLogin = async (email: string, password: string): Promise<boolean> => {
   try {
+    // Limpa o estado de autenticação antes de tentar login
+    cleanupAuthState();
+    
     // Proceed with login attempt
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
@@ -84,6 +87,9 @@ export const handleLogin = async (email: string, password: string): Promise<bool
  */
 export const handleRegister = async (userData: RegisterData): Promise<{success: boolean, requiresEmailConfirmation: boolean, error?: string}> => {
   try {
+    // Limpar qualquer estado de autenticação anterior
+    cleanupAuthState();
+    
     // First check if email already exists
     const emailExists = await checkEmailExists(userData.email);
     if (emailExists) {

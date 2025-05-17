@@ -7,6 +7,16 @@ import { toast } from "@/hooks/use-toast";
  */
 export const checkEmailExists = async (email: string): Promise<boolean> => {
   try {
+    // Primeiro, verificamos diretamente na tabela de usuários usando a função de RPC
+    // para evitar problemas com cache ou estado temporário
+    const { data: userExists, error: userCheckError } = await supabase
+      .rpc('check_email_exists', { email_value: email });
+    
+    if (!userCheckError && userExists === false) {
+      return false;
+    }
+    
+    // Como fallback, tentamos o método OTP que é menos confiável
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -14,8 +24,6 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
       }
     });
 
-    // If there's no error in the OTP request, the user exists
-    // But we might still get a different error that's not related to user existence
     if (error) {
       if (error.message.includes("User not found")) {
         return false; // User does not exist
@@ -115,4 +123,87 @@ export const cleanupAuthState = () => {
       sessionStorage.removeItem(key);
     }
   });
+};
+
+/**
+ * Força a limpeza do cache de autenticação
+ * Use esta função quando houver problemas com emails que parecem ainda estar cadastrados
+ */
+export const forceClearAuthCache = async () => {
+  try {
+    // Primeiro limpa todo o estado local de autenticação
+    cleanupAuthState();
+    
+    // Força desconexão em todos os dispositivos
+    try {
+      await supabase.auth.signOut({ scope: 'global' });
+    } catch (err) {
+      console.error("Erro ao forçar desconexão global:", err);
+    }
+    
+    // Limpa o cache do navegador para a origem do Supabase
+    if (window.caches) {
+      try {
+        const keys = await window.caches.keys();
+        for (const key of keys) {
+          if (key.includes('supabase') || key.includes('auth')) {
+            await window.caches.delete(key);
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao limpar cache do navegador:", err);
+      }
+    }
+    
+    // Informa ao usuário que deve limpar os cookies e cache do navegador
+    toast({
+      title: "Cache de autenticação limpo",
+      description: "Recomendamos limpar os cookies do navegador e recarregar a página para garantir uma experiência sem problemas.",
+      variant: "default",
+      duration: 8000,
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Erro ao limpar cache de autenticação:", error);
+    return false;
+  }
+};
+
+/**
+ * Remove completamente um cadastro por email
+ */
+export const completelyRemoveUserByEmail = async (email: string): Promise<boolean> => {
+  try {
+    if (!email) return false;
+    
+    // Isso requer função no banco de dados com permissões específicas
+    const { error } = await supabase.rpc('completely_remove_user_by_email', {
+      target_email: email
+    });
+    
+    if (error) {
+      console.error("Erro ao remover usuário:", error);
+      toast({
+        title: "Erro ao remover cadastro",
+        description: "Não foi possível remover completamente o cadastro. Entre em contato com o suporte.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    // Limpa o cache local
+    await forceClearAuthCache();
+    
+    toast({
+      title: "Cadastro removido com sucesso!",
+      description: "O email foi completamente removido do sistema e pode ser utilizado novamente.",
+      variant: "success",
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Erro ao remover cadastro:", error);
+    return false;
+  }
 };

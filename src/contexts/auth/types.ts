@@ -20,6 +20,8 @@ export interface AuthContextType {
   resendConfirmationEmail: (email: string) => Promise<boolean>;
   checkEmailExists: (email: string) => Promise<boolean>;
   checkCPFExists: (cpf: string) => Promise<boolean>;
+  clearAuthCache: () => Promise<boolean>;
+  removeUserByEmail: (email: string) => Promise<boolean>;
 }
 
 export interface RegisterData {

@@ -4,7 +4,13 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from '@supabase/supabase-js';
 import { AuthContextType, User, RegisterData } from './types';
-import { checkCPFExists, checkEmailExists, resendConfirmationEmail } from './authUtils';
+import { 
+  checkCPFExists, 
+  checkEmailExists, 
+  resendConfirmationEmail,
+  forceClearAuthCache,
+  completelyRemoveUserByEmail 
+} from './authUtils';
 import { handleLogin, handleRegister } from './authServices';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -123,7 +129,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         openAuthModal,
         resendConfirmationEmail,
         checkEmailExists,
-        checkCPFExists
+        checkCPFExists,
+        clearAuthCache: forceClearAuthCache,
+        removeUserByEmail: completelyRemoveUserByEmail
       }}
     >
       {children}
