@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -173,9 +172,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) {
         console.error("Registration error:", error);
+        
+        // Traduzir mensagens de erro comuns para português
+        let errorMessage = "Ocorreu um erro ao criar sua conta. Tente novamente.";
+        
+        if (error.message.includes("User already registered")) {
+          errorMessage = "Este email já está cadastrado. Tente fazer login.";
+        } else if (error.message.includes("Password should be at least")) {
+          errorMessage = "A senha deve ter pelo menos 6 caracteres.";
+        } else if (error.message.includes("Email not confirmed")) {
+          errorMessage = "Email não confirmado. Verifique sua caixa de entrada.";
+        }
+        
         toast({
           title: "Erro ao criar conta",
-          description: error.message || "Ocorreu um erro ao criar sua conta. Tente novamente.",
+          description: errorMessage,
           variant: "destructive",
         });
         return false;
@@ -187,12 +198,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           title: "Quase lá!",
           description: "Por favor, verifique seu email e clique no link de confirmação para ativar sua conta.",
           variant: "default",
-        });
-      } else {
-        toast({
-          title: "Conta criada com sucesso!",
-          description: "Bem-vindo ao Lovue Tickets!",
-          variant: "success",
         });
       }
       

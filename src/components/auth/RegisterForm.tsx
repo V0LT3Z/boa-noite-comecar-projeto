@@ -1,4 +1,3 @@
-
 import { FormEvent, useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -205,7 +204,7 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       const [day, month, year] = (formData.birthDate as string).split('/').map(Number);
       const birthDateISO = new Date(year, month - 1, day).toISOString();
       
-      await register({
+      const registerResult = await register({
         fullName: formData.name || "",
         email: formData.email || "",
         password: formData.password || "",
@@ -214,19 +213,23 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
         role: formData.role,
       });
 
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Seja bem-vindo ao TicketHub.",
-        variant: "success",
-      });
-      
-      if (formData.role === 'producer') {
-        navigate("/admin");
-      } else {
-        navigate("/minha-conta");
+      // Only show toast and navigate if registration was successful
+      if (registerResult) {
+        toast({
+          title: "Conta criada com sucesso!",
+          description: "Seja bem-vindo ao TicketHub.",
+          variant: "success",
+        });
+        
+        if (formData.role === 'producer') {
+          navigate("/admin");
+        } else {
+          navigate("/minha-conta");
+        }
+        
+        onSuccess();
       }
-      
-      onSuccess();
+      // If registration failed, the AuthContext already shows the appropriate toast
     } catch (error) {
       console.error("Registration error:", error);
       toast({
