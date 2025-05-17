@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import TicketsLoading from "@/components/tickets/TicketsLoading";
 import TicketsHeader from "@/components/tickets/TicketsHeader";
 import TicketsTabs from "@/components/tickets/TicketsTabs";
+import Footer from "@/components/Footer";
 
 const MyTickets = () => {
   const { user } = useAuth();
@@ -45,11 +46,22 @@ const MyTickets = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-dashboard-card pb-10">
-      <div className="max-w-4xl mx-auto px-4 pt-6 text-center">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-dashboard-card">
+      <div className="max-w-4xl mx-auto px-4 pt-6 text-center flex-grow">
         <TicketsHeader />
         <TicketsTabs tickets={tickets} />
       </div>
+      
+      {/* Banner no rodapé */}
+      <div className="w-full mt-10">
+        <img 
+          src="/lovable-uploads/91b2e929-a143-4191-b4bb-b66c4ec76219.png" 
+          alt="Nokta Tickets" 
+          className="w-full h-auto max-h-48 object-contain"
+        />
+      </div>
+      
+      <Footer />
     </div>
   );
 };
