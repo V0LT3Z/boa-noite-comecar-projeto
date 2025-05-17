@@ -14,7 +14,7 @@ const TicketsHeader = () => {
           </Button>
         </Link>
       </div>
-      <h1 className="text-2xl md:text-3xl font-bold text-primary">
+      <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
         Meus Ingressos
       </h1>
       <p className="text-sm text-dashboard-muted">

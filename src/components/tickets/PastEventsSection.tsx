@@ -51,6 +51,7 @@ const PastEventsSection = ({ eventGroups, onShowQR }: PastEventsSectionProps) =>
                         variant="ghost"
                         size="sm"
                         onClick={() => onShowQR(ticket)}
+                        className="hover:bg-gradient-primary hover:text-white transition-colors"
                       >
                         Ver QR
                       </Button>

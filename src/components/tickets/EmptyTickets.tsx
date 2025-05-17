@@ -13,7 +13,7 @@ const EmptyTickets = () => {
         <p className="text-center text-dashboard-muted mb-6 max-w-md">
           Parece que você ainda não adquiriu nenhum ingresso. Explore os eventos disponíveis para encontrar algo do seu interesse!
         </p>
-        <Button asChild>
+        <Button asChild className="bg-gradient-primary hover:opacity-90 transition-opacity">
           <Link to="/eventos">Ver eventos disponíveis</Link>
         </Button>
       </CardContent>

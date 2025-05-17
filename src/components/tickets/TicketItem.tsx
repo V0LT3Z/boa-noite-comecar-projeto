@@ -22,6 +22,7 @@ const TicketItem = ({ ticket, onShowQR }: TicketItemProps) => {
         onClick={() => onShowQR(ticket)}
         variant="secondary"
         size="sm"
+        className="bg-gradient-primary hover:opacity-90 transition-opacity"
       >
         Ver QR
       </Button>

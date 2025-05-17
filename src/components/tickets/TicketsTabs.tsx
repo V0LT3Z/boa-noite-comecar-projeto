@@ -15,14 +15,14 @@ const TicketsTabs = ({ tickets }: TicketsTabsProps) => {
       <TabsList className="w-full grid grid-cols-2 bg-dashboard-card rounded-xl h-12 p-1 mb-6">
         <TabsTrigger 
           value="ingressos"
-          className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all"
+          className="rounded-lg data-[state=active]:bg-gradient-primary data-[state=active]:text-white transition-all"
         >
           <Ticket className="mr-2 h-4 w-4" />
           Ingressos
         </TabsTrigger>
         <TabsTrigger 
           value="produtos"
-          className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all"
+          className="rounded-lg data-[state=active]:bg-gradient-primary data-[state=active]:text-white transition-all"
         >
           <Gift className="mr-2 h-4 w-4" />
           Produtos
