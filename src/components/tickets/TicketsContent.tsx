@@ -6,8 +6,8 @@ import PastEventsSection from "./PastEventsSection";
 import EmptyTickets from "./EmptyTickets";
 import QRCodeModal from "./QRCodeModal";
 
-interface EventGroup {
-  eventId: string;
+export interface EventGroup {
+  eventId: string; // Changed from number to string to match interface in other components
   eventTitle: string;
   eventDate: string;
   eventLocation: string;
@@ -44,7 +44,7 @@ const TicketsContent = ({ tickets }: TicketsContentProps) => {
     });
     
     return Object.entries(groupedTickets).map(([key, tickets]) => ({
-      eventId: tickets[0].event_id,
+      eventId: String(tickets[0].event_id), // Convert number to string
       eventTitle: tickets[0].event_title,
       eventDate: tickets[0].event_date,
       eventLocation: tickets[0].event_location,

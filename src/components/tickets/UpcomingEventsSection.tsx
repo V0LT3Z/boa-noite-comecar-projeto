@@ -1,14 +1,7 @@
 
 import { UserTicket } from "@/types/event";
 import EventGroupCard from "./EventGroupCard";
-
-interface EventGroup {
-  eventId: string;
-  eventTitle: string;
-  eventDate: string;
-  eventLocation: string;
-  tickets: UserTicket[];
-}
+import { EventGroup } from "./TicketsContent";
 
 interface UpcomingEventsSectionProps {
   eventGroups: EventGroup[];

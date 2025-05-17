@@ -3,14 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { UserTicket } from "@/types/event";
-
-interface EventGroup {
-  eventId: string;
-  eventTitle: string;
-  eventDate: string;
-  eventLocation: string;
-  tickets: UserTicket[];
-}
+import { EventGroup } from "./TicketsContent";
 
 interface PastEventsSectionProps {
   eventGroups: EventGroup[];

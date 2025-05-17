@@ -5,7 +5,7 @@ import { UserTicket } from "@/types/event";
 import TicketItem from "./TicketItem";
 
 interface EventGroupCardProps {
-  eventId: string;
+  eventId: string; // Changed from number to string
   eventTitle: string;
   eventDate: string;
   eventLocation: string;
