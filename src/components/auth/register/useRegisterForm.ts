@@ -54,14 +54,18 @@ export default function useRegisterForm(onSuccess: () => void) {
     return () => clearTimeout(timeoutId);
   }, [formData.email, checkEmailExists]);
 
-  // Efeito para verificar se o CPF existe no banco de dados
+  // Improved CPF validation effect
   useEffect(() => {
     const checkCpf = async () => {
-      // Verificar apenas se o CPF tem um formato válido e completo
+      // Only check if CPF has a valid format and is complete
       if (formData.cpf && formData.cpf.length === 14 && validateCPF(formData.cpf)) {
         setIsCheckingCPF(true);
         try {
+          // More reliable check if CPF exists
+          const cpfFormatted = formData.cpf.replace(/[^\d]/g, ""); // Remove non-numeric characters
           const exists = await checkCPFExists(formData.cpf);
+          console.log("CPF exists result:", exists, "for CPF:", formData.cpf);
+          
           setIsCPFAvailable(!exists);
           
           if (exists) {
@@ -81,7 +85,7 @@ export default function useRegisterForm(onSuccess: () => void) {
             });
           }
         } catch (error) {
-          console.error("Erro ao verificar CPF:", error);
+          console.error("Error checking CPF:", error);
         } finally {
           setIsCheckingCPF(false);
         }
@@ -101,8 +105,8 @@ export default function useRegisterForm(onSuccess: () => void) {
         setFormErrors(prev => ({ ...prev, cpf: "CPF inválido ou inexistente" }));
         return false;
       } else {
-        // Não limpar os erros aqui, apenas os relacionados à validação do formato
-        // O erro de CPF já cadastrado será gerenciado pelo useEffect acima
+        // Don't clear errors here, only those related to format validation
+        // The error about CPF already being registered will be managed by the useEffect above
         setFormErrors(prev => {
           const newErrors = { ...prev };
           if (prev.cpf && prev.cpf === "CPF inválido ou inexistente") {
@@ -143,7 +147,7 @@ export default function useRegisterForm(onSuccess: () => void) {
     setIsLoading(true);
     
     try {
-      // Verificar explicitamente se o CPF já está cadastrado antes de prosseguir
+      // Explicitly check if CPF already exists before proceeding
       if (formData.cpf && formData.cpf.length === 14) {
         const cpfExists = await checkCPFExists(formData.cpf);
         if (cpfExists) {
@@ -156,9 +160,9 @@ export default function useRegisterForm(onSuccess: () => void) {
         }
       }
       
-      // Verificar se há erros no formulário antes de enviar
+      // Check if there are any errors in the form before submitting
       if (Object.keys(formErrors).length > 0) {
-        console.log("Formulário contém erros:", formErrors);
+        console.log("Form contains errors:", formErrors);
         setIsLoading(false);
         return;
       }

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { RegisterData } from "./types";
@@ -99,11 +100,11 @@ export const handleRegister = async (userData: RegisterData): Promise<{success: 
       };
     }
 
-    // Check if CPF already exists if provided
+    // Check if CPF already exists if provided - with more reliable detection
     if (userData.cpf) {
-      console.log("Verificando CPF na função handleRegister:", userData.cpf);
+      console.log("Checking CPF in handleRegister function:", userData.cpf);
       const cpfExists = await checkCPFExists(userData.cpf);
-      console.log("Resultado da verificação de CPF:", cpfExists);
+      console.log("Result of CPF check:", cpfExists);
       
       if (cpfExists) {
         return { 

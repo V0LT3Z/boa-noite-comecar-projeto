@@ -50,18 +50,32 @@ export const checkCPFExists = async (cpf: string): Promise<boolean> => {
     
     console.log("Checking if CPF exists:", cpf);
     
-    // Call our database function to check if CPF exists
-    const { data, error } = await supabase.rpc('check_cpf_exists', {
+    // First try using the database function
+    const { data: exists, error } = await supabase.rpc('check_cpf_exists', {
       cpf_value: cpf
     });
     
     if (error) {
-      console.error("Error checking CPF:", error);
-      return false;
+      console.error("Error checking CPF with RPC:", error);
+      
+      // As a fallback, we'll directly query the profiles table
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('cpf', cpf)
+        .limit(1);
+      
+      if (profilesError) {
+        console.error("Error checking CPF in profiles:", profilesError);
+        return false;
+      }
+      
+      console.log("CPF check direct query result:", profiles);
+      return profiles && profiles.length > 0;
     }
     
-    console.log("CPF exists check result:", data);
-    return !!data; // Converte explicitamente para boolean
+    console.log("CPF exists check RPC result:", exists);
+    return !!exists; // Convert explicit to boolean
   } catch (error) {
     console.error("Error checking if CPF exists:", error);
     return false;
