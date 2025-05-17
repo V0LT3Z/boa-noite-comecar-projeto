@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { fetchEvents } from "@/services/events";
 import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
@@ -121,10 +122,10 @@ const Index = () => {
   }, [formattedEvents]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20">
+    <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20 flex flex-col">
       <Header />
       
-      <main className="pb-12">
+      <main className="flex-1 pb-12">
         {/* Hero section com banner principal e informações - full width */}
         <div className="w-full">
           {!loading && featuredEvents.length > 0 && (
@@ -145,6 +146,8 @@ const Index = () => {
           </section>
         )}
       </main>
+      
+      <Footer />
     </div>
   );
 }
