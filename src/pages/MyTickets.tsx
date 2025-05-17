@@ -52,15 +52,6 @@ const MyTickets = () => {
         <TicketsTabs tickets={tickets} />
       </div>
       
-      {/* Banner no rodapé */}
-      <div className="w-full mt-10">
-        <img 
-          src="/lovable-uploads/91b2e929-a143-4191-b4bb-b66c4ec76219.png" 
-          alt="Nokta Tickets" 
-          className="w-full h-auto max-h-48 object-contain"
-        />
-      </div>
-      
       <Footer />
     </div>
   );
