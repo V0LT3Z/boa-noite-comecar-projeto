@@ -55,15 +55,15 @@ const EventsGrid = ({
         <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-100">
           {searchQuery ? (
             <>
-              <h2 className="text-2xl font-semibold mb-2">Nenhum evento encontrado</h2>
-              <p className="text-muted-foreground mb-6">
+              <h2 className="text-2xl font-semibold mb-2 font-gooddog">Nenhum evento encontrado</h2>
+              <p className="text-muted-foreground mb-6 font-gooddog">
                 Não encontramos eventos relacionados a "{searchQuery}"
               </p>
             </>
           ) : (
             <>
-              <h2 className="text-2xl font-semibold mb-2">Nenhum evento disponível</h2>
-              <p className="text-muted-foreground mb-6">
+              <h2 className="text-2xl font-semibold mb-2 font-gooddog">Nenhum evento disponível</h2>
+              <p className="text-muted-foreground mb-6 font-gooddog">
                 No momento não há eventos cadastrados.
               </p>
             </>
@@ -83,10 +83,10 @@ const EventsGrid = ({
   return (
     <div className="container px-4 mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-left">
+        <h2 className="text-2xl font-bold text-left font-gooddog">
           {searchQuery ? `Resultados para "${searchQuery}"` : "Eventos em Destaque"}
         </h2>
-        <p className="text-muted-foreground text-sm mt-1 text-left">
+        <p className="text-muted-foreground text-sm mt-1 text-left font-gooddog">
           {searchQuery ? `${events.length} ${events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}` : "Os mais procurados"}
         </p>
       </div>
@@ -110,7 +110,7 @@ const EventsGrid = ({
           <Button
             onClick={handleViewAllEvents}
             variant="outline"
-            className="px-8 border-primary/30 text-primary hover:bg-primary/5"
+            className="px-8 border-primary/30 text-primary hover:bg-primary/5 font-gooddog"
           >
             Ver todos os eventos
           </Button>

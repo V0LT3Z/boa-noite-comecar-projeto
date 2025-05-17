@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -122,7 +121,7 @@ const Index = () => {
   }, [formattedEvents]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20 flex flex-col font-gooddog">
       <Header />
       
       <main className="flex-1 pb-12">
