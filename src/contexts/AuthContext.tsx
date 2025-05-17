@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,29 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleLogin = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Check if user has confirmed their email first
-      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers({
-        filter: {
-          email: email
-        }
-      });
-      
-      if (getUserError) {
-        console.error("Error checking user email confirmation:", getUserError);
-      } else if (users && users.length > 0) {
-        const userFound = users[0];
-        if (!userFound.email_confirmed_at) {
-          toast({
-            title: "Email não confirmado",
-            description: "Por favor, verifique seu email e clique no link de confirmação ou solicite um novo email de confirmação.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return false;
-        }
-      }
-
-      // Proceed with login attempt if email is confirmed
+      // Proceed with login attempt
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password
@@ -159,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
       
-      // Double-check email confirmation before proceeding
+      // Check if email is confirmed after successful login
       if (!data.user?.email_confirmed_at) {
         toast({
           title: "Email não confirmado",
