@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Bell, Heart, LogOut, Ticket, User, LayoutDashboard } from 'lucide-react';
+import { Bell, Heart, LogOut, Ticket, User, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface UserMenuProps {
@@ -37,7 +37,7 @@ export const UserMenu = ({ user, isProducer, logout }: UserMenuProps) => {
   ];
 
   const producerItems: NavItem[] = isProducer ? [
-    { label: 'Painel Administrativo', href: '/admin', icon: LayoutDashboard },
+    { label: 'Painel Administrativo', href: '/admin', icon: Settings },
   ] : [];
 
   return (
