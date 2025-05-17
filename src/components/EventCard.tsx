@@ -96,10 +96,10 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
             <FavoriteButton eventId={id} variant="icon" />
           </div>
           
-          {/* Date block with transparent background */}
-          <div className="absolute bottom-0 left-0 bg-transparent text-white px-4 py-2 font-semibold flex items-center gap-2 rounded-tr-lg backdrop-blur-sm">
-            <Calendar className="h-4 w-4" />
-            <span className="text-sm">{date}</span>
+          {/* Date block with semi-transparent background, blur effect, and discrete border */}
+          <div className="absolute bottom-0 left-0 bg-black/30 text-white px-3 py-1.5 font-medium flex items-center gap-1.5 rounded-tr-lg backdrop-blur-md border border-white/10">
+            <Calendar className="h-3.5 w-3.5" strokeWidth={2.5} />
+            <span className="text-xs">{date}</span>
           </div>
         </div>
         
