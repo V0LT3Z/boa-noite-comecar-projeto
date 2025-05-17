@@ -19,7 +19,7 @@ const Footer = () => {
               <img 
                 src="/lovable-uploads/e173faec-c516-4d69-bca8-8be4cb8183c0.png" 
                 alt="NOKTA TICKETS" 
-                className="h-16 w-auto"
+                className="h-20 w-auto" // Aumentando de h-16 para h-20
               />
             </Link>
             <p className="text-sm text-gray-600 mb-6">
