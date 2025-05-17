@@ -291,6 +291,14 @@ export type Database = {
         Args: { cpf_value: string }
         Returns: boolean
       }
+      check_email_exists: {
+        Args: { email_value: string }
+        Returns: boolean
+      }
+      completely_remove_user_by_email: {
+        Args: { target_email: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

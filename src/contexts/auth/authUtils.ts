@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -10,8 +9,7 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
     // Primeiro, verificamos diretamente na tabela de usuários usando a função de RPC
     // para evitar problemas com cache ou estado temporário
     const { data: userExists, error: userCheckError } = await supabase
-      .rpc('check_email_exists', { email_value: email })
-      .single();
+      .rpc('check_email_exists', { email_value: email });
     
     if (!userCheckError && userExists === false) {
       return false;
