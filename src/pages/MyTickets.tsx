@@ -47,7 +47,7 @@ const MyTickets = () => {
   
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-dashboard-card">
-      <div className="max-w-4xl mx-auto px-4 pt-6 text-center flex-grow">
+      <div className="container max-w-4xl mx-auto px-4 pt-6 pb-10 text-center flex-grow">
         <TicketsHeader />
         <TicketsTabs tickets={tickets} />
       </div>
