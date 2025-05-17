@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,10 +17,12 @@ interface AuthContextType {
   isLoading: boolean;
   isProducer: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (userData: RegisterData) => Promise<{success: boolean, requiresEmailConfirmation: boolean}>;
+  register: (userData: RegisterData) => Promise<{success: boolean, requiresEmailConfirmation: boolean, error?: string}>;
   logout: () => void;
   openAuthModal: () => void;
   resendConfirmationEmail: (email: string) => Promise<boolean>;
+  checkEmailExists: (email: string) => Promise<boolean>;
+  checkCPFExists: (cpf: string) => Promise<boolean>;
 }
 
 interface RegisterData {
@@ -169,9 +172,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (userData: RegisterData): Promise<{success: boolean, requiresEmailConfirmation: boolean}> => {
+  // Check if email already exists
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+        }
+      });
+
+      // If there's no error in the OTP request, the user exists
+      // But we might still get a different error that's not related to user existence
+      if (error) {
+        if (error.message.includes("User not found")) {
+          return false; // User does not exist
+        }
+        // Any other error indicates the user might exist, but there was a different issue
+        return true;
+      }
+
+      // If we got data back, the user exists
+      return true;
+    } catch (error) {
+      console.error("Error checking if email exists:", error);
+      // Default to false to prevent blocking registration in case of errors
+      return false;
+    }
+  };
+
+  // Check if CPF already exists in user metadata
+  const checkCPFExists = async (cpf: string): Promise<boolean> => {
+    try {
+      if (!cpf) return false;
+      
+      // Create a custom function that queries user metadata for the CPF
+      // This is a placeholder since we can't directly query auth.users metadata
+      // In a real implementation, you'd need to use a database table to track CPFs
+      
+      // For now, we'll return false since we need a proper database setup to check CPFs
+      return false;
+    } catch (error) {
+      console.error("Error checking if CPF exists:", error);
+      return false;
+    }
+  };
+
+  const register = async (userData: RegisterData): Promise<{success: boolean, requiresEmailConfirmation: boolean, error?: string}> => {
     setIsLoading(true);
     try {
+      // First check if email already exists
+      const emailExists = await checkEmailExists(userData.email);
+      if (emailExists) {
+        return { 
+          success: false, 
+          requiresEmailConfirmation: false,
+          error: "Este email já está cadastrado. Tente fazer login ou recuperar sua senha."
+        };
+      }
+
+      // Check if CPF already exists if provided
+      if (userData.cpf) {
+        const cpfExists = await checkCPFExists(userData.cpf);
+        if (cpfExists) {
+          return { 
+            success: false, 
+            requiresEmailConfirmation: false,
+            error: "Este CPF já está cadastrado. Não é possível criar múltiplas contas com o mesmo CPF."
+          };
+        }
+      }
+      
       // Registrar o usuário no Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
@@ -179,7 +250,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         options: {
           data: {
             full_name: userData.fullName,
-            role: userData.role || 'user'
+            role: userData.role || 'user',
+            cpf: userData.cpf,
+            birth_date: userData.birthDate
           }
         }
       });
@@ -198,12 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           errorMessage = "Email não confirmado. Verifique sua caixa de entrada.";
         }
         
-        toast({
-          title: "Erro ao criar conta",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        return { success: false, requiresEmailConfirmation: false };
+        return { success: false, requiresEmailConfirmation: false, error: errorMessage };
       }
       
       // Verificar se o email precisa de confirmação
@@ -217,12 +285,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true, requiresEmailConfirmation: requiresEmailConfirmation || false };
     } catch (error) {
       console.error("Registration error:", error);
-      toast({
-        title: "Erro ao criar conta",
-        description: "Ocorreu um erro ao criar sua conta. Tente novamente.",
-        variant: "destructive",
-      });
-      return { success: false, requiresEmailConfirmation: false };
+      return { 
+        success: false, 
+        requiresEmailConfirmation: false,
+        error: "Ocorreu um erro ao criar sua conta. Tente novamente."
+      };
     } finally {
       setIsLoading(false);
     }
@@ -295,7 +362,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         openAuthModal,
-        resendConfirmationEmail
+        resendConfirmationEmail,
+        checkEmailExists,
+        checkCPFExists
       }}
     >
       {children}
