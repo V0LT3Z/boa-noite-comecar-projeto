@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { User as UserIcon, Bell, Heart, Home, Menu, ArrowLeft, Store, LayoutDashboard } from 'lucide-react';
@@ -25,11 +26,8 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleBackButton = () => {
-    if (isAuthenticated && location.pathname !== '/minha-conta') {
-      navigate('/minha-conta');
-    } else {
-      navigate('/');
-    }
+    // Always navigate to home when back button is clicked
+    navigate('/');
   };
 
   const handleSearch = (query: string) => {
@@ -57,7 +55,7 @@ const Header = () => {
     <header className="bg-white/80 backdrop-blur-md border-b border-gray-100">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {location.pathname !== '/' && location.pathname !== '/minha-conta' && (
+          {location.pathname !== '/' && (
             <Button 
               variant="ghost" 
               size="icon" 
@@ -66,7 +64,7 @@ const Header = () => {
             >
               <ArrowLeft className="h-5 w-5" />
               <span className="sr-only font-gooddog">
-                {isAuthenticated ? 'Voltar para Dashboard' : 'Voltar para início'}
+                Voltar para início
               </span>
             </Button>
           )}
