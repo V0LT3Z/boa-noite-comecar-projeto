@@ -32,34 +32,27 @@ const SearchBar = ({ onSearch, defaultQuery = "", suggestions = [] }: SearchBarP
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
-  // Quando searchQuery for limpo, mostra novamente todos eventos
+  // Quando searchQuery mudar, dispara a busca em tempo real
   useEffect(() => {
-    if (searchQuery.trim() === "") {
-      if (onSearch) {
-        onSearch("");
-      } else {
-        // Remove o parâmetro de busca da URL
-        navigate(`/`);
-      }
+    // Dispara a busca em tempo real (sem precisar pressionar Enter)
+    if (onSearch) {
+      onSearch(searchQuery);
+    } else if (searchQuery.trim() === "") {
+      // Remove o parâmetro de busca da URL quando a busca for limpa
+      navigate(`/`);
+    } else if (!window.location.pathname.includes('/eventos')) {
+      // Atualiza a URL com o parâmetro de busca na página inicial
+      navigate(`/?q=${encodeURIComponent(searchQuery.trim())}`, { replace: true });
     }
-    // Só disparar quando searchQuery mudar (e não em cada render)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery])
+  }, [searchQuery]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     setOpen(false)
-    if (searchQuery.trim()) {
-      console.log(`Searching for: ${searchQuery}`)
-
-      if (onSearch) {
-        // If there's an onSearch handler, use it
-        onSearch(searchQuery.trim())
-      } else {
-        // Otherwise navigate to the homepage with search query
-        navigate(`/?q=${encodeURIComponent(searchQuery.trim())}`)
-      }
-    }
+    
+    // Não precisamos fazer nada aqui, pois a busca já é disparada no useEffect acima
+    // Mantendo apenas para prevenir o comportamento padrão do form
   }
 
   const handleSelect = (value: string) => {

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import EventCard from '@/components/EventCard';
@@ -93,16 +93,15 @@ const EventsGrid = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 gap-y-10 w-full">
         {displayEvents.map(event => (
-          <Link key={event.id} to={`/evento/${event.id}`}>
-            <EventCard
-              id={event.id}
-              title={event.title}
-              date={event.date}
-              location={event.location}
-              image={event.image}
-              status={event.status}
-            />
-          </Link>
+          <EventCard
+            key={event.id}
+            id={event.id}
+            title={event.title}
+            date={event.date}
+            location={event.location}
+            image={event.image}
+            status={event.status}
+          />
         ))}
       </div>
 
