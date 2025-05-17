@@ -91,7 +91,7 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
       <Button 
         type="submit" 
         className="w-full bg-gradient-primary hover:bg-gradient-primary-hover"
-        disabled={isLoading}
+        disabled={isLoading || Object.keys(formErrors).length > 0}
       >
         {isLoading ? "Cadastrando..." : "Cadastrar"}
         <ArrowRight size={16} />
