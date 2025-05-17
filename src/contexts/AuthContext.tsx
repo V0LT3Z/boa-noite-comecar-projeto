@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -206,6 +205,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       if (!cpf) return false;
       
+      console.log("Checking if CPF exists:", cpf);
+      
       // Call our database function to check if CPF exists
       const { data, error } = await supabase.rpc('check_cpf_exists', {
         cpf_value: cpf
@@ -216,6 +217,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
       
+      console.log("CPF exists check result:", data);
       return data || false;
     } catch (error) {
       console.error("Error checking if CPF exists:", error);

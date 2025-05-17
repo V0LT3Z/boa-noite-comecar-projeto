@@ -1,4 +1,3 @@
-
 import { FormEvent, useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -89,7 +88,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const navigate = useNavigate();
-  const { register, checkEmailExists } = useAuth();
+  const { register, checkEmailExists, checkCPFExists } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,6 +105,8 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [isCPFValid, setIsCPFValid] = useState<boolean | null>(null);
   const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(null);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [isCheckingCPF, setIsCheckingCPF] = useState(false);
+  const [isCPFAvailable, setIsCPFAvailable] = useState<boolean | null>(null);
 
   const hasMinLength = useMemo(() => 
     (formData.password?.length || 0) >= 8, [formData.password]
@@ -171,6 +172,35 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
     return () => clearTimeout(timeoutId);
   }, [formData.email, checkEmailExists]);
 
+  // Add new effect for checking if CPF exists in database
+  useEffect(() => {
+    const checkCpf = async () => {
+      // Only check if CPF is valid format (complete)
+      if (formData.cpf && formData.cpf.length === 14 && validateCPF(formData.cpf)) {
+        setIsCheckingCPF(true);
+        const exists = await checkCPFExists(formData.cpf);
+        setIsCPFAvailable(!exists);
+        
+        if (exists) {
+          setFormErrors(prev => ({
+            ...prev,
+            cpf: "Este CPF já está cadastrado. Não é possível criar múltiplas contas com o mesmo CPF."
+          }));
+        } else {
+          setFormErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors.cpf;
+            return newErrors;
+          });
+        }
+        setIsCheckingCPF(false);
+      }
+    };
+    
+    const timeoutId = setTimeout(checkCpf, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.cpf, checkCPFExists]);
+
   const validateCPFInput = (value: string): boolean => {
     if (value.length === 14) {
       const isValid = validateCPF(value);
@@ -178,14 +208,12 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       
       if (!isValid) {
         setFormErrors(prev => ({ ...prev, cpf: "CPF inválido ou inexistente" }));
+        return false;
       } else {
-        setFormErrors(prev => {
-          const newErrors = { ...prev };
-          delete newErrors.cpf;
-          return newErrors;
-        });
+        // Don't clear error here - let the checkCPFExists effect handle this
+        // We just validate format here, not uniqueness
+        return true;
       }
-      return isValid;
     } else {
       setIsCPFValid(null);
       setFormErrors(prev => {
@@ -238,6 +266,19 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
           setFormErrors({
             ...formErrors,
             email: "Este email já está cadastrado. Tente fazer login."
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      // Double check if CPF exists
+      if (formData.cpf) {
+        const cpfExists = await checkCPFExists(formData.cpf);
+        if (cpfExists) {
+          setFormErrors({
+            ...formErrors,
+            cpf: "Este CPF já está cadastrado. Não é possível criar múltiplas contas com o mesmo CPF."
           });
           setIsLoading(false);
           return;
@@ -359,18 +400,23 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
             onValidate={validateCPFInput}
             disabled={isLoading}
             format={formatCPF}
-            isValid={isCPFValid === false ? false : undefined}
+            isValid={formErrors.cpf ? false : undefined}
             className={formErrors.cpf ? "border-destructive" : ""}
           />
-          {formData.cpf && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              {isCPFValid === true ? (
-                <CheckCircle2 size={18} className="text-green-600" />
-              ) : isCPFValid === false ? (
-                <XCircle size={18} className="text-destructive" />
-              ) : null}
-            </div>
-          )}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {isCheckingCPF ? (
+              <svg className="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : isCPFValid === false ? (
+              <XCircle size={18} className="text-destructive" />
+            ) : isCPFAvailable === false ? (
+              <XCircle size={18} className="text-destructive" />
+            ) : isCPFAvailable === true && isCPFValid === true ? (
+              <CheckCircle2 size={18} className="text-green-600" />
+            ) : null}
+          </div>
         </div>
         {formErrors.cpf && <p className="text-destructive text-sm">{formErrors.cpf}</p>}
       </div>
