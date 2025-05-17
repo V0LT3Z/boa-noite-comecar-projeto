@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast"
 import QRCode from "react-qr-code"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
+import Logo from "@/components/admin/layout/Logo"
 
 const MyTickets = () => {
   const { user } = useAuth()
@@ -101,7 +102,7 @@ const MyTickets = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-dashboard-card pb-10">
       <div className="max-w-4xl mx-auto px-4 pt-6">
-        {/* Redesigned header inspired by the reference image */}
+        {/* Header with logo */}
         <div className="flex items-center mb-6">
           <Link to="/minha-conta" className="mr-3">
             <Button variant="ghost" size="sm" className="p-0 h-8 w-8 rounded-full text-primary hover:bg-primary/5">
@@ -109,13 +110,16 @@ const MyTickets = () => {
               <span className="sr-only">Voltar</span>
             </Button>
           </Link>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-primary">
-              Meus Ingressos
-            </h1>
-            <p className="text-sm text-dashboard-muted">
-              Gerencie todos os seus ingressos e produtos comprados
-            </p>
+          <div className="flex flex-1 items-center justify-between">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-primary">
+                Meus Ingressos
+              </h1>
+              <p className="text-sm text-dashboard-muted">
+                Gerencie todos os seus ingressos e produtos comprados
+              </p>
+            </div>
+            <Logo className="hidden md:flex" />
           </div>
         </div>
 
