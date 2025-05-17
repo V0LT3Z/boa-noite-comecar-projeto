@@ -1,4 +1,4 @@
-import { FormEvent, useState, useMemo, useEffect } from "react";
+import { FormEvent, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Eye, EyeOff, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
@@ -213,21 +213,35 @@ const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
         role: formData.role,
       });
 
-      // Only show toast and navigate if registration was successful
-      if (registerResult) {
-        toast({
-          title: "Conta criada com sucesso!",
-          description: "Seja bem-vindo ao TicketHub.",
-          variant: "success",
-        });
-        
-        if (formData.role === 'producer') {
-          navigate("/admin");
+      // Always close the authentication modal on success
+      if (registerResult.success) {
+        if (registerResult.requiresEmailConfirmation) {
+          // Email confirmation required
+          toast({
+            title: "Conta criada com sucesso!",
+            description: "Por favor, verifique seu email e clique no link de confirmação para ativar sua conta.",
+            variant: "success",
+          });
+          
+          // Just close the modal, but don't navigate since they need to confirm email first
+          onSuccess();
         } else {
-          navigate("/minha-conta");
+          // Email already confirmed (rare case) - can navigate directly
+          toast({
+            title: "Conta criada com sucesso!",
+            description: "Seja bem-vindo ao TicketHub.",
+            variant: "success",
+          });
+          
+          // Navigate to appropriate page
+          if (formData.role === 'producer') {
+            navigate("/admin");
+          } else {
+            navigate("/minha-conta");
+          }
+          
+          onSuccess();
         }
-        
-        onSuccess();
       }
       // If registration failed, the AuthContext already shows the appropriate toast
     } catch (error) {

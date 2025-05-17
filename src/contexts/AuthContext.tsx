@@ -16,7 +16,7 @@ interface AuthContextType {
   isLoading: boolean;
   isProducer: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (userData: RegisterData) => Promise<boolean>;
+  register: (userData: RegisterData) => Promise<{success: boolean, requiresEmailConfirmation: boolean}>;
   logout: () => void;
   openAuthModal: () => void;
   resendConfirmationEmail: (email: string) => Promise<boolean>;
@@ -155,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (userData: RegisterData): Promise<boolean> => {
+  const register = async (userData: RegisterData): Promise<{success: boolean, requiresEmailConfirmation: boolean}> => {
     setIsLoading(true);
     try {
       // Registrar o usuário no Supabase Auth
@@ -189,19 +189,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: errorMessage,
           variant: "destructive",
         });
-        return false;
+        return { success: false, requiresEmailConfirmation: false };
       }
       
       // Verificar se o email precisa de confirmação
-      if (data?.user && !data.user.email_confirmed_at) {
-        toast({
-          title: "Quase lá!",
-          description: "Por favor, verifique seu email e clique no link de confirmação para ativar sua conta.",
-          variant: "default",
-        });
+      const requiresEmailConfirmation = data?.user && !data.user.email_confirmed_at;
+      
+      if (requiresEmailConfirmation) {
+        // Não mostrar toast aqui, deixar para o componente de registro decidir a melhor mensagem
+        console.log("Email confirmation required for:", userData.email);
       }
       
-      return true;
+      return { success: true, requiresEmailConfirmation: requiresEmailConfirmation || false };
     } catch (error) {
       console.error("Registration error:", error);
       toast({
@@ -209,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Ocorreu um erro ao criar sua conta. Tente novamente.",
         variant: "destructive",
       });
-      return false;
+      return { success: false, requiresEmailConfirmation: false };
     } finally {
       setIsLoading(false);
     }
