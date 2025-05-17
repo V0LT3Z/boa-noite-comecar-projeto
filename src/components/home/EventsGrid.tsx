@@ -33,7 +33,7 @@ const EventsGrid = ({
   // Se estiver carregando, mostra os skeletons
   if (loading) {
     return (
-      <div>
+      <div className="container px-4 mx-auto">
         <div className="flex justify-between items-center mb-6">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-8 w-32" />
@@ -50,22 +50,24 @@ const EventsGrid = ({
   // Se não há eventos para mostrar
   if (events.length === 0) {
     return (
-      <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-100">
-        {searchQuery ? (
-          <>
-            <h2 className="text-2xl font-semibold mb-2">Nenhum evento encontrado</h2>
-            <p className="text-muted-foreground mb-6">
-              Não encontramos eventos relacionados a "{searchQuery}"
-            </p>
-          </>
-        ) : (
-          <>
-            <h2 className="text-2xl font-semibold mb-2">Nenhum evento disponível</h2>
-            <p className="text-muted-foreground mb-6">
-              No momento não há eventos cadastrados.
-            </p>
-          </>
-        )}
+      <div className="container px-4 mx-auto">
+        <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-100">
+          {searchQuery ? (
+            <>
+              <h2 className="text-2xl font-semibold mb-2">Nenhum evento encontrado</h2>
+              <p className="text-muted-foreground mb-6">
+                Não encontramos eventos relacionados a "{searchQuery}"
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-semibold mb-2">Nenhum evento disponível</h2>
+              <p className="text-muted-foreground mb-6">
+                No momento não há eventos cadastrados.
+              </p>
+            </>
+          )}
+        </div>
       </div>
     );
   }
@@ -75,16 +77,16 @@ const EventsGrid = ({
 
   return (
     <div className="container px-4 mx-auto">
-      <div className="mb-8 text-left">
-        <h2 className="text-2xl font-bold">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-left">
           {searchQuery ? `Resultados para "${searchQuery}"` : "Eventos em Destaque"}
         </h2>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p className="text-muted-foreground text-sm mt-1 text-left">
           {searchQuery ? `${events.length} ${events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}` : "Os mais procurados"}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {displayEvents.map(event => (
           <Link key={event.id} to={`/evento/${event.id}`}>
             <EventCard
@@ -115,4 +117,3 @@ const EventsGrid = ({
 };
 
 export default EventsGrid;
-
