@@ -119,7 +119,7 @@ const MyTickets = () => {
                 Gerencie todos os seus ingressos e produtos comprados
               </p>
             </div>
-            <Logo className="hidden md:flex" />
+            <Logo className="hidden md:flex" showAdmin={false} />
           </div>
         </div>
 
