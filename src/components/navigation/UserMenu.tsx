@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Bell, Heart, LogOut } from 'lucide-react';
+import { Bell, Heart, LogOut, Ticket, User, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface UserMenuProps {
@@ -30,14 +30,14 @@ export const UserMenu = ({ user, isProducer, logout }: UserMenuProps) => {
   };
 
   const authenticatedItems: NavItem[] = [
-    { label: 'Meus Ingressos', href: '/meus-ingressos', icon: Bell },
+    { label: 'Meus Ingressos', href: '/meus-ingressos', icon: Ticket },
     { label: 'Favoritos', href: '/favoritos', icon: Heart },
     { label: 'Notificações', href: '/notificacoes', icon: Bell },
-    { label: 'Minha Conta', href: '/minha-conta', icon: Avatar },
+    { label: 'Minha Conta', href: '/minha-conta', icon: User },
   ];
 
   const producerItems: NavItem[] = isProducer ? [
-    { label: 'Painel Administrativo', href: '/admin', icon: Bell },
+    { label: 'Painel Administrativo', href: '/admin', icon: LayoutDashboard },
   ] : [];
 
   return (
