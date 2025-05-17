@@ -13,16 +13,15 @@ export const useToast = () => {
     toast: ({ title, description, variant = "default" }: ToastProps) => {
       const toastOptions: Partial<ToastT> = {
         position: "bottom-right",
-        className: "rounded-xl border-none shadow-md",
       }
 
       if (variant === "destructive") {
-        toastOptions.className = "bg-destructive text-white rounded-xl border-none shadow-md"
+        toastOptions.className = "bg-destructive text-destructive-foreground border-destructive-border"
       } else if (variant === "success") {
-        toastOptions.className = "bg-green-500 text-white rounded-xl border-none shadow-md"
+        toastOptions.className = "bg-green-500 text-white border-green-600"
       } else {
-        // Default toast com gradiente roxo
-        toastOptions.className = "bg-gradient-to-r from-primary to-secondary text-white rounded-xl border-none shadow-md"
+        // Default toast com gradiente
+        toastOptions.className = "bg-gradient-to-r from-primary to-secondary text-white"
       }
 
       return sonnerToast(title, {
@@ -37,16 +36,15 @@ export const useToast = () => {
 export const toast = ({ title, description, variant = "default" }: ToastProps) => {
   const toastOptions: Partial<ToastT> = {
     position: "bottom-right",
-    className: "rounded-xl border-none shadow-md",
   }
 
   if (variant === "destructive") {
-    toastOptions.className = "bg-destructive text-white rounded-xl border-none shadow-md"
+    toastOptions.className = "bg-destructive text-destructive-foreground border-destructive-border"
   } else if (variant === "success") {
-    toastOptions.className = "bg-green-500 text-white rounded-xl border-none shadow-md"
+    toastOptions.className = "bg-green-500 text-white border-green-600"
   } else {
-    // Default toast com gradiente roxo
-    toastOptions.className = "bg-gradient-to-r from-primary to-secondary text-white rounded-xl border-none shadow-md"
+    // Default toast com gradiente
+    toastOptions.className = "bg-gradient-to-r from-primary to-secondary text-white"
   }
 
   return sonnerToast(title, {
