@@ -38,7 +38,7 @@ const EventsGrid = ({
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-8 w-32" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {[...Array(6)].map((_, index) => (
             <Skeleton key={index} className="h-48 w-full rounded-lg" />
           ))}
@@ -86,7 +86,7 @@ const EventsGrid = ({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
         {displayEvents.map(event => (
           <Link key={event.id} to={`/evento/${event.id}`}>
             <EventCard
