@@ -10,7 +10,8 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
     // Primeiro, verificamos diretamente na tabela de usuários usando a função de RPC
     // para evitar problemas com cache ou estado temporário
     const { data: userExists, error: userCheckError } = await supabase
-      .rpc('check_email_exists', { email_value: email });
+      .rpc('check_email_exists', { email_value: email })
+      .single();
     
     if (!userCheckError && userExists === false) {
       return false;
@@ -160,7 +161,6 @@ export const forceClearAuthCache = async () => {
       title: "Cache de autenticação limpo",
       description: "Recomendamos limpar os cookies do navegador e recarregar a página para garantir uma experiência sem problemas.",
       variant: "default",
-      duration: 8000,
     });
     
     return true;
@@ -178,8 +178,8 @@ export const completelyRemoveUserByEmail = async (email: string): Promise<boolea
     if (!email) return false;
     
     // Isso requer função no banco de dados com permissões específicas
-    const { error } = await supabase.rpc('completely_remove_user_by_email', {
-      target_email: email
+    const { data, error } = await supabase.functions.invoke('remove-user-by-email', {
+      body: { email }
     });
     
     if (error) {
