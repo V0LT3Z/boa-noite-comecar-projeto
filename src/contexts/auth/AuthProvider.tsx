@@ -10,7 +10,7 @@ import {
   resendConfirmationEmail,
   forceClearAuthCache,
   completelyRemoveUserByEmail 
-} from './authUtils';
+} from './utils';
 import { handleLogin, handleRegister } from './authServices';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

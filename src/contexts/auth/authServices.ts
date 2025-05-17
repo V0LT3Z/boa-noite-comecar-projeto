@@ -1,8 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { RegisterData } from "./types";
-import { checkCPFExists, checkEmailExists, cleanupAuthState } from "./authUtils";
+import { checkCPFExists, checkEmailExists, cleanupAuthState } from "./utils";
 
 /**
  * Handles user login
