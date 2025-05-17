@@ -89,15 +89,15 @@ export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 font-gooddog">
         {emailNotConfirmed && (
           <Alert variant="destructive" className="mb-4">
             <ExclamationTriangleIcon className="h-4 w-4 mr-2" />
-            <AlertDescription className="text-sm">
+            <AlertDescription className="text-sm font-gooddog">
               Seu email ainda não foi confirmado. 
               <Button 
                 variant="link" 
-                className="p-0 h-auto text-xs text-destructive-foreground underline ml-1"
+                className="p-0 h-auto text-xs text-destructive-foreground underline ml-1 font-gooddog"
                 onClick={handleResendEmail}
                 disabled={resendingEmail}
               >
@@ -112,14 +112,14 @@ export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="font-gooddog">Email</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  <Input placeholder="seu@email.com" {...field} className="pl-10" />
+                  <Input placeholder="seu@email.com" {...field} className="pl-10 font-gooddog" />
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="font-gooddog" />
             </FormItem>
           )}
         />
@@ -129,7 +129,7 @@ export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Senha</FormLabel>
+              <FormLabel className="font-gooddog">Senha</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -137,7 +137,7 @@ export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
                     type={showPassword ? "text" : "password"} 
                     placeholder="••••••" 
                     {...field} 
-                    className="pl-10 pr-10" 
+                    className="pl-10 pr-10 font-gooddog" 
                   />
                   <button
                     type="button"
@@ -153,7 +153,7 @@ export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
                   </button>
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="font-gooddog" />
             </FormItem>
           )}
         />
@@ -162,7 +162,7 @@ export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
           <Button
             type="button"
             variant="link"
-            className="p-0 h-auto text-xs text-secondary hover:text-primary"
+            className="p-0 h-auto text-xs text-secondary hover:text-primary font-gooddog"
             onClick={onForgotPassword}
           >
             Esqueceu a senha?
@@ -171,7 +171,7 @@ export function LoginForm({ onSuccess, onForgotPassword }: LoginFormProps) {
 
         <Button 
           type="submit" 
-          className="w-full bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90" 
+          className="w-full bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 font-gooddog" 
           disabled={isSubmitting}
         >
           {isSubmitting ? "Entrando..." : "Entrar"}

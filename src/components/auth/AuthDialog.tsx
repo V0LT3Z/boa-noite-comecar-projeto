@@ -36,14 +36,14 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto font-gooddog">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-primary text-center">
+          <DialogTitle className="text-xl font-bold text-primary text-center font-gooddog">
             {activeTab === "login" && "Entrar na sua conta"}
             {activeTab === "register" && "Criar sua conta"}
             {activeTab === "forgot-password" && "Recuperar senha"}
           </DialogTitle>
-          <DialogDescription className="text-center">
+          <DialogDescription className="text-center font-gooddog">
             {activeTab === "login" 
               ? "Faça login para continuar com a compra de ingressos" 
               : activeTab === "register"
@@ -54,9 +54,9 @@ export function AuthDialog({ open, onOpenChange, onSuccess }: AuthDialogProps) {
 
         {activeTab !== "forgot-password" ? (
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "login" | "register")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Cadastro</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 font-gooddog">
+              <TabsTrigger value="login" className="font-gooddog">Login</TabsTrigger>
+              <TabsTrigger value="register" className="font-gooddog">Cadastro</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login" className="mt-4">
