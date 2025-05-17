@@ -122,12 +122,18 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
             className="block w-full"
           >
             <Button 
-              className={`w-full ${eventStatus === "cancelled" 
-                ? "bg-gray-400 hover:bg-gray-500"
-                : "bg-gradient-to-r from-primary to-secondary hover:opacity-90"} text-white`}
+              className={`w-full relative overflow-hidden bg-white text-primary border border-primary/20 hover:border-primary/40 ${
+                eventStatus === "cancelled" ? "bg-gray-100 text-gray-400 border-gray-300" : ""
+              }`}
               disabled={eventStatus === "cancelled"}
             >
-              {eventStatus === "cancelled" ? "Indisponível" : "Ver ingressos"}
+              {/* Animated gradient wave overlay */}
+              <span className="absolute inset-0 bg-gradient-to-r from-primary/40 via-secondary/40 to-primary/40 blur-sm opacity-0 group-hover:opacity-100 animate-wave"></span>
+              
+              {/* Button text */}
+              <span className="relative z-10">
+                {eventStatus === "cancelled" ? "Indisponível" : "Ver ingressos"}
+              </span>
             </Button>
           </Link>
         </div>
