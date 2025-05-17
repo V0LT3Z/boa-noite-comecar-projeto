@@ -1,10 +1,9 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import EventCard from '@/components/EventCard';
-import GradientCard from '@/components/GradientCard';
 
 interface EventItem {
   id: number;
@@ -30,6 +29,8 @@ const EventsGrid = ({
   setShowAllEvents,
   searchQuery
 }: EventsGridProps) => {
+  const navigate = useNavigate();
+  
   // Se estiver carregando, mostra os skeletons
   if (loading) {
     return (
@@ -72,8 +73,12 @@ const EventsGrid = ({
     );
   }
 
-  // Limita o número de eventos exibidos para 12 (4 linhas de 3 cards), a menos que showAllEvents seja true
-  const displayEvents = showAllEvents ? events : events.slice(0, 12);
+  // Limita o número de eventos exibidos para 12 (4 linhas de 3 cards)
+  const displayEvents = events.slice(0, 12);
+
+  const handleViewAllEvents = () => {
+    navigate('/eventos');
+  };
 
   return (
     <div className="container px-4 mx-auto">
@@ -104,11 +109,11 @@ const EventsGrid = ({
       {events.length > 12 && (
         <div className="mt-12 text-center">
           <Button
-            onClick={() => setShowAllEvents(!showAllEvents)}
+            onClick={handleViewAllEvents}
             variant="outline"
             className="px-8 border-primary/30 text-primary hover:bg-primary/5"
           >
-            {showAllEvents ? "Mostrar menos" : `Ver mais ${events.length - 12} eventos`}
+            Ver todos os {events.length} eventos
           </Button>
         </div>
       )}

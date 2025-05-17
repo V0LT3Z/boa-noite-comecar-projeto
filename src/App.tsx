@@ -5,6 +5,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import Header from "./components/Header";
 import Index from "./pages/Index";
+import AllEvents from "./pages/AllEvents";
 import EventDetails from "./pages/EventDetails";
 import Checkout from "./pages/Checkout";
 import Dashboard from "./pages/Dashboard";
@@ -37,6 +38,7 @@ function App() {
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<Index />} />
+                <Route path="/eventos" element={<AllEvents />} />
                 <Route path="/evento/:id" element={<EventDetails />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/pagamento-sucesso" element={<PaymentSuccessConfirmation />} />

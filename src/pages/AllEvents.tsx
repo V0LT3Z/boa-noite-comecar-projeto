@@ -7,12 +7,14 @@ import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import EventCard from "@/components/EventCard";
+import { Link } from "react-router-dom";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
-// Imported refactored components
-import EventsGrid from "@/components/home/EventsGrid";
-import FeaturedCarousel from "@/components/home/FeaturedCarousel";
-
-const Index = () => {
+const AllEvents = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
   
@@ -33,14 +35,11 @@ const Index = () => {
         setEvents([]);
         console.log("Nenhum evento encontrado no banco de dados");
         
-        // Exibir toast informativo apenas na primeira carga
-        if (!eventsLoaded) {
-          toast({
-            title: "Nenhum evento disponível",
-            description: "Ainda não há eventos disponíveis. Os produtores podem criar novos eventos na área administrativa.",
-            variant: "default",
-          });
-        }
+        toast({
+          title: "Nenhum evento disponível",
+          description: "Ainda não há eventos disponíveis. Os produtores podem criar novos eventos na área administrativa.",
+          variant: "default",
+        });
       } else {
         // Filter out cancelled events
         const activeEvents = eventData.filter(event => event.status !== "cancelled");
@@ -111,42 +110,85 @@ const Index = () => {
       return matchesSearch;
     });
   }, [formattedEvents, searchQuery]);
-    
-  // Eventos em destaque para o carrossel
-  const featuredEvents = useMemo(() => {
-    const activeEvents = formattedEvents.filter(event => event.status === "active");
-    console.log("Eventos para o carrossel:", activeEvents.length);
-    
-    return activeEvents.slice(0, 5);
-  }, [formattedEvents]);
+
+  // Renderização do esqueleto durante o carregamento
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Skeleton className="h-8 w-48" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+            {[...Array(12)].map((_, index) => (
+              <Skeleton key={index} className="h-80 w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Renderização quando não há eventos
+  if (filteredEvents.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <Link to="/" className="inline-flex items-center gap-2 text-primary hover:underline mb-6">
+            <ArrowLeft size={16} />
+            <span>Voltar para página inicial</span>
+          </Link>
+          <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-100">
+            <h2 className="text-2xl font-semibold mb-2">Nenhum evento encontrado</h2>
+            <p className="text-muted-foreground">
+              {searchQuery ? `Não encontramos eventos relacionados a "${searchQuery}"` : "No momento não há eventos disponíveis."}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20">
       <Header />
       
-      <main className="pb-12">
-        {/* Hero section com banner principal e informações - full width */}
-        <div className="w-full">
-          {!loading && featuredEvents.length > 0 && (
-            <FeaturedCarousel events={featuredEvents} />
-          )}
+      <main className="container mx-auto px-4 py-8">
+        <Link to="/" className="inline-flex items-center gap-2 text-primary hover:underline mb-6">
+          <ArrowLeft size={16} />
+          <span>Voltar para página inicial</span>
+        </Link>
+        
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">
+            {searchQuery ? `Resultados para "${searchQuery}"` : "Todos os Eventos"}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            {filteredEvents.length} {filteredEvents.length === 1 ? 'evento encontrado' : 'eventos encontrados'}
+          </p>
         </div>
         
-        {/* Lista de eventos - constrained width */}
-        {!loading && (
-          <section className="mt-16 container mx-auto px-4 max-w-7xl">
-            <EventsGrid 
-              events={filteredEvents} 
-              loading={loading} 
-              showAllEvents={false}
-              setShowAllEvents={() => {}}
-              searchQuery={searchQuery}
-            />
-          </section>
-        )}
+        <Separator className="mb-8" />
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredEvents.map(event => (
+            <Link key={event.id} to={`/evento/${event.id}`}>
+              <EventCard
+                id={event.id}
+                title={event.title}
+                date={event.date}
+                location={event.location}
+                image={event.image}
+                status={event.status}
+              />
+            </Link>
+          ))}
+        </div>
       </main>
     </div>
   );
-}
+};
 
-export default Index;
+export default AllEvents;
