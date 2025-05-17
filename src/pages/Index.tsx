@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -22,81 +21,17 @@ const Index = () => {
   const [eventsLoaded, setEventsLoaded] = useState(false);
   const { toast } = useToast();
   
-  // Função para gerar eventos genéricos
-  const generateGenericEvents = (): EventResponse[] => {
-    const eventTitles = [
-      "Festival de Música Indie",
-      "Workshop de Fotografia",
-      "Feira Gastronômica Internacional",
-      "Conferência de Tecnologia",
-      "Exposição de Arte Contemporânea",
-      "Show de Comédia Stand-up",
-      "Maratona Beneficente",
-      "Feira de Livros",
-      "Palestra sobre Sustentabilidade",
-      "Festival de Cinema",
-      "Concerto Sinfônico",
-      "Curso de Culinária",
-      "Campeonato de E-Sports",
-      "Feira de Empreendedorismo",
-      "Workshop de Marketing Digital",
-      "Congresso de Medicina",
-      "Festival de Teatro",
-      "Encontro de Networking"
-    ];
-    
-    const locations = [
-      "São Paulo, SP",
-      "Rio de Janeiro, RJ",
-      "Belo Horizonte, MG",
-      "Porto Alegre, RS",
-      "Florianópolis, SC",
-      "Salvador, BA",
-      "Recife, PE",
-      "Fortaleza, CE"
-    ];
-    
-    const now = new Date();
-    
-    // Criar 18 eventos genéricos
-    return eventTitles.map((title, index) => ({
-      id: index + 1,
-      title: title,
-      description: `Descrição do evento ${title}`,
-      date: new Date(now.getFullYear(), now.getMonth(), now.getDate() + index).toISOString(),
-      location: locations[index % locations.length],
-      price: Math.floor(Math.random() * 200) + 50,
-      capacity: 100,
-      tickets_sold: Math.floor(Math.random() * 50),
-      status: index % 10 === 0 ? "cancelled" : "active", // A cada 10 eventos, um é cancelado
-      event_type: "presential",
-      created_at: new Date().toISOString(),
-      image_url: `https://picsum.photos/seed/event${index}/800/500`,
-      user_id: "1",
-      organizer: "Organizador de Eventos",
-    }));
-  };
-
   const loadEvents = useCallback(async () => {
     if (eventsLoaded) return; // Evita múltiplas chamadas se os eventos já foram carregados
     
     try {
       setLoading(true);
-      
-      // Primeiro tenta carregar do banco de dados
-      let eventData = await fetchEvents();
-      console.log("Eventos carregados do banco:", eventData?.length || 0);
-      
-      // Se não houver eventos suficientes no banco, adiciona eventos genéricos
-      if (!eventData || eventData.length < 15) {
-        const genericEvents = generateGenericEvents();
-        eventData = genericEvents;
-        console.log("Usando eventos genéricos:", genericEvents.length);
-      }
+      const eventData = await fetchEvents();
+      console.log("Eventos carregados:", eventData);
       
       if (!eventData || eventData.length === 0) {
         setEvents([]);
-        console.log("Nenhum evento encontrado");
+        console.log("Nenhum evento encontrado no banco de dados");
         
         // Exibir toast informativo apenas na primeira carga
         if (!eventsLoaded) {
@@ -110,21 +45,17 @@ const Index = () => {
         // Filter out cancelled events
         const activeEvents = eventData.filter(event => event.status !== "cancelled");
         console.log("Eventos ativos:", activeEvents.length);
-        setEvents(eventData); // Agora mantendo todos os eventos, incluindo cancelados, para teste
+        setEvents(activeEvents);
       }
       
       setEventsLoaded(true);
     } catch (error) {
       console.error("Erro ao carregar eventos:", error);
-      
-      // Usar eventos genéricos em caso de erro
-      const genericEvents = generateGenericEvents();
-      setEvents(genericEvents);
-      console.log("Usando eventos genéricos após erro:", genericEvents.length);
+      setEvents([]);
       
       toast({
         title: "Falha ao carregar eventos",
-        description: "Ocorreu um erro ao carregar os eventos. Usando dados de demonstração.",
+        description: "Ocorreu um erro ao carregar os eventos. Por favor, tente novamente mais tarde.",
         variant: "destructive",
       });
     } finally {
