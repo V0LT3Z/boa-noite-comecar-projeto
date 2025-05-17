@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LoginForm } from "./LoginForm"
-import RegisterForm from "./RegisterForm"
+import RegisterForm from "./register"
 import ForgotPasswordForm from "./ForgotPasswordForm"
 
 interface AuthDialogProps {
