@@ -113,7 +113,7 @@ const EventsGrid = ({
             variant="outline"
             className="px-8 border-primary/30 text-primary hover:bg-primary/5"
           >
-            Ver todos os {events.length} eventos
+            Ver todos os eventos
           </Button>
         </div>
       )}
