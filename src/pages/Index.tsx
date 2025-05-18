@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -7,6 +8,7 @@ import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 // Imported refactored components
 import EventsGrid from "@/components/home/EventsGrid";
@@ -26,6 +28,7 @@ const Index = () => {
     
     try {
       setLoading(true);
+      console.log("Carregando eventos...");
       const eventData = await fetchEvents();
       console.log("Eventos carregados:", eventData);
       
@@ -64,6 +67,7 @@ const Index = () => {
   }, [eventsLoaded, toast]);
 
   useEffect(() => {
+    console.log("Index component mounted");
     loadEvents();
   }, [loadEvents]);
   
@@ -73,6 +77,8 @@ const Index = () => {
   };
 
   const formattedEvents = useMemo(() => {
+    if (!events || events.length === 0) return [];
+    
     return events.map(event => {
       try {
         const eventDate = new Date(event.date);
@@ -80,10 +86,10 @@ const Index = () => {
           id: event.id,
           title: event.title,
           date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
-          location: event.location,
+          location: event.location || "Local não informado",
           image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
           category: "Eventos",
-          status: event.status
+          status: event.status || "active"
         };
       } catch (error) {
         console.error("Erro ao formatar evento:", error, event);
@@ -101,6 +107,8 @@ const Index = () => {
   }, [events]);
 
   const filteredEvents = useMemo(() => {
+    if (!formattedEvents || formattedEvents.length === 0) return [];
+    
     return formattedEvents.filter(event => {
       // Filter by search query if provided
       const matchesSearch = searchQuery 
@@ -120,6 +128,21 @@ const Index = () => {
     return activeEvents.slice(0, 5);
   }, [formattedEvents]);
 
+  // Adicionar fallback para quando estiver carregando
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20 flex flex-col font-gooddog">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-lg">Carregando eventos...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20 flex flex-col font-gooddog">
       <Header />
@@ -133,17 +156,15 @@ const Index = () => {
         </div>
         
         {/* Lista de eventos - constrained width */}
-        {!loading && (
-          <section className="mt-16 container mx-auto px-4 max-w-7xl">
-            <EventsGrid 
-              events={filteredEvents} 
-              loading={loading} 
-              showAllEvents={false}
-              setShowAllEvents={() => {}}
-              searchQuery={searchQuery}
-            />
-          </section>
-        )}
+        <section className="mt-16 container mx-auto px-4 max-w-7xl">
+          <EventsGrid 
+            events={filteredEvents} 
+            loading={loading} 
+            showAllEvents={false}
+            setShowAllEvents={() => {}}
+            searchQuery={searchQuery}
+          />
+        </section>
       </main>
       
       <Footer />
