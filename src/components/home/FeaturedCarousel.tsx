@@ -28,7 +28,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   });
   const autoplayTimerRef = useRef<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [preloadedImages, setPreloadedImages] = useState<string[]>([]);
+  const [imagesReady, setImagesReady] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const slidesRef = useRef<HTMLDivElement>(null);
   
@@ -40,37 +40,15 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     return null;
   }
   
-  // Preload all images to prevent white flashes
+  // Load images after component mounts
   useEffect(() => {
-    if (!events || events.length === 0) return;
+    // Set images ready after a short timeout to allow the component to mount
+    const timer = setTimeout(() => {
+      setImagesReady(true);
+    }, 300);
     
-    // Preload all event images
-    const imagesToPreload = events.map(event => event.image);
-    
-    Promise.all(
-      imagesToPreload.map(
-        (src) =>
-          new Promise((resolve, reject) => {
-            const img = new Image();
-            img.src = src;
-            img.onload = () => resolve(src);
-            img.onerror = () => {
-              console.error(`Failed to preload image: ${src}`);
-              reject(new Error(`Failed to preload image: ${src}`));
-            };
-          })
-      )
-    )
-      .then((loadedImages) => {
-        console.log("All images preloaded successfully:", loadedImages);
-        setPreloadedImages(loadedImages as string[]);
-      })
-      .catch((error) => {
-        console.error("Error during image preloading:", error);
-        // Still set the preloaded images we have
-        setPreloadedImages(preloadedImages);
-      });
-  }, [events]);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Handle carousel slide selection
   useEffect(() => {
@@ -136,20 +114,13 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   
   // Improved navigation functions
   const scrollNext = () => {
-    if (isTransitioning) return;
+    if (isTransitioning || !emblaApi) return;
     
     console.log("scrollNext called, current index:", selectedIndex);
     setIsTransitioning(true);
     
-    // Calculate next index and update state
-    const nextIndex = (selectedIndex + 1) % events.length;
-    setSelectedIndex(nextIndex);
-    console.log("New index set to:", nextIndex);
-    
     // Sync with embla carousel
-    if (emblaApi) {
-      emblaApi.scrollTo(nextIndex);
-    }
+    emblaApi.scrollNext();
     
     // Reset transition flag after animation completes
     setTimeout(() => {
@@ -158,20 +129,13 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   };
   
   const scrollPrev = () => {
-    if (isTransitioning) return;
+    if (isTransitioning || !emblaApi) return;
     
     console.log("scrollPrev called, current index:", selectedIndex);
     setIsTransitioning(true);
     
-    // Calculate previous index and update state
-    const prevIndex = selectedIndex === 0 ? events.length - 1 : selectedIndex - 1;
-    setSelectedIndex(prevIndex);
-    console.log("New index set to:", prevIndex);
-    
     // Sync with embla carousel
-    if (emblaApi) {
-      emblaApi.scrollTo(prevIndex);
-    }
+    emblaApi.scrollPrev();
     
     // Reset transition flag after animation completes
     setTimeout(() => {
@@ -179,7 +143,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     }, 500); // Match this with CSS transition duration
   };
 
-  if (preloadedImages.length < events.length) {
+  if (!imagesReady) {
     return (
       <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
         <div className="mx-auto max-w-[1400px] px-4">
@@ -212,14 +176,18 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
           <div className="lg:col-span-8">
             <div>
               <div className="relative overflow-hidden rounded-3xl shadow-xl h-[420px]">
-                <div className="relative h-full w-full" ref={slidesRef}>
-                  {events.map((event, index) => (
-                    <EventSlide 
-                      key={`event-slide-${event.id}`}
-                      {...event} 
-                      isActive={index === selectedIndex}
-                    />
-                  ))}
+                <div className="relative h-full w-full" ref={emblaRef}>
+                  <div className="flex h-full">
+                    {events.map((event, index) => (
+                      <div className="flex-full min-w-0 relative h-full w-full" key={`event-slide-container-${event.id}`}>
+                        <EventSlide 
+                          key={`event-slide-${event.id}`}
+                          {...event} 
+                          isActive={index === selectedIndex}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

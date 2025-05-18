@@ -1,3 +1,4 @@
+
 import { Calendar, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -21,6 +22,10 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
   const [eventExists, setEventExists] = useState<boolean | null>(null);
   const [eventStatus, setEventStatus] = useState<string | undefined>(status);
   const [isChecking, setIsChecking] = useState(false);
+  const [fallbackImageUsed, setFallbackImageUsed] = useState(false);
+  
+  // Generate a consistent fallback image based on the event id
+  const fallbackImage = `https://picsum.photos/seed/event${id}/800/500`;
   
   useEffect(() => {
     // Verificar se o evento existe apenas uma vez
@@ -64,15 +69,22 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
     return true;
   };
   
+  const handleImageError = () => {
+    if (!fallbackImageUsed) {
+      setFallbackImageUsed(true);
+    }
+  };
+  
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">
       <div className="relative">
         {/* Image container with overlay */}
         <div className="relative h-40 overflow-hidden">
           <img
-            src={image}
+            src={fallbackImageUsed ? fallbackImage : image}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={handleImageError}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80 mix-blend-multiply" />
           

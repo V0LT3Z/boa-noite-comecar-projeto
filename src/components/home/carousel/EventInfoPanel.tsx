@@ -1,57 +1,84 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Calendar, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Calendar, MapPin, ChevronRight } from 'lucide-react';
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import FavoriteButton from '@/components/FavoriteButton';
 
 interface EventInfoPanelProps {
   id: number;
   title: string;
   date: string;
   location: string;
+  image: string;
+  status?: string;
 }
 
-const EventInfoPanel = ({ id, title, date, location }: EventInfoPanelProps) => {
+const EventInfoPanel = ({ id, title, date, location, image, status }: EventInfoPanelProps) => {
+  const [imageError, setImageError] = useState(false);
+  // Generate a consistent fallback image
+  const fallbackImage = `https://picsum.photos/seed/event${id}/600/400`;
+  
+  const handleImageError = () => {
+    setImageError(true);
+  };
+  
   return (
-    <Card className="h-[420px] border-none shadow-lg bg-white p-6 flex flex-col">
-      <ScrollArea className="flex-grow pr-4 mb-4">
-        <h3 className="text-xl font-bold mb-4 break-words font-gooddog">{title}</h3>
+    <div className="bg-white rounded-3xl overflow-hidden shadow-md h-[420px] flex flex-col">
+      {/* Header image with smaller size */}
+      <div className="relative h-[180px] overflow-hidden">
+        <img 
+          src={imageError ? fallbackImage : image} 
+          alt={title}
+          className="w-full h-full object-cover"
+          onError={handleImageError}
+        />
         
-        <div className="space-y-4 mt-4">
-          <div className="flex items-start gap-3">
-            <Calendar className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-            <span className="text-gray-700 text-sm font-gooddog">{date}</span>
+        {/* Status badge if cancelled */}
+        {status === "cancelled" && (
+          <div className="absolute top-3 right-3 bg-red-500 px-2 py-1 rounded-full text-xs font-bold text-white">
+            Cancelado
           </div>
-          <div className="flex items-start gap-3">
-            <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-            <span className="text-gray-700 text-sm font-gooddog break-words">{location}</span>
+        )}
+        
+        {/* Favorite button */}
+        <div className="absolute top-2 right-2">
+          <FavoriteButton eventId={id} variant="icon" />
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="flex-1 p-5 flex flex-col">
+        <h3 className="text-xl font-bold mb-2 line-clamp-2">{title}</h3>
+        
+        <div className="flex flex-col gap-3 flex-grow">
+          {/* Date info */}
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="h-4 w-4 text-primary" />
+            <span>{date}</span>
+          </div>
+          
+          {/* Location info */}
+          <div className="flex items-center gap-2 text-sm">
+            <MapPin className="h-4 w-4 text-primary" />
+            <span className="line-clamp-1">{location}</span>
           </div>
         </div>
-      </ScrollArea>
-      
-      <div className="space-y-4 mt-auto flex-shrink-0">
-        <Button 
-          className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-md py-6 font-gooddog"
-          asChild
-        >
-          <Link to={`/evento/${id}`}>
-            Comprar ingresso
-          </Link>
-        </Button>
         
-        <Button 
-          variant="outline"
-          className="w-full border-primary/30 text-primary hover:bg-primary/5 py-6 font-gooddog"
-          asChild
-        >
-          <Link to={`/evento/${id}`} className="flex items-center justify-center">
-            Mais detalhes <ChevronRight className="ml-1 h-4 w-4" />
+        {/* Call to action */}
+        <div className="mt-auto pt-4">
+          <Link to={`/evento/${id}`} className="w-full block">
+            <Button 
+              variant="default" 
+              className="w-full bg-gradient-primary" 
+              disabled={status === "cancelled"}
+            >
+              Ver detalhes
+            </Button>
           </Link>
-        </Button>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 };
 

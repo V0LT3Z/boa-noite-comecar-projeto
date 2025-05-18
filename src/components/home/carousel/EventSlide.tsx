@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Calendar } from 'lucide-react';
 
 interface EventSlideProps {
@@ -12,6 +12,14 @@ interface EventSlideProps {
 }
 
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
+  const [imageError, setImageError] = useState(false);
+  // Generate a consistent fallback image based on the event id
+  const fallbackImage = `https://picsum.photos/seed/event${id}/1200/600`;
+  
+  const handleImageError = () => {
+    setImageError(true);
+  };
+  
   return (
     <div 
       className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
@@ -21,10 +29,11 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
     >
       <div className="relative h-[420px] w-full overflow-hidden group">
         <img 
-          src={image} 
+          src={imageError ? fallbackImage : image} 
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="eager"
+          onError={handleImageError}
           style={{
             transition: 'transform 500ms ease-in-out',
             transform: isActive ? 'scale(1)' : 'scale(1.05)'
