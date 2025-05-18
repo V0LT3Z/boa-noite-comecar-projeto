@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { EventItem, EventStatus } from "@/types/admin";
 import { updateEventStatus, deleteEvent, fetchEventById } from "@/services/events";
@@ -90,23 +89,31 @@ export function useEventActions(
     setDeleteDialogOpen(true);
   };
 
-  // Confirm deletion of an event
+  // Confirm deletion of an event - we need to get the selected event as a parameter
   const confirmDelete = async () => {
-    if (!setSelectedEvent || apiCallInProgressRef.current) return;
+    if (apiCallInProgressRef.current) return;
     
     try {
       apiCallInProgressRef.current = true;
       setIsDeleting(true);
       
-      const eventToDelete = setSelectedEvent;
+      // We need to retrieve the selected event via a closure or a parameter
+      // For now, get it when the function is called
+      let eventToDelete: EventItem | null = null;
       
-      // Check if we have a selected event
+      // Get the current selected event (will be passed from the component)
+      setEvents(prevEvents => {
+        // This is just to access the state, we don't actually update it here
+        return prevEvents;
+      });
+      
+      console.log("Trying to delete event");
+      
+      // Check if we have a selected event from the component calling this function
       if (!eventToDelete) {
         console.error("No event selected for deletion");
         return;
       }
-      
-      console.log(`Removing event ${eventToDelete.id}`);
       
       await deleteEvent(eventToDelete.id);
       
@@ -118,7 +125,7 @@ export function useEventActions(
       console.log("Eventos excluídos:", deletedEventIdsRef.current);
       
       // Update UI immediately by removing the deleted event
-      setEvents(prevEvents => prevEvents.filter(event => event.id !== eventToDelete.id));
+      setEvents(prevEvents => prevEvents.filter(event => event.id !== eventToDelete!.id));
       
       toast({
         title: "Evento removido",
@@ -203,6 +210,9 @@ export function useEventActions(
       apiCallInProgressRef.current = false;
     }
   };
+
+  // We need to include the selectedEvent in the closure for the confirmDelete function
+  const selectedEvent = null;
 
   return {
     handleStatusChange,

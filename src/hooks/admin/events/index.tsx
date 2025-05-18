@@ -17,7 +17,7 @@ export function useEventsManagement() {
   const {
     events, setEvents,
     loadingEvents, setLoadingEvents,
-    searchQuery,
+    searchQuery, setSearchQuery,
     isCreatingEvent, setIsCreatingEvent,
     editingEvent, setEditingEvent,
     selectedEvent, setSelectedEvent,

@@ -97,7 +97,11 @@ const AdminEvents = () => {
           }
         }}
         selectedEvent={selectedEvent}
-        onConfirm={confirmDelete}
+        onConfirm={() => {
+          if (selectedEvent) {
+            confirmDelete();
+          }
+        }}
         isDeleting={isDeleting}
       />
     </AdminLayout>
