@@ -157,6 +157,7 @@ export const getFavorites = async (): Promise<EventDetails[]> => {
   console.log("Eventos favoritados encontrados:", events);
   
   // Mapear os eventos para o formato EventDetails
+  // Corrigir erro de tipo garantindo que status seja um dos valores aceitos
   const eventDetails: EventDetails[] = events.map(event => ({
     id: event.id,
     title: event.title,
@@ -175,7 +176,8 @@ export const getFavorites = async (): Promise<EventDetails[]> => {
     minimumAge: event.minimum_age || 0,
     warnings: [],
     coordinates: { lat: 0, lng: 0 },
-    status: event.status
+    // Coerção do tipo para garantir compatibilidade com EventDetails
+    status: (event.status as "active" | "paused" | "cancelled") || "active"
   }));
 
   return eventDetails;
@@ -193,7 +195,9 @@ export const getRecommended = async (): Promise<EventDetails[]> => {
 
 // Funções para gerenciamento de notificações
 export const getUserNotifications = async (): Promise<Notification[]> => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const sessionResult = await supabase.auth.getSession();
+  const session = sessionResult.data.session;
+  
   if (!session) {
     return [];
   }
@@ -216,7 +220,9 @@ export const getUserNotifications = async (): Promise<Notification[]> => {
 };
 
 export const markNotificationAsRead = async (notificationId: string): Promise<boolean> => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const sessionResult = await supabase.auth.getSession();
+  const session = sessionResult.data.session;
+  
   if (!session) {
     return false;
   }
@@ -236,7 +242,9 @@ export const markNotificationAsRead = async (notificationId: string): Promise<bo
 };
 
 export const markAllNotificationsAsRead = async (): Promise<boolean> => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const sessionResult = await supabase.auth.getSession();
+  const session = sessionResult.data.session;
+  
   if (!session) {
     return false;
   }
@@ -255,7 +263,9 @@ export const markAllNotificationsAsRead = async (): Promise<boolean> => {
 };
 
 export const clearAllNotifications = async (): Promise<boolean> => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const sessionResult = await supabase.auth.getSession();
+  const session = sessionResult.data.session;
+  
   if (!session) {
     return false;
   }
@@ -275,15 +285,19 @@ export const clearAllNotifications = async (): Promise<boolean> => {
 
 // Função para inscrever nas notificações em tempo real
 export const subscribeToNotifications = (callback: (notification: Notification) => void) => {
-  const { data: { session } } = supabase.auth.getSession();
-  if (!session) {
-    console.log("Usuário não está autenticado para receber notificações");
-    return {
-      unsubscribe: () => {}
-    };
-  }
-
-  console.log("Inscrito para receber notificações em tempo real");
+  const sessionPromise = supabase.auth.getSession();
+  
+  // Usar Promise e then() para evitar acesso direto ao .data
+  sessionPromise.then(({ data: { session } }) => {
+    if (!session) {
+      console.log("Usuário não está autenticado para receber notificações");
+      return {
+        unsubscribe: () => {}
+      };
+    }
+    
+    console.log("Inscrito para receber notificações em tempo real");
+  });
   
   // Em uma implementação real, usaríamos o Supabase Realtime
   // Por enquanto, retornamos um objeto com método unsubscribe
