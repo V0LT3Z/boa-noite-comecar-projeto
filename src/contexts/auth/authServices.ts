@@ -90,6 +90,16 @@ export const handleRegister = async (userData: RegisterData): Promise<{success: 
     // Limpar qualquer estado de autenticação anterior
     cleanupAuthState();
     
+    // Validate email format before proceeding
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userData.email)) {
+      return { 
+        success: false, 
+        requiresEmailConfirmation: false,
+        error: "Formato de email inválido. Por favor, use um email válido."
+      };
+    }
+    
     // First check if email already exists
     const emailExists = await checkEmailExists(userData.email);
     if (emailExists) {
@@ -143,6 +153,8 @@ export const handleRegister = async (userData: RegisterData): Promise<{success: 
         errorMessage = "A senha deve ter pelo menos 6 caracteres.";
       } else if (error.message.includes("Email not confirmed")) {
         errorMessage = "Email não confirmado. Verifique sua caixa de entrada.";
+      } else if (error.message.includes("Email address") && error.message.includes("is invalid")) {
+        errorMessage = "Formato de email inválido. Por favor, use um email válido.";
       }
       
       return { success: false, requiresEmailConfirmation: false, error: errorMessage };
