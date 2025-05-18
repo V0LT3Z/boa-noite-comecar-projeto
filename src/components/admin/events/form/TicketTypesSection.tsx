@@ -8,7 +8,7 @@ import TicketTypeCard from "./TicketTypeCard";
 interface TicketTypesSectionProps {
   addTicketType: () => void;
   removeTicketType: (index: number) => void;
-  isDeletingTicket: number | null;
+  isDeletingTicket: number | null;  // Changed from boolean to number | null
 }
 
 const TicketTypesSection = ({ 

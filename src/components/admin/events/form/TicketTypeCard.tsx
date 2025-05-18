@@ -16,7 +16,7 @@ import { EventFormValues } from "./eventFormSchema";
 interface TicketTypeCardProps {
   index: number;
   onRemove: (index: number) => void;
-  isDeleting: boolean;
+  isDeleting: number | null; // Changed from boolean to number | null
 }
 
 const TicketTypeCard = ({ index, onRemove, isDeleting }: TicketTypeCardProps) => {
