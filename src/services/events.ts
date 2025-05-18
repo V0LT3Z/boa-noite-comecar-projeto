@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
@@ -54,8 +53,11 @@ export const fetchEvents = async () => {
       throw error;
     }
     
-    console.log(`Eventos encontrados: ${events?.length || 0}`);
-    return events as EventResponse[];
+    // Garantir que só retornamos eventos válidos
+    const validEvents = events?.filter(event => event && typeof event.id === 'number') || [];
+    
+    console.log(`Eventos encontrados: ${validEvents.length || 0}`);
+    return validEvents as EventResponse[];
   } catch (error) {
     console.error("Erro ao buscar eventos:", error);
     throw error;

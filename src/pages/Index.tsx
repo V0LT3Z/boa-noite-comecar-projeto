@@ -21,6 +21,7 @@ const Index = () => {
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventsLoaded, setEventsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
   const loadEvents = useCallback(async () => {
@@ -28,6 +29,7 @@ const Index = () => {
     
     try {
       setLoading(true);
+      setError(null);
       console.log("Carregando eventos...");
       const eventData = await fetchEvents();
       console.log("Eventos carregados:", eventData);
@@ -45,8 +47,14 @@ const Index = () => {
           });
         }
       } else {
-        // Filter out cancelled events
-        const activeEvents = eventData.filter(event => event.status !== "cancelled");
+        // Filter out cancelled and removed events
+        // Compare with the previous implementation, here we're ensuring that
+        // any events that are cancelled OR don't exist anymore are filtered out
+        const activeEvents = eventData.filter(event => {
+          // Ensure we only display active events that haven't been deleted
+          return event.status === "active" && event.id;
+        });
+        
         console.log("Eventos ativos:", activeEvents.length);
         setEvents(activeEvents);
       }
@@ -54,6 +62,7 @@ const Index = () => {
       setEventsLoaded(true);
     } catch (error) {
       console.error("Erro ao carregar eventos:", error);
+      setError("Falha ao carregar eventos. Tente novamente mais tarde.");
       setEvents([]);
       
       toast({
@@ -69,6 +78,16 @@ const Index = () => {
   useEffect(() => {
     console.log("Index component mounted");
     loadEvents();
+    
+    // Adicionar um intervalo para recarregar eventos periodicamente
+    // para garantir que eventos excluídos sejam atualizados na tela principal
+    const interval = setInterval(() => {
+      console.log("Recarregando eventos...");
+      setEventsLoaded(false); // Forçar recarregamento
+      loadEvents();
+    }, 60000); // Atualizar a cada minuto
+    
+    return () => clearInterval(interval);
   }, [loadEvents]);
   
   const handleSearch = (query: string) => {
@@ -116,12 +135,14 @@ const Index = () => {
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
-      return matchesSearch;
+      // Somente mostrar eventos ativos
+      return matchesSearch && event.status === "active";
     });
   }, [formattedEvents, searchQuery]);
     
   // Eventos em destaque para o carrossel
   const featuredEvents = useMemo(() => {
+    // Filtrar novamente para garantir que apenas eventos ativos sejam exibidos
     const activeEvents = formattedEvents.filter(event => event.status === "active");
     console.log("Eventos para o carrossel:", activeEvents.length);
     
@@ -137,6 +158,29 @@ const Index = () => {
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
             <p className="text-lg">Carregando eventos...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Exibir mensagem de erro se ocorrer algum problema
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20 flex flex-col font-gooddog">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4 text-center max-w-lg mx-auto p-6">
+            <p className="text-lg text-red-500">{error}</p>
+            <button 
+              onClick={() => {
+                setEventsLoaded(false);
+                loadEvents();
+              }}
+              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/80"
+            >
+              Tentar novamente
+            </button>
           </div>
         </div>
       </div>

@@ -1,11 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
 
 // Componentes refatorados
 import CarouselControls from './carousel/CarouselControls';
@@ -38,6 +33,12 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   const slidesRef = useRef<HTMLDivElement>(null);
   
   console.log("FeaturedCarousel received events:", events);
+  
+  // Verificar se há eventos disponíveis
+  if (!events || events.length === 0) {
+    console.log("Nenhum evento disponível para o carrossel");
+    return null;
+  }
   
   // Preload all images to prevent white flashes
   useEffect(() => {
@@ -125,6 +126,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     };
   }, [emblaApi, events.length, isTransitioning]);
 
+  // Garantir que temos pelo menos um evento
   if (events.length === 0) {
     return null;
   }
