@@ -7,7 +7,6 @@ import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-import CleanupAuthButton from "@/components/auth/CleanupAuthButton";
 
 // Imported refactored components
 import EventsGrid from "@/components/home/EventsGrid";
@@ -126,11 +125,6 @@ const Index = () => {
       <Header />
       
       <main className="flex-1 pb-12">
-        {/* Tools section - Added at the top for testing */}
-        <div className="w-full max-w-md mx-auto mt-4 px-4">
-          <CleanupAuthButton />
-        </div>
-        
         {/* Hero section com banner principal e informações - full width */}
         <div className="w-full">
           {!loading && filteredEvents.length > 0 && (
