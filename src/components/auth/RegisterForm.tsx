@@ -1,11 +1,11 @@
 
-import { AuthProvider } from "@/contexts/auth";
+import { useAuth } from "@/contexts/AuthContext";
 import RegisterForm from './register/RegisterForm';
 
 const RegisterFormWithProvider = ({ onSuccess }: { onSuccess: () => void }) => (
-  <AuthProvider>
+  <div>
     <RegisterForm onSuccess={onSuccess} />
-  </AuthProvider>
+  </div>
 );
 
 export default RegisterFormWithProvider;
