@@ -16,6 +16,7 @@ const AdminEvents = () => {
     events,
     loadingEvents,
     selectedEvent,
+    setSelectedEvent, // Added this line - destructuring setSelectedEvent from the hook
     confirmDialogOpen,
     setConfirmDialogOpen,
     deleteDialogOpen,
