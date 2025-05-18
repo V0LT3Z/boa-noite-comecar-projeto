@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "@/hooks/use-toast";
 import { EventItem, EventStatus } from "@/types/admin";
@@ -72,7 +71,7 @@ export function useEventsManagement() {
         description: event.description || "",
         location: event.location || "",
         venue: event.location || "",
-        minimumAge: event.minimum_age?.toString() || "0"
+        minimumAge: event.minimumAge?.toString() || "0"
       }));
       
       setEvents(formattedEvents);
@@ -318,6 +317,7 @@ export function useEventsManagement() {
     events,
     loadingEvents,
     selectedEvent,
+    setSelectedEvent, // Add setSelectedEvent to the return object
     confirmDialogOpen,
     setConfirmDialogOpen,
     deleteDialogOpen,
