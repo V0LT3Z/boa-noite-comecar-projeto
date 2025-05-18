@@ -1,6 +1,5 @@
-
 import { toast } from "@/hooks/use-toast";
-import { EventItem, EventStatus } from "@/types/admin";
+import { EventItem } from "@/types/admin";
 import { updateEventStatus } from "@/services/events";
 
 /**
