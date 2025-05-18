@@ -23,7 +23,10 @@ enabled = true
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
+# Update the site URL to your deployment URL
+site_url = "https://9f1d5b2d-925b-4ae7-9724-2e7d5f1c2dbc.lovableproject.com"
+# Add redirect URLs for both local development and production
+additional_redirect_urls = ["http://localhost:3000", "https://9f1d5b2d-925b-4ae7-9724-2e7d5f1c2dbc.lovableproject.com"]
 
 [analytics]
 enabled = false
