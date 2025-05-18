@@ -60,7 +60,7 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
     e.preventDefault(); // Prevent event bubbling when used in cards
     e.stopPropagation(); // Ensure event doesn't propagate
     
-    console.log("Toggle favorite clicked, isAuthenticated:", isAuthenticated, "user:", !!user);
+    console.log("Toggle favorite clicked, isAuthenticated:", isAuthenticated, "user:", !!user, "eventId:", eventId);
     
     if (!isAuthenticated || !user) {
       console.log("User not authenticated, opening auth dialog");
@@ -85,6 +85,11 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
       
       if (success) {
         setIsFavorite(!isFavorite);
+        toast({
+          title: isFavorite ? "Removido dos favoritos" : "Adicionado aos favoritos",
+          description: isFavorite ? "O evento foi removido dos seus favoritos." : "O evento foi adicionado aos seus favoritos.",
+          variant: "default"
+        });
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
@@ -118,6 +123,7 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
           } font-gooddog`}
           onClick={handleToggleFavorite}
           disabled={isLoading}
+          data-event-id={eventId}
         >
           <Heart 
             className={`h-5 w-5 ${isFavorite ? "fill-destructive" : ""}`} 
@@ -144,6 +150,7 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
         } font-gooddog`}
         onClick={handleToggleFavorite}
         disabled={isLoading}
+        data-event-id={eventId}
       >
         <Heart 
           className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} 

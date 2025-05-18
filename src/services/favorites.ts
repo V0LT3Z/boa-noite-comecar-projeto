@@ -22,6 +22,7 @@ export const addToFavorites = async (eventId: number) => {
   }
 
   const userId = session.user.id;
+  console.log("Adicionando favorito - UserID:", userId, "EventID:", eventId);
 
   // Verificar se já está nos favoritos
   const { data: existing, error: checkError } = await supabase
@@ -32,12 +33,14 @@ export const addToFavorites = async (eventId: number) => {
     .maybeSingle();
 
   if (checkError) {
+    console.error("Erro ao verificar favorito:", checkError);
     throw checkError;
   }
 
   if (existing) {
     // Se já existe, não faz nada
-    return existing;
+    console.log("Evento já está nos favoritos");
+    return true;
   }
 
   // Se não existe, adiciona aos favoritos
@@ -46,15 +49,15 @@ export const addToFavorites = async (eventId: number) => {
     .insert({
       user_id: userId,
       event_id: eventId
-    })
-    .select()
-    .single();
+    });
 
   if (error) {
+    console.error("Erro ao adicionar favorito:", error);
     throw error;
   }
 
-  return data;
+  console.log("Favorito adicionado com sucesso", data);
+  return true;
 };
 
 // Função para remover um evento dos favoritos
@@ -66,6 +69,7 @@ export const removeFromFavorites = async (eventId: number) => {
   }
 
   const userId = session.user.id;
+  console.log("Removendo favorito - UserID:", userId, "EventID:", eventId);
 
   // Remover dos favoritos
   const { error } = await supabase
@@ -75,9 +79,11 @@ export const removeFromFavorites = async (eventId: number) => {
     .eq("event_id", eventId);
 
   if (error) {
+    console.error("Erro ao remover favorito:", error);
     throw error;
   }
 
+  console.log("Favorito removido com sucesso");
   return true;
 };
 
@@ -90,6 +96,7 @@ export const isEventFavorited = async (eventId: number): Promise<boolean> => {
   }
 
   const userId = session.user.id;
+  console.log("Verificando favorito - UserID:", userId, "EventID:", eventId);
 
   // Verificar nos favoritos
   const { data, error } = await supabase
@@ -104,7 +111,9 @@ export const isEventFavorited = async (eventId: number): Promise<boolean> => {
     return false;
   }
 
-  return !!data;
+  const isFavorited = !!data;
+  console.log("Evento está favoritado?", isFavorited);
+  return isFavorited;
 };
 
 // Função para obter todos os eventos favoritos do usuário
@@ -124,36 +133,52 @@ export const getFavorites = async (): Promise<EventDetails[]> => {
     .eq("user_id", userId);
 
   if (favoritesError || !favorites || favorites.length === 0) {
+    console.log("Nenhum favorito encontrado ou erro:", favoritesError);
     return [];
   }
 
-  // Mock de dados para eventos favoritos
-  // Em uma aplicação real, buscaríamos estes dados do backend
-  const mockFavorites: EventDetails[] = favorites.map(fav => ({
-    id: fav.event_id,
-    title: `Evento ${fav.event_id}`,
-    description: "Descrição do evento favorito",
-    date: "2023-12-15",
-    time: "20:00",
-    location: "São Paulo, SP",
-    image: "https://picsum.photos/seed/event3/800/500",
-    tickets: [
-      { id: 1, name: "Ingresso Comum", price: 150.0, availableQuantity: 100, maxPerPurchase: 4, description: "Acesso à área comum" },
-      { id: 2, name: "Ingresso VIP", price: 300.0, availableQuantity: 50, maxPerPurchase: 2, description: "Acesso à área VIP" }
-    ],
+  console.log("Favoritos encontrados:", favorites);
+  
+  // Buscar detalhes dos eventos favoritados
+  const eventIds = favorites.map(fav => fav.event_id);
+  
+  // Em uma aplicação real, buscaríamos estes eventos do backend
+  // Por enquanto, vamos buscar os detalhes dos eventos usando os IDs
+  const { data: events, error: eventsError } = await supabase
+    .from("events")
+    .select("*")
+    .in("id", eventIds);
+    
+  if (eventsError || !events) {
+    console.log("Erro ao buscar eventos favoritados:", eventsError);
+    return [];
+  }
+  
+  console.log("Eventos favoritados encontrados:", events);
+  
+  // Mapear os eventos para o formato EventDetails
+  const eventDetails: EventDetails[] = events.map(event => ({
+    id: event.id,
+    title: event.title,
+    description: event.description || "",
+    date: event.date,
+    time: new Date(event.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    location: event.location,
+    image: event.image_url || `https://picsum.photos/seed/${event.id}/800/500`,
+    tickets: [],  // Estes dados seriam buscados de outra tabela
     venue: {
-      name: "Arena XYZ",
-      address: "Av. Principal, 1000",
-      capacity: 5000,
-      map_url: "https://maps.google.com"
+      name: event.location,
+      address: "",
+      capacity: 0,
+      map_url: ""
     },
-    minimumAge: 18,
-    warnings: ["Proibido fumar", "Entrada de menores apenas com acompanhante"],
-    coordinates: { lat: -23.55, lng: -46.64 },
-    status: "active" 
+    minimumAge: event.minimum_age || 0,
+    warnings: [],
+    coordinates: { lat: 0, lng: 0 },
+    status: event.status
   }));
 
-  return mockFavorites;
+  return eventDetails;
 };
 
 // Alias para compatibilidade com o código existente
@@ -161,35 +186,9 @@ export const getUserFavorites = getFavorites;
 
 // Função para obter eventos recomendados com base nos favoritos
 export const getRecommended = async (): Promise<EventDetails[]> => {
-  // Mock de dados para eventos recomendados
-  // Em uma aplicação real, usaríamos um algoritmo de recomendação
-  const mockRecommended: EventDetails[] = [
-    {
-      id: 101,
-      title: "Evento Recomendado 1",
-      description: "Este evento combina com seus gostos",
-      date: "2023-11-25",
-      time: "19:00",
-      location: "Rio de Janeiro, RJ",
-      image: "https://picsum.photos/seed/rec1/800/500",
-      tickets: [
-        { id: 1, name: "Ingresso Comum", price: 120.0, availableQuantity: 80, maxPerPurchase: 4, description: "Acesso à área comum" },
-        { id: 2, name: "Ingresso VIP", price: 240.0, availableQuantity: 40, maxPerPurchase: 2, description: "Acesso à área VIP" }
-      ],
-      venue: {
-        name: "Centro de Eventos ABC",
-        address: "Rua das Flores, 500",
-        capacity: 3000,
-        map_url: "https://maps.google.com"
-      },
-      minimumAge: 16,
-      warnings: ["Proibido fumar"],
-      coordinates: { lat: -22.91, lng: -43.21 },
-      status: "active"
-    }
-  ];
-
-  return mockRecommended;
+  // Em uma implementação real, buscaríamos recomendações baseadas nos favoritos
+  // Por enquanto, retornamos uma lista vazia
+  return [];
 };
 
 // Funções para gerenciamento de notificações
@@ -201,56 +200,93 @@ export const getUserNotifications = async (): Promise<Notification[]> => {
 
   const userId = session.user.id;
 
-  // Em uma implementação real, buscaríamos do Supabase
-  // Por enquanto, retornamos dados de exemplo
-  const mockNotifications: Notification[] = [
-    {
-      id: "notif-1",
-      user_id: userId,
-      event_id: 1,
-      message: "O evento Festival de Música Eletrônica 2023 está quase esgotando!",
-      type: "ticket_running_out",
-      is_read: false,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: "notif-2",
-      user_id: userId,
-      event_id: 2,
-      message: "O evento Show de Rock - Bandas Nacionais teve uma mudança de horário.",
-      type: "event_update",
-      is_read: true,
-      created_at: new Date(Date.now() - 86400000).toISOString() // Ontem
-    }
-  ];
+  // Buscar notificações do usuário do Supabase
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
 
-  return mockNotifications;
+  if (error || !data) {
+    console.error("Erro ao buscar notificações:", error);
+    return [];
+  }
+
+  return data as Notification[];
 };
 
 export const markNotificationAsRead = async (notificationId: string): Promise<boolean> => {
-  // Em uma implementação real, atualizaríamos no Supabase
-  console.log(`Marcando notificação ${notificationId} como lida`);
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    return false;
+  }
+
+  const { error } = await supabase
+    .from("notifications")
+    .update({ is_read: true })
+    .eq("id", notificationId)
+    .eq("user_id", session.user.id);
+
+  if (error) {
+    console.error("Erro ao marcar notificação como lida:", error);
+    return false;
+  }
+
   return true;
 };
 
 export const markAllNotificationsAsRead = async (): Promise<boolean> => {
-  // Em uma implementação real, atualizaríamos no Supabase
-  console.log("Marcando todas as notificações como lidas");
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    return false;
+  }
+
+  const { error } = await supabase
+    .from("notifications")
+    .update({ is_read: true })
+    .eq("user_id", session.user.id);
+
+  if (error) {
+    console.error("Erro ao marcar todas as notificações como lidas:", error);
+    return false;
+  }
+
   return true;
 };
 
 export const clearAllNotifications = async (): Promise<boolean> => {
-  // Em uma implementação real, excluiríamos do Supabase
-  console.log("Limpando todas as notificações");
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    return false;
+  }
+
+  const { error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("user_id", session.user.id);
+
+  if (error) {
+    console.error("Erro ao limpar todas as notificações:", error);
+    return false;
+  }
+
   return true;
 };
 
 // Função para inscrever nas notificações em tempo real
 export const subscribeToNotifications = (callback: (notification: Notification) => void) => {
-  // Em uma implementação real, usaríamos o Supabase Realtime
+  const { data: { session } } = supabase.auth.getSession();
+  if (!session) {
+    console.log("Usuário não está autenticado para receber notificações");
+    return {
+      unsubscribe: () => {}
+    };
+  }
+
   console.log("Inscrito para receber notificações em tempo real");
   
-  // Retorna um objeto com método unsubscribe para desinscrever
+  // Em uma implementação real, usaríamos o Supabase Realtime
+  // Por enquanto, retornamos um objeto com método unsubscribe
   return {
     unsubscribe: () => {
       console.log("Desinscrito das notificações em tempo real");
