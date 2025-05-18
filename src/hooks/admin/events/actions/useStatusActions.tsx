@@ -1,6 +1,8 @@
+
 import { toast } from "@/hooks/use-toast";
 import { EventItem } from "@/types/admin";
 import { updateEventStatus } from "@/services/events";
+import { EventStatus } from "@/components/admin/events/EventStatusBadge";
 
 /**
  * Hook for handling event status change actions
