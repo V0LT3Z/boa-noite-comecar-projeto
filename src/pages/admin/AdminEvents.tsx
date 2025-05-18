@@ -5,7 +5,7 @@ import { ConfirmActionDialog } from "@/components/admin/events/ConfirmActionDial
 import { DeleteEventDialog } from "@/components/admin/events/DeleteEventDialog";
 import { AdminEventsList } from "@/components/admin/events/AdminEventsList";
 import EventFormHeader from "@/components/admin/events/EventFormHeader";
-import { useEventsManagement } from "@/components/admin/events/useEventsManagement";
+import { useEventsManagement } from "@/hooks/admin/events";
 
 const AdminEvents = () => {
   const {
@@ -16,7 +16,7 @@ const AdminEvents = () => {
     events,
     loadingEvents,
     selectedEvent,
-    setSelectedEvent, // Added this line - destructuring setSelectedEvent from the hook
+    setSelectedEvent,
     confirmDialogOpen,
     setConfirmDialogOpen,
     deleteDialogOpen,
