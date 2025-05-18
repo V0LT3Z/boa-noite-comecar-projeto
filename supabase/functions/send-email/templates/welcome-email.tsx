@@ -10,22 +10,22 @@ const WelcomeEmail: React.FC<WelcomeEmailProps> = ({ name }) => {
   return (
     <EmailLayout>
       <h2 style={{ color: "#333333", fontSize: "24px", fontWeight: "bold", margin: "0 0 20px 0" }}>
-        Olá, {name}!
+        Bem-vindo(a), {name}!
       </h2>
       <p style={{ fontSize: "16px", lineHeight: "1.6", margin: "0 0 15px 0" }}>
-        Seja bem-vindo(a) ao Lovue Tickets! Estamos felizes em ter você conosco.
+        Estamos muito felizes em ter você como parte da nossa comunidade! Sua conta foi criada com sucesso.
       </p>
       <p style={{ fontSize: "16px", lineHeight: "1.6", margin: "0 0 15px 0" }}>
-        Com o Lovue Tickets, você pode:
+        Com a sua conta, você pode:
       </p>
-      <ul style={{ fontSize: "16px", lineHeight: "1.6", margin: "0 0 15px 0" }}>
-        <li>Descobrir os melhores eventos perto de você</li>
-        <li>Comprar ingressos com segurança e rapidez</li>
-        <li>Gerenciar todos os seus ingressos em um só lugar</li>
-        <li>Revender seus ingressos quando não puder comparecer</li>
+      <ul style={{ fontSize: "16px", lineHeight: "1.6", margin: "0 0 20px 0" }}>
+        <li>Descobrir e comprar ingressos para os melhores eventos</li>
+        <li>Guardar seus ingressos em um só lugar de forma segura</li>
+        <li>Receber notificações sobre eventos do seu interesse</li>
+        <li>Gerenciar todas as suas compras com facilidade</li>
       </ul>
       <p style={{ fontSize: "16px", lineHeight: "1.6", margin: "0 0 25px 0" }}>
-        Comece a explorar os eventos disponíveis agora mesmo!
+        Aproveite ao máximo nossa plataforma e não perca nenhum evento especial!
       </p>
       <table role="presentation" border={0} cellPadding="0" cellSpacing="0" className="btn btn-primary" style={{
         width: "100%",
@@ -58,7 +58,7 @@ const WelcomeEmail: React.FC<WelcomeEmailProps> = ({ name }) => {
                         textDecoration: "none",
                         textTransform: "capitalize",
                       }}>
-                        Explorar Eventos
+                        Explorar Eventos Agora
                       </a>
                     </td>
                   </tr>
@@ -69,10 +69,13 @@ const WelcomeEmail: React.FC<WelcomeEmailProps> = ({ name }) => {
         </tbody>
       </table>
       <p style={{ fontSize: "16px", lineHeight: "1.6", margin: "25px 0 0 0" }}>
-        Se precisar de ajuda, entre em contato com nossa equipe de suporte.
+        Se tiver qualquer dúvida ou precisar de assistência, não hesite em entrar em contato com nossa equipe.
       </p>
       <p style={{ fontSize: "16px", lineHeight: "1.6", margin: "15px 0 0 0" }}>
-        Obrigado por escolher o Lovue Tickets!
+        Agradecemos por escolher a nossa plataforma!
+      </p>
+      <p style={{ fontSize: "16px", lineHeight: "1.6", margin: "15px 0 0 0", fontStyle: "italic" }}>
+        Equipe Lovue Tickets
       </p>
     </EmailLayout>
   );
