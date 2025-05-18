@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -16,6 +15,7 @@ import Favorites from "./pages/Favorites";
 import Notifications from "./pages/Notifications";
 import EditProfile from "./pages/EditProfile";
 import Marketplace from "./pages/Marketplace";
+import CleanupAuthButton from "./components/auth/CleanupAuthButton";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
