@@ -17,46 +17,62 @@ export function useDeleteActions(
 ) {
   // Prepare for event deletion
   const handleDelete = (event: EventItem) => {
-    // Create a deep copy to prevent mutations
-    setSelectedEvent(JSON.parse(JSON.stringify(event)));
-    setDeleteDialogOpen(true);
+    try {
+      // Create a deep copy to prevent mutations
+      const eventCopy = JSON.parse(JSON.stringify(event));
+      setSelectedEvent(eventCopy);
+      setDeleteDialogOpen(true);
+    } catch (error) {
+      console.error("Error preparing event for deletion:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível preparar o evento para exclusão",
+        variant: "destructive"
+      });
+    }
   };
 
   // Confirm and execute event deletion
   const confirmDelete = async () => {
-    if (apiCallInProgressRef.current) return;
+    if (apiCallInProgressRef.current) {
+      console.log("API call already in progress, skipping");
+      return;
+    }
     
     try {
       apiCallInProgressRef.current = true;
       setIsDeleting(true);
       
-      // Get the current selected event - this will come from the component
+      // Get the current selected event
       let selectedEvent: EventItem | null = null;
       
-      // We'll use a closure to access the selected event later
+      // Use a closure to access the selected event
       setSelectedEvent(current => {
         selectedEvent = current;
         return current;
       });
       
-      if (!selectedEvent) {
-        console.error("No event selected for deletion");
-        return;
+      if (!selectedEvent || !selectedEvent.id) {
+        console.error("No event selected for deletion or missing ID");
+        throw new Error("Evento inválido para exclusão");
       }
       
       console.log(`Removing event ${selectedEvent.id}`);
       
-      await deleteEvent(selectedEvent.id);
+      const result = await deleteEvent(selectedEvent.id);
+      console.log("Delete event result:", result);
       
       // Skip state updates if component unmounted
       if (!isMountedRef.current) return;
       
-      // Add the deleted event ID to our tracking ref to ensure it doesn't reappear
+      // Add the deleted event ID to tracking ref
       deletedEventIdsRef.current.push(selectedEvent.id);
       console.log("Eventos excluídos:", deletedEventIdsRef.current);
       
-      // Update UI immediately by removing the deleted event
-      setEvents(prevEvents => prevEvents.filter(event => event.id !== selectedEvent!.id));
+      // Update UI by removing the deleted event
+      setEvents(prevEvents => {
+        return prevEvents.filter(event => event.id !== selectedEvent!.id);
+      });
       
       toast({
         title: "Evento removido",
@@ -79,7 +95,7 @@ export function useDeleteActions(
         setIsDeleting(false);
         setDeleteDialogOpen(false);
         
-        // Use timeout to ensure dialog is fully closed before resetting selection
+        // Use timeout to ensure dialog is fully closed before resetting
         setTimeout(() => {
           if (isMountedRef.current) {
             setSelectedEvent(null);

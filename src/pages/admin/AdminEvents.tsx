@@ -71,7 +71,9 @@ const AdminEvents = () => {
             if (!open) {
               // Clear state after dialog closes
               setTimeout(() => {
-                setSelectedEvent(null);
+                if (setSelectedEvent) {
+                  setSelectedEvent(null);
+                }
               }, 300);
             }
           }
@@ -91,7 +93,9 @@ const AdminEvents = () => {
             if (!open) {
               // Clear state after dialog closes
               setTimeout(() => {
-                setSelectedEvent(null);
+                if (setSelectedEvent) {
+                  setSelectedEvent(null);
+                }
               }, 300);
             }
           }

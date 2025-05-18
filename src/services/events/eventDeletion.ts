@@ -8,6 +8,10 @@ export const deleteEvent = async (id: number) => {
   try {
     console.log(`Excluindo evento com ID: ${id}`);
     
+    if (!id || isNaN(id)) {
+      throw new Error("ID de evento inválido");
+    }
+    
     // First, get all the ticket_types associated with this event
     const { data: ticketTypes, error: ticketTypesError } = await supabase
       .from("ticket_types")

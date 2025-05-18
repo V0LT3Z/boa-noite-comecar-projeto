@@ -17,7 +17,7 @@ const TicketTypesSection = ({
   isDeletingTicket 
 }: TicketTypesSectionProps) => {
   const { watch } = useFormContext<EventFormValues>();
-  const tickets = watch("tickets");
+  const tickets = watch("tickets") || [];
 
   return (
     <div className="space-y-4">
@@ -33,7 +33,7 @@ const TicketTypesSection = ({
         </Button>
       </div>
 
-      {tickets?.map((_, index) => (
+      {tickets.map((_, index) => (
         <TicketTypeCard 
           key={index} 
           index={index} 
@@ -41,6 +41,14 @@ const TicketTypesSection = ({
           isDeleting={isDeletingTicket} 
         />
       ))}
+
+      {tickets.length === 0 && (
+        <div className="p-6 text-center border rounded-lg border-dashed">
+          <p className="text-muted-foreground">
+            Nenhum tipo de ingresso cadastrado. Clique em "Adicionar Tipo" para criar um.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
