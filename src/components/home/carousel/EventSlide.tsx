@@ -12,14 +12,26 @@ interface EventSlideProps {
   isActive?: boolean;
 }
 
+// Chave para armazenar IDs de eventos excluídos no localStorage
+const DELETED_EVENTS_KEY = 'deletedEventIds';
+
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
   const [isValidEvent, setIsValidEvent] = useState(true);
   const [imageError, setImageError] = useState(false);
   
-  // Verificar se o evento existe no banco de dados
+  // Verificar se o evento existe no banco de dados e não está na lista de excluídos
   useEffect(() => {
     const checkEventValidity = async () => {
       try {
+        // Primeiro, verificar se o evento está na lista de excluídos
+        const deletedEventIds = getDeletedEventIds();
+        if (deletedEventIds.includes(id)) {
+          console.log(`Evento ${id} está na lista de excluídos, não será exibido`);
+          setIsValidEvent(false);
+          return;
+        }
+        
+        // Se não estiver excluído, verificar se existe no banco de dados
         const eventDetails = await fetchEventById(id);
         setIsValidEvent(!!eventDetails);
       } catch (error) {
@@ -30,6 +42,17 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
     
     checkEventValidity();
   }, [id]);
+  
+  // Função para obter eventos excluídos do localStorage
+  const getDeletedEventIds = (): number[] => {
+    try {
+      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
+      return savedIds ? JSON.parse(savedIds) : [];
+    } catch (error) {
+      console.error('Erro ao carregar eventos excluídos:', error);
+      return [];
+    }
+  };
   
   // Se o evento não for válido, não renderiza nada
   if (!isValidEvent) {

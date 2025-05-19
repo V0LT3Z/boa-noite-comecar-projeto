@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import {
@@ -11,6 +10,9 @@ import {
 import CarouselControls from './carousel/CarouselControls';
 import EventSlide from './carousel/EventSlide';
 import EventInfoPanel from './carousel/EventInfoPanel';
+
+// Chave para armazenar IDs de eventos excluídos no localStorage
+const DELETED_EVENTS_KEY = 'deletedEventIds';
 
 interface EventItem {
   id: number;
@@ -36,8 +38,23 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const slidesRef = useRef<HTMLDivElement>(null);
   
+  // Função para obter eventos excluídos do localStorage
+  const getDeletedEventIds = (): number[] => {
+    try {
+      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
+      return savedIds ? JSON.parse(savedIds) : [];
+    } catch (error) {
+      console.error('Erro ao carregar eventos excluídos:', error);
+      return [];
+    }
+  };
+  
+  // Filtrar eventos excluídos antes de processar
+  const deletedEventIds = getDeletedEventIds();
+  const filteredEvents = events.filter(event => !deletedEventIds.includes(event.id));
+  
   // Filtrar eventos nulos ou inválidos
-  const validEvents = events.filter(event => 
+  const validEvents = filteredEvents.filter(event => 
     event && event.id && event.title && event.image
   );
   

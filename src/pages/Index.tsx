@@ -76,12 +76,14 @@ const Index = () => {
       } else {
         // Obter eventos excluídos do localStorage
         const deletedEventIds = getDeletedEventIds();
+        console.log("Eventos excluídos encontrados no localStorage:", deletedEventIds);
         
         // Filtrar eventos excluídos e cancelados
         const activeEvents = eventData.filter(event => 
           event.status !== "cancelled" && !deletedEventIds.includes(event.id)
         );
         
+        console.log(`Total de eventos: ${eventData.length}, Ativos após filtro: ${activeEvents.length}`);
         setEvents(activeEvents);
       }
       
@@ -119,6 +121,7 @@ const Index = () => {
     if (!deletedIds.includes(eventId)) {
       const updatedIds = [...deletedIds, eventId];
       saveDeletedEventIds(updatedIds);
+      console.log(`Evento ${eventId} adicionado à lista de excluídos:`, updatedIds);
       
       toast({
         title: "Evento removido",
