@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -106,11 +105,12 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
     },
   });
 
-  // Handle image upload
+  // Handle image upload with better logging
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const imageUrl = URL.createObjectURL(file);
+      console.log("EventForm: Nova imagem selecionada, URL blob criada:", imageUrl);
       setPreviewImage(imageUrl);
       
       // Update form value with the image URL
@@ -174,12 +174,13 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
     form.setValue("tickets", currentTickets.filter((_, i) => i !== index));
   };
 
-  // Handle form submission
+  // Handle form submission with improved image logging
   const onSubmit = async (data: EventFormValues) => {
     setIsSubmitting(true);
     
     try {
       console.log("Submitting event data:", data);
+      console.log("Banner URL being submitted:", data.bannerUrl);
       
       // Convert form data to AdminEventForm format
       const adminEventData: AdminEventForm = {
@@ -207,12 +208,14 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
         if (event?.id) {
           // Update existing event
           await updateEvent(event.id, adminEventData);
+          console.log("Evento atualizado com sucesso, ID:", event.id);
         } else {
           // Create new event
           if (!user) {
             throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
           }
-          await createEvent(adminEventData, user.id);
+          const result = await createEvent(adminEventData, user.id);
+          console.log("Evento criado com sucesso, ID:", result?.id);
         }
         
         toast({
@@ -262,6 +265,7 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
                   size="sm"
                   className="absolute top-2 right-2"
                   onClick={() => {
+                    console.log("EventForm: Imagem removida pelo usuário");
                     setPreviewImage(null);
                     form.setValue("bannerUrl", "");
                   }}

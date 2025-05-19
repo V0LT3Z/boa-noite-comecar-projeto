@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,7 @@ const EventCard = ({
           
           // Atualizar a URL da imagem a partir do banco de dados
           if (event.image) {
+            console.log("EventCard: Atualizando URL da imagem para o evento", id, "Nova URL:", event.image);
             setPersistentImageUrl(event.image);
           }
         }
@@ -106,6 +108,7 @@ const EventCard = ({
   
   // Usar uma imagem de fallback SOMENTE se a original falhar ou for blob URL
   const handleImageError = () => {
+    console.log("EventCard: Erro ao carregar imagem, usando fallback:", id);
     setImageError(true);
   };
   
@@ -113,6 +116,8 @@ const EventCard = ({
   const imageUrl = imageError || isTemporaryBlobUrl
     ? `https://picsum.photos/seed/${id}/800/500` 
     : persistentImageUrl;
+  
+  console.log("EventCard: Renderizando com URL da imagem:", imageUrl, "para evento:", id);
   
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">

@@ -19,6 +19,7 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
   const [isValidEvent, setIsValidEvent] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [persistentImageUrl, setPersistentImageUrl] = useState(image);
+  const [imageChecked, setImageChecked] = useState(false);
   
   // Verificar se o evento existe no banco de dados e não está na lista de excluídos
   useEffect(() => {
@@ -38,7 +39,9 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
         
         // Se o evento existe, atualizar a URL da imagem a partir do banco de dados
         if (eventDetails && eventDetails.image) {
+          console.log(`EventSlide: Atualizando URL da imagem para o evento ${id}, Nova URL:`, eventDetails.image);
           setPersistentImageUrl(eventDetails.image);
+          setImageChecked(true);
         }
       } catch (error) {
         console.error(`Erro ao verificar evento ${id}:`, error);
@@ -46,8 +49,10 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
       }
     };
     
-    checkEventValidity();
-  }, [id, image]);
+    if (!imageChecked) {
+      checkEventValidity();
+    }
+  }, [id, image, imageChecked]);
   
   // Função para obter eventos excluídos do localStorage
   const getDeletedEventIds = (): number[] => {
@@ -67,6 +72,7 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
   
   // Usar uma imagem padrão SOMENTE se a URL original for inválida
   const handleImageError = () => {
+    console.log(`EventSlide: Erro ao carregar imagem para evento ${id}, usando fallback`);
     setImageError(true);
   };
   
@@ -77,6 +83,8 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
   const imageUrl = imageError || isTemporaryBlobUrl
     ? `https://picsum.photos/seed/${id}/800/500`
     : persistentImageUrl;
+  
+  console.log(`EventSlide: Renderizando slide para evento ${id} com URL:`, imageUrl);
   
   return (
     <div 
