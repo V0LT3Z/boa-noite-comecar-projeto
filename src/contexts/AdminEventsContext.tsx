@@ -23,7 +23,7 @@ type AdminEventsContextType = {
   setEditingEvent: (event: EventItem | null) => void;
   setConfirmDialogOpen: (isOpen: boolean) => void;
   setDeleteDialogOpen: (isOpen: boolean) => void;
-  loadEvents: () => Promise<void>;
+  loadEvents: (forceRefresh?: boolean) => Promise<void>;
   handleStatusChange: (eventId: number, newStatus: EventStatus) => Promise<void>;
   handleDelete: (event: EventItem) => void;
   confirmDelete: () => Promise<void>;
@@ -61,14 +61,14 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
 
   // Filter events based on search query
   const filteredEvents = events.filter(event => {
-    // Não mostrar eventos que foram excluídos
+    // Don't show events that were deleted
     if (deletedEventIdsRef.current.has(event.id)) {
       return false;
     }
     return event.title.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  // Garantir que o componente está montado antes de atualizar o estado
+  // Ensure component is mounted before updating state
   useEffect(() => {
     isMountedRef.current = true;
     
@@ -78,26 +78,30 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // Load events with useCallback to prevent unnecessary re-renders
-  const loadEvents = useCallback(async () => {
+  const loadEvents = useCallback(async (forceRefresh = false) => {
     // Skip if we're already loading or unmounted
     if (apiCallInProgressRef.current || !isMountedRef.current) return;
     
     try {
-      console.log("Iniciando carregamento de eventos");
+      console.log(`Iniciando carregamento de eventos ${forceRefresh ? "(com atualização forçada de cache)" : ""}`);
       apiCallInProgressRef.current = true;
       setLoadingEvents(true);
       
-      // Fetch events from the API - force cache refresh
-      const fetchedEvents = await fetchEvents(true);
+      // Fetch events from the API - using forceRefresh parameter
+      const fetchedEvents = await fetchEvents(forceRefresh);
       
       // Skip state update if component unmounted during fetch
       if (!isMountedRef.current) return;
       
       console.log(`${fetchedEvents?.length || 0} eventos carregados do banco de dados`);
       
+      // Keep track of any recently deleted IDs that might still be in the response
+      // due to caching or server delays
+      const currentlyDeleted = new Set(deletedEventIdsRef.current);
+      
       // Filter out any events that were marked as deleted
       const filteredEvents = fetchedEvents.filter(
-        event => !deletedEventIdsRef.current.has(event.id)
+        event => !currentlyDeleted.has(event.id)
       );
       
       // Format events for display
@@ -197,7 +201,7 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Handle event deletion
+  // Handle event deletion with improved permanent removal
   const handleDelete = (event: EventItem) => {
     // Create a deep copy to prevent mutations
     setSelectedEvent(JSON.parse(JSON.stringify(event)));
@@ -211,15 +215,15 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
     try {
       apiCallInProgressRef.current = true;
       setIsDeleting(true);
-      console.log(`Removendo evento ${selectedEvent.id}`);
+      console.log(`Removendo evento ${selectedEvent.id} permanentemente`);
       
-      // Excluindo o evento permanentemente do banco de dados
+      // Permanently deleting the event from the database
       const result = await deleteEvent(selectedEvent.id);
       
       // Skip state updates if component unmounted
       if (!isMountedRef.current) return;
       
-      // Add to deleted events set
+      // Add to deleted events set for immediate UI filtering
       deletedEventIdsRef.current.add(selectedEvent.id);
       
       // Update UI immediately by removing the deleted event
@@ -231,12 +235,12 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
         variant: "success"
       });
 
-      // Recarrega a lista de eventos para garantir que os dados estão atualizados
+      // Force reload events after a short delay to ensure database is synced
       setTimeout(() => {
         if (isMountedRef.current) {
-          loadEvents();
+          loadEvents(true); // Force refresh to ensure deleted events don't reappear
         }
-      }, 500);
+      }, 1000);
     } catch (error) {
       // Skip error handling if component unmounted
       if (!isMountedRef.current) return;

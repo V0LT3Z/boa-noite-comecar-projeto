@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse } from "@/types/event";
 import { mapEventResponse } from "./utils/eventMappers";
@@ -11,13 +12,20 @@ export const fetchEvents = async (forceRefresh = false) => {
   try {
     console.log("Buscando todos os eventos", forceRefresh ? "(forçando atualização do cache)" : "");
     
-    // Adiciona um parâmetro aleatório para forçar a não utilização do cache quando solicitado
-    const cacheBreaker = forceRefresh ? `?nocache=${Date.now()}` : '';
+    // When forceRefresh is true, add cache prevention headers to the request
+    // This ensures we get fresh data from the database
+    const options = forceRefresh ? {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+      },
+    } : undefined;
     
     const { data: events, error } = await supabase
       .from("events")
       .select("*")
-      .order("date", { ascending: true });
+      .order("date", { ascending: true })
+      .throwOnError();
 
     if (error) {
       console.error("Erro ao buscar eventos:", error);

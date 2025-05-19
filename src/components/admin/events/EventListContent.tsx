@@ -21,13 +21,13 @@ export const EventListContent = () => {
 
   // Load events when component mounts
   useEffect(() => {
-    // Carregar eventos imediatamente
+    // Load events immediately
     loadEvents();
     
-    // Adicionar um intervalo para recarregar eventos periodicamente (a cada 30 segundos)
+    // Add an interval to reload events periodically (every 30 seconds)
     const refreshInterval = setInterval(() => {
-      console.log("Recarregando eventos para garantir dados atualizados");
-      loadEvents();
+      console.log("Reloading events to ensure data is up to date");
+      loadEvents(true); // Added true parameter to force cache refresh
     }, 30000);
 
     return () => {
