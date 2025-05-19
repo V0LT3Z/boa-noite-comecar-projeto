@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -8,6 +9,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { getDeletedEventIds } from "@/services/utils/deletedEventsUtils";
+import { useQuery } from "@tanstack/react-query";
 
 // Imported refactored components
 import EventsGrid from "@/components/home/EventsGrid";
@@ -16,61 +18,24 @@ import FeaturedCarousel from "@/components/home/FeaturedCarousel";
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
-  
-  const [events, setEvents] = useState<EventResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [eventsLoaded, setEventsLoaded] = useState(false);
   const { toast } = useToast();
   
-  const loadEvents = useCallback(async (forceReload: boolean = false) => {
-    if (eventsLoaded && !forceReload) return; // Evita múltiplas chamadas se os eventos já foram carregados
-    
-    try {
-      setLoading(true);
-      const eventData = await fetchEvents();
-      
-      if (!eventData || eventData.length === 0) {
-        setEvents([]);
-        
-        // Exibir toast informativo apenas na primeira carga
-        if (!eventsLoaded) {
-          toast({
-            title: "Nenhum evento disponível",
-            description: "Ainda não há eventos disponíveis. Os produtores podem criar novos eventos na área administrativa.",
-            variant: "default",
-          });
-        }
-      } else {
-        // Get deleted event IDs
-        const deletedEventIds = getDeletedEventIds();
-        
-        // Filter out cancelled events AND deleted events
-        const filteredEvents = eventData.filter(event => 
-          event.status !== "cancelled" && !deletedEventIds.has(event.id)
-        );
-        
-        console.log(`Total de eventos: ${eventData.length}, Ativos: ${filteredEvents.length}, Excluídos: ${deletedEventIds.size}`);
-        setEvents(filteredEvents);
-      }
-      
-      setEventsLoaded(true);
-    } catch (error) {
+  // Usar React Query para gerenciar o fetch e cache de eventos
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => fetchEvents(false),
+    staleTime: 1000 * 60 * 5, // 5 minutos antes de considerar os dados desatualizados
+    gcTime: 1000 * 60 * 10, // 10 minutos antes de remover os dados do cache
+    retry: 1,
+    onError: (error) => {
       console.error("Erro ao carregar eventos:", error);
-      setEvents([]);
-      
       toast({
         title: "Falha ao carregar eventos",
         description: "Ocorreu um erro ao carregar os eventos. Por favor, tente novamente mais tarde.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
-  }, [eventsLoaded, toast]);
-
-  useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
+  });
   
   const handleSearch = (query: string) => {
     // Update URL with search query
@@ -79,7 +44,8 @@ const Index = () => {
 
   // Remover um evento da UI se ele não existir mais no banco de dados
   const removeNonexistentEvent = (eventId: number) => {
-    setEvents(currentEvents => currentEvents.filter(event => event.id !== eventId));
+    // Precisamos apenas atualizar a UI, React Query cuidará da sincronização quando necessário
+    console.log(`Evento ${eventId} marcado como removido`);
   };
 
   const formattedEvents = useMemo(() => {
@@ -121,7 +87,7 @@ const Index = () => {
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
-      return matchesSearch && !deletedEventIds.has(event.id);
+      return matchesSearch && !deletedEventIds.has(event.id) && event.status !== "cancelled";
     });
   }, [formattedEvents, searchQuery]);
     
@@ -143,24 +109,22 @@ const Index = () => {
       <main className="flex-1 pb-12">
         {/* Hero section com banner principal e informações - full width */}
         <div className="w-full">
-          {!loading && filteredEvents.length > 0 && (
+          {!isLoading && filteredEvents.length > 0 && (
             <FeaturedCarousel events={featuredEvents} />
           )}
         </div>
         
         {/* Lista de eventos - constrained width */}
-        {!loading && (
-          <section className="mt-16 container mx-auto px-4 max-w-7xl">
-            <EventsGrid 
-              events={filteredEvents} 
-              loading={loading} 
-              showAllEvents={false}
-              setShowAllEvents={() => {}}
-              searchQuery={searchQuery}
-              onMarkDeleted={removeNonexistentEvent}
-            />
-          </section>
-        )}
+        <section className="mt-16 container mx-auto px-4 max-w-7xl">
+          <EventsGrid 
+            events={filteredEvents} 
+            loading={isLoading} 
+            showAllEvents={false}
+            setShowAllEvents={() => {}}
+            searchQuery={searchQuery}
+            onMarkDeleted={removeNonexistentEvent}
+          />
+        </section>
       </main>
       
       <Footer />

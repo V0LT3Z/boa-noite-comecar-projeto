@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse } from "@/types/event";
 import { mapEventResponse } from "./utils/eventMappers";
@@ -6,21 +5,26 @@ import { processImageUrl } from "./utils/imageUtils";
 import { format } from "date-fns";
 import { getDeletedEventIds } from "./utils/deletedEventsUtils";
 
+// Cache em memória para reduzir requisições à API
+let eventsCache: EventResponse[] | null = null;
+let lastFetchTime = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos em milissegundos
+
 /**
  * Fetch all events from the database
  */
 export const fetchEvents = async (forceRefresh = false) => {
   try {
-    console.log("Buscando todos os eventos", forceRefresh ? "(forçando atualização do cache)" : "");
+    const now = Date.now();
+    const cacheIsValid = eventsCache !== null && (now - lastFetchTime) < CACHE_TTL;
     
-    // When forceRefresh is true, add cache prevention headers and use stronger cache busting
-    const options = forceRefresh ? {
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    } : undefined;
+    // Se temos cache válido e não estamos forçando atualização, use o cache
+    if (cacheIsValid && !forceRefresh) {
+      console.log("Usando eventos em cache");
+      return eventsCache;
+    }
+    
+    console.log("Buscando todos os eventos", forceRefresh ? "(forçando atualização do cache)" : "");
     
     const { data: events, error } = await supabase
       .from("events")
@@ -40,10 +44,12 @@ export const fetchEvents = async (forceRefresh = false) => {
       events.forEach(event => {
         event.image_url = processImageUrl(event.image_url, event.id);
       });
+      
+      // Atualizar cache
+      eventsCache = events as EventResponse[];
+      lastFetchTime = now;
     }
     
-    // We're no longer filtering deleted events here, to ensure all events are returned
-    // This allows components to handle filtering based on their specific needs
     return events as EventResponse[];
   } catch (error) {
     console.error("Erro ao buscar eventos:", error);

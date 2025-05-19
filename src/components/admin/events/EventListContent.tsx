@@ -1,9 +1,8 @@
 
-import { useEffect } from "react";
+import { useAdminEvents } from "@/contexts/AdminEventsContext";
 import { EventsTable } from "@/components/admin/events/EventsTable";
 import { EmptyEventsList } from "@/components/admin/events/EmptyEventsList";
 import { EventSearchBar } from "@/components/admin/events/EventSearchBar";
-import { useAdminEvents } from "@/contexts/AdminEventsContext";
 
 export const EventListContent = () => {
   const { 
@@ -16,18 +15,8 @@ export const EventListContent = () => {
     openConfirmDialog,
     handleDelete,
     handleNewEvent,
-    loadEvents,
     deletedEventIds
   } = useAdminEvents();
-
-  // Load events when component mounts and refresh after deletion
-  useEffect(() => {
-    // Initial load with force refresh to ensure we have latest data
-    loadEvents(true);
-    
-    // Clean up function kept for future use if needed
-    return () => {};
-  }, [loadEvents, deletedEventIds]); // Re-run when deletedEventIds changes
 
   // Filter events to exclude any deleted ones
   const displayEvents = filteredEvents.filter(event => {

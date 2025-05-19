@@ -10,15 +10,18 @@ import { AdminEventsProvider, useAdminEvents } from "@/contexts/AdminEventsConte
 
 // Este componente deve ser usado dentro do AdminEventsProvider
 const AdminEventsContent = () => {
-  const { isCreatingEvent, confirmDialogOpen, deleteDialogOpen, handleStatusChange, loadEvents } = useAdminEvents();
+  const { isCreatingEvent, confirmDialogOpen, handleStatusChange, loadEvents } = useAdminEvents();
 
-  // Carregar eventos quando o componente é montado e forçar uma atualização
+  // Carregar eventos quando o componente é montado, mas apenas uma vez
   useEffect(() => {
-    loadEvents(true); // Forçar dados novos ao montar
+    // Utilizamos um timeout para garantir que o carregamento inicial seja rápido
+    const timer = setTimeout(() => {
+      loadEvents(true);
+    }, 100);
     
-    // Limpar o estado do componente ao desmontar
+    // Limpar o timeout ao desmontar
     return () => {
-      // Esta função de limpeza vazia garante que o manipulador de desmontagem do contexto funcione corretamente
+      clearTimeout(timer);
     };
   }, [loadEvents]);
 
