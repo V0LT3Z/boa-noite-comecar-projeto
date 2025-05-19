@@ -14,6 +14,7 @@ interface EventSlideProps {
 
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
   const [isValidEvent, setIsValidEvent] = useState(true);
+  const [imageError, setImageError] = useState(false);
   
   // Verificar se o evento existe no banco de dados
   useEffect(() => {
@@ -35,10 +36,15 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
     return null;
   }
   
-  // Usar uma imagem padrão se a URL for inválida
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.src = "https://picsum.photos/seed/fallback/800/500";
+  // Usar uma imagem padrão SOMENTE se a URL original for inválida
+  const handleImageError = () => {
+    setImageError(true);
   };
+  
+  // Usar a imagem original e só cair para o fallback se houver erro
+  const imageUrl = imageError 
+    ? `https://picsum.photos/seed/${id}/800/500`
+    : image;
   
   return (
     <div 
@@ -49,7 +55,7 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
     >
       <div className="relative h-[420px] w-full overflow-hidden group">
         <img 
-          src={image} 
+          src={imageUrl} 
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="eager"

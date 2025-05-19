@@ -128,6 +128,7 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
     }
     
     console.log("Criando evento para o usuário com ID:", userId);
+    console.log("URL da imagem sendo armazenada:", eventData.bannerUrl);
 
     const totalTickets = eventData.tickets.reduce(
       (sum, ticket) => sum + (parseInt(String(ticket.availableQuantity)) || 0),
