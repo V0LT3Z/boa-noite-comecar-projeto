@@ -162,14 +162,10 @@ const Favorites = () => {
                   {/* Imagem maior e com melhor qualidade */}
                   <div className="w-full sm:w-64 h-64 relative">
                     <img 
-                      src={event.image} 
+                      src={event.image || `https://picsum.photos/seed/${event.id}/800/800`}
                       alt={event.title}
                       className="w-full h-full object-cover"
                       loading="lazy"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = `https://picsum.photos/seed/${event.id}/800/800`;
-                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-primary opacity-10 mix-blend-multiply" />
                   </div>
