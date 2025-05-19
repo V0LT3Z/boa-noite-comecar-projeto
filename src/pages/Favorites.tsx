@@ -159,40 +159,37 @@ const Favorites = () => {
             {favoriteEvents.map((event) => (
               <Card key={event.id} className="overflow-hidden hover:shadow-event-card transition-shadow">
                 <div className="flex flex-col sm:flex-row h-auto">
-                  {/* Imagem maior e com melhor qualidade */}
-                  <div className="w-full sm:w-64 h-64 relative">
+                  <div className="w-full sm:w-48 h-48 relative">
                     <img 
                       src={event.image} 
                       alt={event.title}
                       className="w-full h-full object-cover"
-                      loading="lazy"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = `https://picsum.photos/seed/${event.id}/800/800`;
+                        target.src = `https://picsum.photos/seed/${event.id}/800/500`;
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-primary opacity-10 mix-blend-multiply" />
+                    <div className="absolute inset-0 bg-gradient-primary opacity-30 mix-blend-multiply" />
                   </div>
                   
-                  <CardContent className="flex flex-col flex-1 p-6">
+                  <CardContent className="flex flex-col flex-1 p-4">
                     <div className="flex-1 mb-4">
-                      <h3 className="text-2xl font-bold text-primary mb-3">{event.title}</h3>
-                      <div className="space-y-2 text-gray-700">
-                        <p className="text-lg">{event.date} • {event.time}</p>
-                        <p className="text-lg">{event.location}</p>
+                      <h3 className="text-xl font-bold text-primary mb-2">{event.title}</h3>
+                      <div className="space-y-2 text-gray-600">
+                        <p>{event.date} • {event.time}</p>
+                        <p>{event.location}</p>
                       </div>
                     </div>
                     
-                    <div className="flex flex-wrap gap-3 mt-4">
+                    <div className="flex flex-wrap gap-3 mt-2">
                       <Link to={`/evento/${event.id}`}>
-                        <Button variant="default" size="lg" className="bg-gradient-primary text-white hover:opacity-90">
+                        <Button variant="default" className="bg-gradient-primary text-white hover:opacity-90">
                           Ver ingressos
                         </Button>
                       </Link>
                       
                       <Button 
                         variant="outline" 
-                        size="lg"
                         className="border-destructive text-destructive hover:bg-destructive/10"
                         onClick={() => handleRemoveFromFavorites(event.id)}
                       >
