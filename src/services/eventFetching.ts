@@ -12,14 +12,17 @@ export const fetchEvents = async (forceRefresh = false) => {
   try {
     console.log("Buscando todos os eventos", forceRefresh ? "(forçando atualização do cache)" : "");
     
-    // When forceRefresh is true, add cache prevention headers to the request
-    // This ensures we get fresh data from the database
+    // When forceRefresh is true, add cache prevention headers and use stronger cache busting
     const options = forceRefresh ? {
       headers: {
-        'Cache-Control': 'no-cache',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
+        'Expires': '0',
       },
     } : undefined;
+    
+    // Add a timestamp parameter to prevent caching
+    const cacheParam = forceRefresh ? `?cacheBuster=${new Date().getTime()}` : '';
     
     const { data: events, error } = await supabase
       .from("events")
@@ -37,9 +40,7 @@ export const fetchEvents = async (forceRefresh = false) => {
     // Process all image URLs to ensure they're valid and persistent
     if (events) {
       events.forEach(event => {
-        console.log(`Processando imagem para evento ${event.id}, URL original:`, event.image_url);
         event.image_url = processImageUrl(event.image_url, event.id);
-        console.log(`URL processada:`, event.image_url);
       });
     }
     

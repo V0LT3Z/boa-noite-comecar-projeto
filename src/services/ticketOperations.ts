@@ -49,7 +49,7 @@ export const deleteEvent = async (id: number) => {
     if (ticketTypes && ticketTypes.length > 0) {
       const ticketTypeIds = ticketTypes.map(tt => tt.id);
       
-      // Delete tickets associated with these ticket types (if any)
+      // Delete tickets associated with these ticket types
       const { error: ticketsError } = await supabase
         .from("tickets")
         .delete()
@@ -57,10 +57,9 @@ export const deleteEvent = async (id: number) => {
         
       if (ticketsError) {
         console.error("Erro ao excluir ingressos associados:", ticketsError);
-        // Continue with deletion anyway
       }
       
-      // Delete orders associated with these ticket types (if any)
+      // Delete orders associated with these ticket types
       const { error: ordersError } = await supabase
         .from("orders")
         .delete()
@@ -68,7 +67,6 @@ export const deleteEvent = async (id: number) => {
         
       if (ordersError) {
         console.error("Erro ao excluir pedidos associados:", ordersError);
-        // Continue with deletion anyway
       }
       
       // Delete ticket types
@@ -79,11 +77,10 @@ export const deleteEvent = async (id: number) => {
         
       if (deleteTicketTypesError) {
         console.error("Erro ao excluir tipos de ingressos:", deleteTicketTypesError);
-        // Continue with deletion anyway
       }
     }
     
-    // Also delete any favorites associated with this event
+    // Delete any favorites associated with this event
     const { error: favoritesError } = await supabase
       .from("favorites")
       .delete()
@@ -91,7 +88,6 @@ export const deleteEvent = async (id: number) => {
       
     if (favoritesError) {
       console.error("Erro ao excluir favoritos associados:", favoritesError);
-      // Continue with deletion anyway
     }
     
     // Delete notifications associated with this event
@@ -102,10 +98,9 @@ export const deleteEvent = async (id: number) => {
       
     if (notificationsError) {
       console.error("Erro ao excluir notificações associadas:", notificationsError);
-      // Continue with deletion anyway
     }
     
-    // Delete any orders directly linked to the event (without ticket type)
+    // Delete any orders directly linked to the event
     const { error: eventOrdersError } = await supabase
       .from("orders")
       .delete()
@@ -113,10 +108,9 @@ export const deleteEvent = async (id: number) => {
       
     if (eventOrdersError) {
       console.error("Erro ao excluir pedidos diretamente ligados ao evento:", eventOrdersError);
-      // Continue with deletion anyway
     }
     
-    // Delete any tickets directly linked to the event (without ticket type)
+    // Delete any tickets directly linked to the event
     const { error: eventTicketsError } = await supabase
       .from("tickets")
       .delete()
@@ -124,22 +118,20 @@ export const deleteEvent = async (id: number) => {
       
     if (eventTicketsError) {
       console.error("Erro ao excluir ingressos diretamente ligados ao evento:", eventTicketsError);
-      // Continue with deletion anyway
     }
     
-    // Finally, delete the event itself - usando .neq('id', 0) para garantir que a exclusão ocorra
-    const { error, data } = await supabase
+    // Finally, delete the event itself - using a strong force delete approach
+    const { error } = await supabase
       .from("events")
       .delete()
-      .eq("id", id)
-      .select();
+      .eq("id", id);
 
     if (error) {
       console.error("Erro ao excluir evento:", error);
       throw error;
     }
 
-    console.log("Evento excluído com sucesso", data);
+    console.log("Evento excluído com sucesso. ID:", id);
     return { success: true, id };
   } catch (error) {
     console.error("Erro ao excluir evento:", error);

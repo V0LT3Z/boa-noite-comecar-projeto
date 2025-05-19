@@ -16,24 +16,30 @@ export const EventListContent = () => {
     openConfirmDialog,
     handleDelete,
     handleNewEvent,
-    loadEvents
+    loadEvents,
+    deletedEventIds
   } = useAdminEvents();
 
-  // Load events when component mounts
+  // Load events when component mounts and refresh after deletion
   useEffect(() => {
-    // Load events immediately
-    loadEvents();
+    // Initial load with force refresh to ensure we have latest data
+    loadEvents(true);
     
-    // Add an interval to reload events periodically (every 30 seconds)
+    // Add an interval to reload events periodically
     const refreshInterval = setInterval(() => {
-      console.log("Reloading events to ensure data is up to date");
-      loadEvents(true); // Added true parameter to force cache refresh
+      console.log("Recarregando eventos para garantir dados atualizados");
+      loadEvents(true); // Force cache refresh
     }, 30000);
 
     return () => {
       clearInterval(refreshInterval);
     };
-  }, [loadEvents]);
+  }, [loadEvents, deletedEventIds]); // Re-run when deletedEventIds changes
+
+  // Filter events to exclude any deleted ones
+  const displayEvents = filteredEvents.filter(event => {
+    return !deletedEventIds.has(event.id);
+  });
 
   return (
     <div className="border rounded-lg">
@@ -48,9 +54,9 @@ export const EventListContent = () => {
         <div className="p-8 text-center">
           <p className="text-muted-foreground">Carregando eventos...</p>
         </div>
-      ) : filteredEvents.length > 0 ? (
+      ) : displayEvents.length > 0 ? (
         <EventsTable 
-          events={filteredEvents} 
+          events={displayEvents} 
           onEdit={handleEdit}
           onStatusAction={openConfirmDialog}
           onDeleteEvent={handleDelete}

@@ -17,6 +17,7 @@ type AdminEventsContextType = {
   deleteDialogOpen: boolean;
   actionType: "pause" | "cancel" | "activate";
   editingEvent: EventItem | null;
+  deletedEventIds: Set<number>;
   setSearchQuery: (query: string) => void;
   setSelectedEvent: (event: EventItem | null) => void;
   setIsCreatingEvent: (isCreating: boolean) => void;
@@ -59,7 +60,10 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
   const apiCallInProgressRef = useRef(false);
   const deletedEventIdsRef = useRef<Set<number>>(new Set());
 
-  // Filter events based on search query
+  // Use state to track deleted events for child components to access
+  const [deletedEventIds, setDeletedEventIds] = useState<Set<number>>(new Set());
+
+  // Filter events based on search query and deleted status
   const filteredEvents = events.filter(event => {
     // Don't show events that were deleted
     if (deletedEventIdsRef.current.has(event.id)) {
@@ -71,6 +75,21 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
   // Ensure component is mounted before updating state
   useEffect(() => {
     isMountedRef.current = true;
+    
+    // Try to load any previously deleted IDs from localStorage
+    try {
+      const savedDeletedIds = localStorage.getItem('deleted_event_ids');
+      if (savedDeletedIds) {
+        const parsedIds = JSON.parse(savedDeletedIds);
+        if (Array.isArray(parsedIds)) {
+          const newDeletedIds = new Set(parsedIds);
+          deletedEventIdsRef.current = newDeletedIds;
+          setDeletedEventIds(newDeletedIds);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao carregar IDs excluídos do localStorage:", error);
+    }
     
     return () => {
       isMountedRef.current = false;
@@ -95,13 +114,9 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       
       console.log(`${fetchedEvents?.length || 0} eventos carregados do banco de dados`);
       
-      // Keep track of any recently deleted IDs that might still be in the response
-      // due to caching or server delays
-      const currentlyDeleted = new Set(deletedEventIdsRef.current);
-      
       // Filter out any events that were marked as deleted
       const filteredEvents = fetchedEvents.filter(
-        event => !currentlyDeleted.has(event.id)
+        event => !deletedEventIdsRef.current.has(event.id)
       );
       
       // Format events for display
@@ -225,6 +240,18 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       
       // Add to deleted events set for immediate UI filtering
       deletedEventIdsRef.current.add(selectedEvent.id);
+      
+      // Update state for child components
+      setDeletedEventIds(new Set(deletedEventIdsRef.current));
+      
+      // Save to localStorage for persistence across refreshes
+      try {
+        localStorage.setItem('deleted_event_ids', 
+          JSON.stringify([...deletedEventIdsRef.current])
+        );
+      } catch (error) {
+        console.error("Erro ao salvar IDs excluídos no localStorage:", error);
+      }
       
       // Update UI immediately by removing the deleted event
       setEvents(prevEvents => prevEvents.filter(event => event.id !== selectedEvent.id));
@@ -351,6 +378,7 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       deleteDialogOpen,
       actionType,
       editingEvent,
+      deletedEventIds,
       setSearchQuery,
       setSelectedEvent,
       setIsCreatingEvent,

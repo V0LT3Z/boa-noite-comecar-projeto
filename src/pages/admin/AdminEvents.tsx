@@ -10,14 +10,17 @@ import { AdminEventsProvider, useAdminEvents } from "@/contexts/AdminEventsConte
 
 // This component must be used inside the AdminEventsProvider
 const AdminEventsContent = () => {
-  const { isCreatingEvent, confirmDialogOpen, handleStatusChange } = useAdminEvents();
+  const { isCreatingEvent, confirmDialogOpen, handleStatusChange, loadEvents } = useAdminEvents();
 
-  // Clean up component state on unmount
+  // Load events when component mounts and force a fresh load
   useEffect(() => {
+    loadEvents(true); // Force fresh data on mount
+    
+    // Clean up component state on unmount
     return () => {
       // This empty cleanup function ensures the context unmount handler works properly
     };
-  }, []);
+  }, [loadEvents]);
 
   return (
     <div className="space-y-6">
