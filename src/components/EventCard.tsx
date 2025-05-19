@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -32,8 +32,6 @@ const EventCard = ({
   const [eventExists, setEventExists] = useState<boolean | null>(null);
   const [eventStatus, setEventStatus] = useState<string | undefined>(status);
   const [isChecking, setIsChecking] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  const [persistentImageUrl, setPersistentImageUrl] = useState(image);
   
   useEffect(() => {
     // Verificar se o evento existe apenas uma vez
@@ -56,12 +54,6 @@ const EventCard = ({
         setEventExists(true);
         if (event) {
           setEventStatus(event.status);
-          
-          // Atualizar a URL da imagem a partir do banco de dados
-          if (event.image) {
-            console.log("EventCard: Atualizando URL da imagem para o evento", id, "Nova URL:", event.image);
-            setPersistentImageUrl(event.image);
-          }
         }
       } catch (error) {
         console.error("Erro ao verificar evento:", error);
@@ -103,21 +95,14 @@ const EventCard = ({
     return true;
   };
   
-  // Verificar se a URL é um blob e usar fallback nesse caso
-  const isTemporaryBlobUrl = persistentImageUrl?.startsWith('blob:');
+  // Log da imagem que será renderizada
+  console.log("EventCard: Renderizando com URL da imagem:", image, "para evento:", id);
   
-  // Usar uma imagem de fallback SOMENTE se a original falhar ou for blob URL
-  const handleImageError = () => {
-    console.log("EventCard: Erro ao carregar imagem, usando fallback:", id);
-    setImageError(true);
+  // Função para lidar com erros de carregamento de imagem
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    console.error("Erro ao carregar imagem para o evento:", id);
+    // O próprio navegador tentará novamente ou usará o cache
   };
-  
-  // Usar uma imagem de fallback SOMENTE se a original falhar ou for blob URL
-  const imageUrl = imageError || isTemporaryBlobUrl
-    ? `https://picsum.photos/seed/${id}/800/500` 
-    : persistentImageUrl;
-  
-  console.log("EventCard: Renderizando com URL da imagem:", imageUrl, "para evento:", id);
   
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">
@@ -125,7 +110,7 @@ const EventCard = ({
         {/* Image container with overlay */}
         <div className="relative h-40 overflow-hidden">
           <img
-            src={imageUrl}
+            src={image}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             onError={handleImageError}

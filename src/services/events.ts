@@ -3,10 +3,32 @@ import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";
 import { format, parse } from "date-fns";
 
+// Helper function to generate consistent image URLs based on event ID
+const generatePersistentImageUrl = (eventId: number) => {
+  return `https://picsum.photos/seed/${eventId}/800/500`;
+};
+
+// Helper function to process image URLs - ensures blob URLs are converted to persistent ones
+const processImageUrl = (imageUrl: string | null | undefined, eventId: number) => {
+  if (!imageUrl) {
+    return generatePersistentImageUrl(eventId);
+  }
+  
+  if (imageUrl.startsWith('blob:')) {
+    console.log(`Convertendo URL blob para persistente para evento ${eventId}`);
+    return generatePersistentImageUrl(eventId);
+  }
+  
+  return imageUrl;
+};
+
 const mapEventResponse = (event: EventResponse, ticketTypes: TicketTypeResponse[] = []): EventDetails => {
   const eventDate = new Date(event.date);
   const formattedDate = format(eventDate, "yyyy-MM-dd");
   const formattedTime = format(eventDate, "HH:mm");
+
+  // Process image URL to ensure it's always persistent
+  const processedImageUrl = processImageUrl(event.image_url, event.id);
 
   return {
     id: event.id,
@@ -15,7 +37,7 @@ const mapEventResponse = (event: EventResponse, ticketTypes: TicketTypeResponse[
     time: formattedTime,
     location: event.location,
     description: event.description || "",
-    image: event.image_url || "https://picsum.photos/seed/event/800/500",
+    image: processedImageUrl,
     minimumAge: event.minimum_age || 0,
     status: (event.status as "active" | "paused" | "cancelled") || "active",
     tickets: ticketTypes.map(tt => ({
@@ -54,6 +76,14 @@ export const fetchEvents = async () => {
     }
     
     console.log(`Eventos encontrados: ${events?.length || 0}`);
+    
+    // Process all image URLs to ensure they're persistent
+    if (events) {
+      events.forEach(event => {
+        event.image_url = processImageUrl(event.image_url, event.id);
+      });
+    }
+    
     return events as EventResponse[];
   } catch (error) {
     console.error("Erro ao buscar eventos:", error);
@@ -83,12 +113,8 @@ export const fetchEventById = async (id: number) => {
     const event = eventData[0] as EventResponse;
     console.log("Evento encontrado:", event);
     
-    // Verificar se a imagem é um blob URL e substituir por uma URL persistente se for
-    if (event.image_url && event.image_url.startsWith('blob:')) {
-      console.log("Detectada URL blob temporária:", event.image_url);
-      // Usar uma URL fixa baseada no ID do evento para torná-la persistente
-      event.image_url = `https://picsum.photos/seed/${event.id}/800/500`;
-    }
+    // Process image URL to ensure it's always persistent
+    event.image_url = processImageUrl(event.image_url, event.id);
 
     const { data: ticketTypes, error: ticketError } = await supabase
       .from("ticket_types")
@@ -136,17 +162,7 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
     
     console.log("Criando evento para o usuário com ID:", userId);
     
-    // Check if the bannerUrl is a blob URL and convert to a persistent URL if needed
-    let persistentImageUrl = eventData.bannerUrl;
-    if (persistentImageUrl && persistentImageUrl.startsWith('blob:')) {
-      console.log("Convertendo URL temporária para persistente:", persistentImageUrl);
-      // Generate a persistent URL based on a random value or timestamp instead
-      const randomSeed = new Date().getTime();
-      persistentImageUrl = `https://picsum.photos/seed/${randomSeed}/800/500`;
-    }
-    
-    console.log("URL da imagem persistente sendo armazenada:", persistentImageUrl);
-
+    // Let's create the event first to get an ID
     const totalTickets = eventData.tickets.reduce(
       (sum, ticket) => sum + (parseInt(String(ticket.availableQuantity)) || 0),
       0
@@ -157,7 +173,7 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
       description: eventData.description,
       date: dateObj.toISOString(),
       location: eventData.location,
-      image_url: persistentImageUrl || null,
+      image_url: null, // We'll update this after getting an ID
       minimum_age: parseInt(eventData.minimumAge) || 0,
       status: eventData.status || "active",
       total_tickets: totalTickets,
@@ -178,6 +194,22 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
     }
 
     console.log("Evento criado com sucesso:", eventInsert);
+    
+    // Now update with the persistent image URL based on the event ID
+    let persistentImageUrl = processImageUrl(eventData.bannerUrl, eventInsert.id);
+    
+    console.log("URL da imagem persistente sendo armazenada:", persistentImageUrl);
+    
+    // Update the event with the permanent image URL
+    const { error: updateError } = await supabase
+      .from("events")
+      .update({ image_url: persistentImageUrl })
+      .eq("id", eventInsert.id);
+      
+    if (updateError) {
+      console.error("Erro ao atualizar URL da imagem:", updateError);
+      // Continue anyway - this is not critical
+    }
 
     if (eventInsert && eventData.tickets && eventData.tickets.length > 0) {
       const ticketTypesData = eventData.tickets.map(ticket => ({
@@ -203,7 +235,7 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
       console.log("Tipos de ingresso criados com sucesso");
     }
     
-    return eventInsert;
+    return { ...eventInsert, image_url: persistentImageUrl };
   } catch (error) {
     console.error("Erro ao criar evento:", error);
     throw error;
@@ -216,17 +248,15 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
     const dateTime = `${eventData.date}T${eventData.time || "19:00"}`;
     const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
-    // Handle blob URL conversion for event updates
-    let persistentImageUrl = eventData.bannerUrl;
-    if (persistentImageUrl && persistentImageUrl.startsWith('blob:')) {
-      console.log("Atualizando evento: Convertendo URL temporária para persistente:", persistentImageUrl);
-      // Use a timestamp to generate a unique seed for the image
-      const timestamp = new Date().getTime();
-      persistentImageUrl = `https://picsum.photos/seed/${id}-${timestamp}/800/500`;
-      console.log("Nova URL persistente gerada:", persistentImageUrl);
-    } else if (!persistentImageUrl) {
-      // If bannerUrl is empty, we need to keep the existing image URL
-      console.log("Tentando manter URL de imagem existente, fetchando dados atuais do evento");
+    // Process image URL - handle blob URLs and empty URLs
+    let processedImageUrl;
+    
+    if (eventData.bannerUrl) {
+      // If a new image URL is provided, process it
+      processedImageUrl = processImageUrl(eventData.bannerUrl, id);
+      console.log("Nova URL de imagem processada:", processedImageUrl);
+    } else {
+      // If no new image URL, keep the existing one
       const { data: currentEvent } = await supabase
         .from("events")
         .select("image_url")
@@ -234,8 +264,12 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
         .single();
         
       if (currentEvent && currentEvent.image_url) {
-        persistentImageUrl = currentEvent.image_url;
-        console.log("Mantendo URL de imagem existente:", persistentImageUrl);
+        processedImageUrl = currentEvent.image_url;
+        console.log("Mantendo URL de imagem existente:", processedImageUrl);
+      } else {
+        // Fallback if somehow we don't have an image URL
+        processedImageUrl = generatePersistentImageUrl(id);
+        console.log("Usando URL de fallback:", processedImageUrl);
       }
     }
 
@@ -251,7 +285,7 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
         description: eventData.description,
         date: dateObj.toISOString(),
         location: eventData.location,
-        image_url: persistentImageUrl, // Use our processed image URL
+        image_url: processedImageUrl,
         minimum_age: parseInt(eventData.minimumAge) || 0,
         status: eventData.status,
         total_tickets: totalTickets,
@@ -275,7 +309,6 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
       console.log("Evento atualizado com sucesso. URL da imagem salva:", updatedEvent.image_url);
     }
 
-    // ... keep existing code for ticket type updates
     const { data: existingTickets, error: fetchError } = await supabase
       .from("ticket_types")
       .select("*")
@@ -339,7 +372,7 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
       }
     }
 
-    return { id };
+    return { id, image_url: processedImageUrl };
   } catch (error) {
     console.error("Erro geral ao atualizar evento:", error);
     throw error;

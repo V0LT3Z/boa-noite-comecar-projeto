@@ -1,7 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Calendar } from 'lucide-react';
-import { fetchEventById } from '@/services/events';
 
 interface EventSlideProps {
   id: number;
@@ -16,44 +15,6 @@ interface EventSlideProps {
 const DELETED_EVENTS_KEY = 'deletedEventIds';
 
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
-  const [isValidEvent, setIsValidEvent] = useState(true);
-  const [imageError, setImageError] = useState(false);
-  const [persistentImageUrl, setPersistentImageUrl] = useState(image);
-  const [imageChecked, setImageChecked] = useState(false);
-  
-  // Verificar se o evento existe no banco de dados e não está na lista de excluídos
-  useEffect(() => {
-    const checkEventValidity = async () => {
-      try {
-        // Primeiro, verificar se o evento está na lista de excluídos
-        const deletedEventIds = getDeletedEventIds();
-        if (deletedEventIds.includes(id)) {
-          console.log(`Evento ${id} está na lista de excluídos, não será exibido`);
-          setIsValidEvent(false);
-          return;
-        }
-        
-        // Se não estiver excluído, verificar se existe no banco de dados
-        const eventDetails = await fetchEventById(id);
-        setIsValidEvent(!!eventDetails);
-        
-        // Se o evento existe, atualizar a URL da imagem a partir do banco de dados
-        if (eventDetails && eventDetails.image) {
-          console.log(`EventSlide: Atualizando URL da imagem para o evento ${id}, Nova URL:`, eventDetails.image);
-          setPersistentImageUrl(eventDetails.image);
-          setImageChecked(true);
-        }
-      } catch (error) {
-        console.error(`Erro ao verificar evento ${id}:`, error);
-        setIsValidEvent(false);
-      }
-    };
-    
-    if (!imageChecked) {
-      checkEventValidity();
-    }
-  }, [id, image, imageChecked]);
-  
   // Função para obter eventos excluídos do localStorage
   const getDeletedEventIds = (): number[] => {
     try {
@@ -65,26 +26,20 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
     }
   };
   
-  // Se o evento não for válido, não renderiza nada
-  if (!isValidEvent) {
+  // Verificar se o evento está na lista de excluídos
+  const deletedEventIds = getDeletedEventIds();
+  if (deletedEventIds.includes(id)) {
+    console.log(`Evento ${id} está na lista de excluídos, não será exibido`);
     return null;
   }
   
-  // Usar uma imagem padrão SOMENTE se a URL original for inválida
+  // Usar a imagem fornecida pelo serviço de eventos, que já foi processada para ser persistente
+  console.log(`EventSlide: Renderizando slide para evento ${id} com URL:`, image);
+  
   const handleImageError = () => {
-    console.log(`EventSlide: Erro ao carregar imagem para evento ${id}, usando fallback`);
-    setImageError(true);
+    console.log(`EventSlide: Erro ao carregar imagem para evento ${id}`);
+    // O elemento img automaticamente tenta o src fornecido no onError
   };
-  
-  // Verificar se a URL é um blob e usar fallback nesse caso
-  const isTemporaryBlobUrl = persistentImageUrl?.startsWith('blob:');
-  
-  // Usar a imagem original e só cair para o fallback se houver erro ou for blob temporária
-  const imageUrl = imageError || isTemporaryBlobUrl
-    ? `https://picsum.photos/seed/${id}/800/500`
-    : persistentImageUrl;
-  
-  console.log(`EventSlide: Renderizando slide para evento ${id} com URL:`, imageUrl);
   
   return (
     <div 
@@ -95,7 +50,7 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
     >
       <div className="relative h-[420px] w-full overflow-hidden group">
         <img 
-          src={imageUrl} 
+          src={image} 
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="eager"
