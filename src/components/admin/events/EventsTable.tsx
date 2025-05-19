@@ -28,17 +28,13 @@ interface EventsTableProps {
     action: "pause" | "cancel" | "activate"
   ) => void;
   onDeleteEvent: (event: EventItem) => void;
-  renderExtraStatus?: (event: EventItem) => React.ReactNode;
-  deletedEventIds?: number[];
 }
 
 export function EventsTable({
   events,
   onEdit,
   onStatusAction,
-  onDeleteEvent,
-  renderExtraStatus,
-  deletedEventIds = []
+  onDeleteEvent
 }: EventsTableProps) {
   // Handle view action - open event page in new tab
   const handleViewEvent = (id: number) => {
@@ -58,78 +54,66 @@ export function EventsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {events.map((event) => {
-            // Check if event is deleted
-            const isDeleted = deletedEventIds.includes(event.id);
-            
-            return (
-              <TableRow key={event.id} className={isDeleted ? "bg-red-50" : ""}>
-                <TableCell>
-                  <span className="font-medium">{event.title}</span>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col gap-1">
-                    <EventStatusBadge status={event.status} />
-                    {renderExtraStatus && renderExtraStatus(event)}
-                  </div>
-                </TableCell>
-                <TableCell>{event.date}</TableCell>
-                <TableCell>{event.location}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Abrir menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleViewEvent(event.id)}>
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Visualizar
+          {events.map((event) => (
+            <TableRow key={event.id}>
+              <TableCell>
+                <span className="font-medium">{event.title}</span>
+              </TableCell>
+              <TableCell>
+                <EventStatusBadge status={event.status} />
+              </TableCell>
+              <TableCell>{event.date}</TableCell>
+              <TableCell>{event.location}</TableCell>
+              <TableCell className="text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Abrir menu</span>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleViewEvent(event.id)}>
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Visualizar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onEdit(event)}>
+                      <PenLine className="mr-2 h-4 w-4" />
+                      Editar
+                    </DropdownMenuItem>
+                    {event.status !== "active" && (
+                      <DropdownMenuItem
+                        onClick={() => onStatusAction(event, "activate")}
+                      >
+                        <span className="mr-2">🟢</span>
+                        Ativar
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(event)}>
-                        <PenLine className="mr-2 h-4 w-4" />
-                        Editar
+                    )}
+                    {event.status !== "paused" && (
+                      <DropdownMenuItem
+                        onClick={() => onStatusAction(event, "pause")}
+                      >
+                        <span className="mr-2">⏸️</span>
+                        Pausar
                       </DropdownMenuItem>
-                      {!isDeleted && (
-                        <>
-                          {event.status !== "active" && (
-                            <DropdownMenuItem
-                              onClick={() => onStatusAction(event, "activate")}
-                            >
-                              <span className="mr-2">🟢</span>
-                              Ativar
-                            </DropdownMenuItem>
-                          )}
-                          {event.status !== "paused" && (
-                            <DropdownMenuItem
-                              onClick={() => onStatusAction(event, "pause")}
-                            >
-                              <span className="mr-2">⏸️</span>
-                              Pausar
-                            </DropdownMenuItem>
-                          )}
-                          {event.status !== "cancelled" && (
-                            <DropdownMenuItem
-                              onClick={() => onStatusAction(event, "cancel")}
-                            >
-                              <span className="mr-2">🚫</span>
-                              Cancelar
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem onClick={() => onDeleteEvent(event)}>
-                            <Trash2 className="mr-2 h-4 w-4 text-red-600" />
-                            <span className="text-red-600">Excluir</span>
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+                    )}
+                    {event.status !== "cancelled" && (
+                      <DropdownMenuItem
+                        onClick={() => onStatusAction(event, "cancel")}
+                      >
+                        <span className="mr-2">🚫</span>
+                        Cancelar
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={() => onDeleteEvent(event)}>
+                      <Trash2 className="mr-2 h-4 w-4 text-red-600" />
+                      <span className="text-red-600">Excluir</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>

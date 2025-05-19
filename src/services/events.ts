@@ -8,15 +8,6 @@ export {
   fetchUserTickets 
 } from './eventFetching';
 
-// Re-export local event management functions
-export { 
-  isEventLocallyDeleted,
-  markEventAsLocallyDeleted,
-  restoreLocallyDeletedEvent,
-  clearLocallyDeletedEvents,
-  getLocallyDeletedEvents
-} from './localEventManagement';
-
 // Re-export event management functions
 export { createEvent, updateEvent, updateEventStatus } from './eventManagement';
 export { deleteTicketType, deleteEvent } from './ticketOperations';

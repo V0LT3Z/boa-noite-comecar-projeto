@@ -32,8 +32,8 @@ export const DeleteEventDialog: React.FC<DeleteEventDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Confirmar exclusão</DialogTitle>
           <DialogDescription>
-            Tem certeza que deseja esconder o evento <span className="font-semibold">{selectedEvent?.title}</span>? 
-            Ele não aparecerá mais na página inicial, mas poderá ser restaurado depois.
+            Tem certeza que deseja excluir o evento <span className="font-semibold">{selectedEvent?.title}</span>? 
+            Esta ação é irreversível e todos os dados relacionados a este evento serão permanentemente excluídos.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

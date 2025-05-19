@@ -8,14 +8,11 @@ import { EventItem, EventStatus } from "@/types/admin";
 import { ConfirmActionDialog } from "@/components/admin/events/ConfirmActionDialog";
 import { EventList } from "@/components/admin/events/EventList";
 import { DeleteEventDialog } from "@/components/admin/events/DeleteEventDialog";
-import { RestoreEventDialog } from "@/components/admin/events/RestoreEventDialog";
 import { 
   fetchEvents, 
   fetchEventById, 
   updateEventStatus,
-  markEventAsLocallyDeleted,
-  restoreLocallyDeletedEvent,
-  getLocallyDeletedEvents
+  deleteEvent
 } from "@/services/events";
 import { format } from "date-fns";
 
@@ -26,19 +23,16 @@ export const EventsManager = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
-  const [deletedEvents, setDeletedEvents] = useState<number[]>([]);
   
   // Dialog state
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [actionType, setActionType] = useState<"pause" | "cancel" | "activate">("pause");
   
   // Processing state
   const [isProcessingAction, setIsProcessingAction] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
   
   // Refs to prevent state updates during unmount
   const isMountedRef = useRef(true);
@@ -53,13 +47,6 @@ export const EventsManager = () => {
     };
   }, []);
 
-  // Atualiza a lista de IDs de eventos excluídos do localStorage
-  const updateDeletedEventsFromStorage = useCallback(() => {
-    const deletedIds = getLocallyDeletedEvents();
-    setDeletedEvents(deletedIds);
-    return deletedIds;
-  }, []);
-
   // Load events with useCallback to prevent unnecessary re-renders
   const loadEvents = useCallback(async () => {
     // Skip if we're already loading or unmounted
@@ -70,14 +57,11 @@ export const EventsManager = () => {
       apiCallInProgressRef.current = true;
       setLoadingEvents(true);
       
-      // Fetch events from the API - incluindo os marcados como excluídos!
+      // Fetch events from the API
       const fetchedEvents = await fetchEvents();
       
       // Skip state update if component unmounted during fetch
       if (!isMountedRef.current) return;
-      
-      // Atualizar lista de eventos excluídos do localStorage
-      updateDeletedEventsFromStorage();
       
       console.log(`Eventos carregados: ${fetchedEvents.length}`);
       
@@ -114,7 +98,7 @@ export const EventsManager = () => {
       }
       apiCallInProgressRef.current = false;
     }
-  }, [updateDeletedEventsFromStorage]);
+  }, []);
 
   // Load events on mount and when event creation state changes
   useEffect(() => {
@@ -185,52 +169,44 @@ export const EventsManager = () => {
     }
   };
 
-  // Handle event deletion - using markEventAsLocallyDeleted
+  // Handle event deletion - using permanent deletion
   const handleDelete = (event: EventItem) => {
     // Create a deep copy to prevent mutations
     setSelectedEvent(JSON.parse(JSON.stringify(event)));
     setDeleteDialogOpen(true);
   };
-  
-  // Handle event restoration
-  const handleRestore = (event: EventItem) => {
-    // Create a deep copy to prevent mutations
-    setSelectedEvent(JSON.parse(JSON.stringify(event)));
-    setRestoreDialogOpen(true);
-  };
 
-  // Confirm deletion of an event - using markEventAsLocallyDeleted
+  // Confirm deletion of an event - using permanent deletion
   const confirmDelete = async () => {
     if (!selectedEvent || apiCallInProgressRef.current) return;
     
     try {
       apiCallInProgressRef.current = true;
       setIsDeleting(true);
-      console.log(`Marcando evento ${selectedEvent.id} como excluído localmente`);
+      console.log(`Excluindo permanentemente o evento ${selectedEvent.id}`);
       
-      // Agora apenas marcamos como excluído localmente
-      markEventAsLocallyDeleted(selectedEvent.id);
+      // Excluir permanentemente o evento do banco de dados
+      await deleteEvent(selectedEvent.id);
       
       // Skip state updates if component unmounted
       if (!isMountedRef.current) return;
       
-      // Atualiza a lista de IDs excluídos
-      const updatedDeletedIds = updateDeletedEventsFromStorage();
-      console.log("Lista atualizada de IDs excluídos:", updatedDeletedIds);
+      // Remove o evento da lista local
+      setEvents(currentEvents => currentEvents.filter(event => event.id !== selectedEvent.id));
       
       toast({
-        title: "Evento removido",
-        description: "O evento foi marcado como removido e não aparecerá na página inicial.",
+        title: "Evento excluído",
+        description: "O evento foi excluído permanentemente com sucesso.",
         variant: "success"
       });
     } catch (error) {
       // Skip error handling if component unmounted
       if (!isMountedRef.current) return;
       
-      console.error("Erro ao marcar evento como excluído:", error);
+      console.error("Erro ao excluir evento:", error);
       toast({
-        title: "Erro ao remover evento",
-        description: "Não foi possível remover o evento. Tente novamente.",
+        title: "Erro ao excluir evento",
+        description: "Não foi possível excluir o evento. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -238,65 +214,6 @@ export const EventsManager = () => {
       if (isMountedRef.current) {
         setIsDeleting(false);
         setDeleteDialogOpen(false);
-        
-        // Use timeout to ensure dialog is fully closed before resetting selection
-        setTimeout(() => {
-          if (isMountedRef.current) {
-            setSelectedEvent(null);
-          }
-        }, 300);
-      }
-      apiCallInProgressRef.current = false;
-    }
-  };
-  
-  // Confirm restoration of an event
-  const confirmRestore = async () => {
-    if (!selectedEvent || apiCallInProgressRef.current) return;
-    
-    try {
-      apiCallInProgressRef.current = true;
-      setIsRestoring(true);
-      console.log(`Restaurando evento ${selectedEvent.id}`);
-      
-      // Restaurar evento usando a função centralizada
-      const success = restoreLocallyDeletedEvent(selectedEvent.id);
-      
-      // Skip state updates if component unmounted
-      if (!isMountedRef.current) return;
-      
-      if (success) {
-        // Atualiza a lista de IDs excluídos
-        const updatedDeletedIds = updateDeletedEventsFromStorage();
-        console.log("Lista atualizada de IDs excluídos após restauração:", updatedDeletedIds);
-        
-        toast({
-          title: "Evento restaurado",
-          description: "O evento foi restaurado e voltará a aparecer na página inicial.",
-          variant: "success"
-        });
-      } else {
-        toast({
-          title: "Erro ao restaurar evento",
-          description: "Não foi possível restaurar o evento. Tente novamente.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      // Skip error handling if component unmounted
-      if (!isMountedRef.current) return;
-      
-      console.error("Erro ao restaurar evento:", error);
-      toast({
-        title: "Erro ao restaurar evento",
-        description: "Não foi possível restaurar o evento. Tente novamente.",
-        variant: "destructive"
-      });
-    } finally {
-      // Reset state only if still mounted
-      if (isMountedRef.current) {
-        setIsRestoring(false);
-        setRestoreDialogOpen(false);
         
         // Use timeout to ensure dialog is fully closed before resetting selection
         setTimeout(() => {
@@ -416,9 +333,7 @@ export const EventsManager = () => {
             onEdit={handleEdit}
             onStatusAction={openConfirmDialog}
             onDeleteEvent={handleDelete}
-            onRestoreEvent={handleRestore}
             onCreateEvent={handleNewEvent}
-            deletedEventIds={deletedEvents}
           />
         </>
       )}
@@ -463,26 +378,6 @@ export const EventsManager = () => {
         selectedEvent={selectedEvent}
         onConfirm={confirmDelete}
         isDeleting={isDeleting}
-      />
-      
-      {/* Restore event confirmation dialog */}
-      <RestoreEventDialog
-        open={restoreDialogOpen}
-        onOpenChange={(open) => {
-          if (!isRestoring && isMountedRef.current) {
-            setRestoreDialogOpen(open);
-            if (!open) {
-              setTimeout(() => {
-                if (isMountedRef.current) {
-                  setSelectedEvent(null);
-                }
-              }, 300);
-            }
-          }
-        }}
-        selectedEvent={selectedEvent}
-        onConfirm={confirmRestore}
-        isRestoring={isRestoring}
       />
     </div>
   );
