@@ -125,7 +125,7 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
         description: event.description || "",
         location: event.location || "",
         venue: event.location || "",
-        minimumAge: event.minimumAge?.toString() || "0"
+        minimumAge: event.minimum_age?.toString() || "0"  // Fixed: Changed from minimumAge to minimum_age
       }));
       
       setEvents(formattedEvents);
