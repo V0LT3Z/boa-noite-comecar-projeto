@@ -27,9 +27,7 @@ const Index = () => {
     
     try {
       setLoading(true);
-      
-      // Always force refresh when loading events on the main page
-      const eventData = await fetchEvents(true);
+      const eventData = await fetchEvents();
       
       if (!eventData || eventData.length === 0) {
         setEvents([]);
@@ -43,16 +41,15 @@ const Index = () => {
           });
         }
       } else {
-        // Get fresh set of deleted event IDs
+        // Get deleted event IDs
         const deletedEventIds = getDeletedEventIds();
-        console.log(`Index: Checking ${deletedEventIds.size} deleted events`);
         
         // Filter out cancelled events AND deleted events
         const filteredEvents = eventData.filter(event => 
           event.status !== "cancelled" && !deletedEventIds.has(event.id)
         );
         
-        console.log(`Total events: ${eventData.length}, Active: ${filteredEvents.length}, Deleted: ${deletedEventIds.size}`);
+        console.log(`Total de eventos: ${eventData.length}, Ativos: ${filteredEvents.length}, Excluídos: ${deletedEventIds.size}`);
         setEvents(filteredEvents);
       }
       
@@ -72,8 +69,7 @@ const Index = () => {
   }, [eventsLoaded, toast]);
 
   useEffect(() => {
-    // Always force refresh when first loading the index page
-    loadEvents(true);
+    loadEvents();
   }, [loadEvents]);
   
   const handleSearch = (query: string) => {
@@ -81,9 +77,8 @@ const Index = () => {
     setSearchParams(query ? { q: query } : {});
   };
 
-  // Remove a non-existent event from UI 
+  // Remover um evento da UI se ele não existir mais no banco de dados
   const removeNonexistentEvent = (eventId: number) => {
-    console.log(`Index: Removing event ID ${eventId} from UI as it no longer exists`);
     setEvents(currentEvents => currentEvents.filter(event => event.id !== eventId));
   };
 
@@ -126,12 +121,7 @@ const Index = () => {
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
-      const isDeleted = deletedEventIds.has(event.id);
-      if (isDeleted) {
-        console.log(`Index: Event ${event.id} is in deleted list and won't be displayed`);
-      }
-      
-      return matchesSearch && !isDeleted;
+      return matchesSearch && !deletedEventIds.has(event.id);
     });
   }, [formattedEvents, searchQuery]);
     
@@ -159,16 +149,18 @@ const Index = () => {
         </div>
         
         {/* Lista de eventos - constrained width */}
-        <section className="mt-16 container mx-auto px-4 max-w-7xl">
-          <EventsGrid 
-            events={filteredEvents} 
-            loading={loading} 
-            showAllEvents={false}
-            setShowAllEvents={() => {}}
-            searchQuery={searchQuery}
-            onMarkDeleted={removeNonexistentEvent}
-          />
-        </section>
+        {!loading && (
+          <section className="mt-16 container mx-auto px-4 max-w-7xl">
+            <EventsGrid 
+              events={filteredEvents} 
+              loading={loading} 
+              showAllEvents={false}
+              setShowAllEvents={() => {}}
+              searchQuery={searchQuery}
+              onMarkDeleted={removeNonexistentEvent}
+            />
+          </section>
+        )}
       </main>
       
       <Footer />

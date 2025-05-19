@@ -11,9 +11,9 @@ import { getDeletedEventIds } from "./utils/deletedEventsUtils";
  */
 export const fetchEvents = async (forceRefresh = false) => {
   try {
-    console.log("Fetching all events", forceRefresh ? "(forcing cache refresh)" : "");
+    console.log("Buscando todos os eventos", forceRefresh ? "(forçando atualização do cache)" : "");
     
-    // When forceRefresh is true, add cache prevention headers
+    // When forceRefresh is true, add cache prevention headers and use stronger cache busting
     const options = forceRefresh ? {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -22,29 +22,39 @@ export const fetchEvents = async (forceRefresh = false) => {
       },
     } : undefined;
     
+    // Add a timestamp parameter to prevent caching
+    const cacheParam = forceRefresh ? `?cacheBuster=${new Date().getTime()}` : '';
+    
     const { data: events, error } = await supabase
       .from("events")
       .select("*")
-      .order("date", { ascending: true });
+      .order("date", { ascending: true })
+      .throwOnError();
 
     if (error) {
-      console.error("Error fetching events:", error);
+      console.error("Erro ao buscar eventos:", error);
       throw error;
     }
     
-    console.log(`Events found: ${events?.length || 0}`);
+    console.log(`Eventos encontrados: ${events?.length || 0}`);
     
-    // Process all image URLs
+    // Process all image URLs to ensure they're valid and persistent
     if (events) {
       events.forEach(event => {
         event.image_url = processImageUrl(event.image_url, event.id);
       });
     }
     
-    // Return all events without filtering - we'll handle filtering in the UI components
+    // Filter out deleted events
+    const deletedEventIds = getDeletedEventIds();
+    if (deletedEventIds.size > 0) {
+      console.log(`Filtrando ${deletedEventIds.size} eventos excluídos`);
+      return events?.filter(event => !deletedEventIds.has(event.id)) as EventResponse[];
+    }
+    
     return events as EventResponse[];
   } catch (error) {
-    console.error("Error fetching events:", error);
+    console.error("Erro ao buscar eventos:", error);
     throw error;
   }
 };
@@ -54,7 +64,7 @@ export const fetchEvents = async (forceRefresh = false) => {
  */
 export const fetchEventById = async (id: number) => {
   try {
-    console.log("Fetching event with ID:", id);
+    console.log("Buscando evento com ID:", id);
     
     const { data: eventData, error: eventError } = await supabase
       .from("events")
@@ -62,17 +72,17 @@ export const fetchEventById = async (id: number) => {
       .eq("id", id);
 
     if (eventError) {
-      console.error("Error fetching event:", eventError);
+      console.error("Erro ao buscar evento:", eventError);
       return null;
     }
 
     if (!eventData || eventData.length === 0) {
-      console.log("Event not found for ID:", id);
+      console.log("Evento não encontrado para o ID:", id);
       return null;
     }
 
     const event = eventData[0] as EventResponse;
-    console.log("Event found:", event);
+    console.log("Evento encontrado:", event);
     
     // Always use consistent image URL
     event.image_url = processImageUrl(event.image_url, event.id);
@@ -83,7 +93,7 @@ export const fetchEventById = async (id: number) => {
       .eq("event_id", id);
 
     if (ticketError) {
-      console.error("Error fetching ticket types:", ticketError);
+      console.error("Erro ao buscar tipos de ingressos:", ticketError);
       return null;
     }
 
@@ -102,7 +112,7 @@ export const fetchEventById = async (id: number) => {
     
     return mappedEvent;
   } catch (error) {
-    console.error("Error fetching event:", error);
+    console.error("Erro geral ao buscar evento:", error);
     return null;
   }
 };

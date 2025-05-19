@@ -35,42 +35,44 @@ const EventCard = ({
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // First check if this event is already marked as deleted
-    if (isEventDeleted(id)) {
-      console.log(`EventCard: Event ${id} is in deleted list, not rendering`);
-      setEventExists(false);
-      if (onMarkDeleted) {
-        onMarkDeleted(id);
-      }
-      return;
-    }
-    
-    // Otherwise check if it exists in the database
+    // Check if the event exists and if it's not a deleted event
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
+      
+      // First check if this event is in the deleted set
+      if (isEventDeleted(id)) {
+        setEventExists(false);
+        if (onMarkDeleted) {
+          onMarkDeleted(id);
+        }
+        return;
+      }
       
       setIsChecking(true);
       try {
         const event = await fetchEventById(id);
         
         if (!event) {
-          console.log(`EventCard: Event ${id} not found in database`);
           setEventExists(false);
+          // Notify that the event was removed from the database
           if (onMarkDeleted) {
             onMarkDeleted(id);
           }
           return;
         }
         
-        console.log(`EventCard: Event ${id} exists, status: ${event.status}`);
         setEventExists(true);
         if (event) {
           setEventStatus(event.status);
         }
       } catch (error) {
-        console.error("Error checking event:", error);
-        // Don't mark as non-existent if there's an error - might be a temporary connection issue
-        setEventExists(true);
+        console.error("Erro ao verificar evento:", error);
+        setEventExists(false);
+        
+        // If the event doesn't exist in the database, notify the parent component
+        if (onMarkDeleted) {
+          onMarkDeleted(id);
+        }
       } finally {
         setIsChecking(false);
       }
@@ -177,7 +179,7 @@ const EventCard = ({
         </div>
       </div>
     </Card>
-  );
+  )
 }
 
 export default EventCard;
