@@ -23,9 +23,6 @@ interface EventsGridProps {
   onMarkDeleted?: (id: number) => void;
 }
 
-// Key for storing deleted event IDs in localStorage
-const DELETED_EVENTS_KEY = 'deletedEventIds';
-
 const EventsGrid = ({
   events,
   loading,
@@ -35,26 +32,6 @@ const EventsGrid = ({
   onMarkDeleted = () => {}
 }: EventsGridProps) => {
   const navigate = useNavigate();
-  
-  // Function to handle marking an event as deleted
-  const handleMarkDeleted = (id: number) => {
-    // Call the parent callback
-    onMarkDeleted(id);
-    
-    // Also update localStorage
-    try {
-      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-      const currentDeletedIds = savedIds ? JSON.parse(savedIds) : [];
-      
-      if (!currentDeletedIds.includes(id)) {
-        const updatedIds = [...currentDeletedIds, id];
-        localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(updatedIds));
-        console.log(`Evento ${id} adicionado ao cache de eventos excluídos:`, updatedIds);
-      }
-    } catch (error) {
-      console.error('Erro ao salvar eventos excluídos no localStorage:', error);
-    }
-  };
   
   // Se estiver carregando, mostra os skeletons
   if (loading) {
@@ -126,7 +103,7 @@ const EventsGrid = ({
             location={event.location}
             image={event.image}
             status={event.status}
-            onMarkDeleted={handleMarkDeleted}
+            onMarkDeleted={onMarkDeleted}
           />
         ))}
       </div>

@@ -14,9 +14,6 @@ import { fetchEvents, fetchEventById, updateEventStatus, updateEvent, deleteEven
 import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
-// Chave para armazenar IDs de eventos excluídos no localStorage
-const DELETED_EVENTS_KEY = 'deletedEventIds';
-
 const AdminEvents = () => {
   // Component state
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
@@ -38,24 +35,6 @@ const AdminEvents = () => {
   // Refs to prevent state updates during unmount
   const isMountedRef = useRef(true);
   const apiCallInProgressRef = useRef(false);
-  
-  // Function to manage deleted events in localStorage
-  const addEventToDeletedCache = (eventId: number) => {
-    try {
-      // Get current deleted events from localStorage
-      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-      const currentDeletedIds = savedIds ? JSON.parse(savedIds) : [];
-      
-      // Add new id if not already in the list
-      if (!currentDeletedIds.includes(eventId)) {
-        const updatedIds = [...currentDeletedIds, eventId];
-        localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(updatedIds));
-        console.log(`Evento ${eventId} adicionado ao cache de eventos excluídos:`, updatedIds);
-      }
-    } catch (error) {
-      console.error('Erro ao salvar eventos excluídos no localStorage:', error);
-    }
-  };
 
   // Reset mounted ref on unmount
   useEffect(() => {
@@ -82,24 +61,10 @@ const AdminEvents = () => {
       // Skip state update if component unmounted during fetch
       if (!isMountedRef.current) return;
       
-      // Get deleted events from localStorage
-      let deletedEventIds: number[] = [];
-      try {
-        const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-        deletedEventIds = savedIds ? JSON.parse(savedIds) : [];
-      } catch (error) {
-        console.error('Erro ao carregar eventos excluídos do localStorage:', error);
-      }
-      
-      // Filter out any previously deleted events that might still come from the API
-      const filteredEvents = fetchedEvents.filter(
-        event => !deletedEventIds.includes(event.id)
-      );
-      
-      console.log(`Eventos após filtragem: ${filteredEvents.length} (removidos: ${deletedEventIds.length})`);
+      console.log(`${fetchedEvents?.length || 0} eventos carregados do banco de dados`);
       
       // Format events for display
-      const formattedEvents: EventItem[] = filteredEvents.map(event => ({
+      const formattedEvents: EventItem[] = fetchedEvents.map(event => ({
         id: event.id,
         title: event.title,
         date: format(new Date(event.date), "yyyy-MM-dd"),
@@ -207,14 +172,14 @@ const AdminEvents = () => {
     }
   };
 
-  // Handle event deletion - UPDATED TO USE LOCALSTORAGE
+  // Handle event deletion
   const handleDelete = (event: EventItem) => {
     // Create a deep copy to prevent mutations
     setSelectedEvent(JSON.parse(JSON.stringify(event)));
     setDeleteDialogOpen(true);
   };
 
-  // Confirm deletion of an event - UPDATED TO USE LOCALSTORAGE
+  // Confirm deletion of an event
   const confirmDelete = async () => {
     if (!selectedEvent || apiCallInProgressRef.current) return;
     
@@ -223,20 +188,18 @@ const AdminEvents = () => {
       setIsDeleting(true);
       console.log(`Removendo evento ${selectedEvent.id}`);
       
+      // Excluindo o evento permanentemente do banco de dados
       const result = await deleteEvent(selectedEvent.id);
       
       // Skip state updates if component unmounted
       if (!isMountedRef.current) return;
-      
-      // Add the deleted event ID to localStorage
-      addEventToDeletedCache(selectedEvent.id);
       
       // Update UI immediately by removing the deleted event
       setEvents(prevEvents => prevEvents.filter(event => event.id !== selectedEvent.id));
       
       toast({
         title: "Evento removido",
-        description: "O evento foi removido com sucesso e não aparecerá mais na página inicial.",
+        description: "O evento foi permanentemente removido do sistema.",
         variant: "success"
       });
     } catch (error) {

@@ -44,7 +44,7 @@ const EventCard = ({
         
         if (!event) {
           setEventExists(false);
-          // Notificar que o evento foi removido
+          // Notificar que o evento foi removido do banco de dados
           if (onMarkDeleted) {
             onMarkDeleted(id);
           }
@@ -59,7 +59,7 @@ const EventCard = ({
         console.error("Erro ao verificar evento:", error);
         setEventExists(false);
         
-        // Se o evento não existe no banco de dados, marcá-lo como excluído
+        // Se o evento não existe no banco de dados, notificar o componente pai
         if (onMarkDeleted) {
           onMarkDeleted(id);
         }
