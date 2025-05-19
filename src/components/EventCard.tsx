@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import FavoriteButton from "./FavoriteButton";
-import { fetchEventById, isEventLocallyDeleted } from "@/services/events";
+import { fetchEventById } from "@/services/events";
 import { toast } from "@/hooks/use-toast";
 
 interface EventCardProps {
@@ -34,15 +33,7 @@ const EventCard = ({
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // Verificar primeiro usando a função centralizada se o evento está marcado como excluído
-    if (isEventLocallyDeleted(id)) {
-      console.log(`Evento ${id} está marcado como excluído localmente`);
-      setEventExists(false);
-      // Não precisamos chamar onMarkDeleted porque o evento já está marcado como excluído
-      return;
-    }
-    
-    // Verificar se o evento existe apenas se ainda não verificamos
+    // Verify if the event actually exists in the database
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
       
@@ -53,7 +44,7 @@ const EventCard = ({
         if (!event) {
           console.log(`Evento ${id} não existe no banco de dados`);
           setEventExists(false);
-          // Notificar que o evento foi removido
+          // Notify that the event was removed
           onMarkDeleted(id);
           return;
         }
@@ -66,7 +57,7 @@ const EventCard = ({
         console.error("Erro ao verificar evento:", error);
         setEventExists(false);
         
-        // Se o evento não existe no banco de dados, marcá-lo como excluído
+        // If the event doesn't exist in the database, mark it as deleted
         onMarkDeleted(id);
       } finally {
         setIsChecking(false);
@@ -76,7 +67,7 @@ const EventCard = ({
     checkEvent();
   }, [id, eventExists, isChecking, onMarkDeleted]);
   
-  // Se o evento não existe ou está marcado como excluído, não renderizar o card
+  // If the event doesn't exist, don't render the card
   if (eventExists === false) {
     return null;
   }

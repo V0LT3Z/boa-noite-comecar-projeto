@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
-import { fetchEvents, markEventAsLocallyDeleted, isEventLocallyDeleted } from "@/services/events";
+import { fetchEvents } from "@/services/events";
 import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -72,45 +71,39 @@ const AllEvents = () => {
     setSearchParams(query ? { q: query } : {});
   };
   
-  // Function to mark an event as deleted locally
+  // Function to handle event removal from UI when it's been deleted
   const handleMarkDeleted = (id: number) => {
-    console.log(`Marcando evento ${id} como excluído localmente`);
-    
-    // Updatamos usando a função centralizada
-    markEventAsLocallyDeleted(id);
-    
+    console.log(`Removendo evento ${id} da lista`);
     // Remove from current events list
     setEvents(prev => prev.filter(event => event.id !== id));
   };
 
   const formattedEvents = useMemo(() => {
-    return events
-      .filter(event => !isEventLocallyDeleted(event.id))  // Filtrar eventos excluídos já aqui
-      .map(event => {
-        try {
-          const eventDate = new Date(event.date);
-          return {
-            id: event.id,
-            title: event.title,
-            date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
-            location: event.location,
-            image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
-            category: "Eventos",
-            status: event.status
-          };
-        } catch (error) {
-          console.error("Erro ao formatar evento:", error, event);
-          return {
-            id: event.id || 0,
-            title: event.title || "Evento sem título",
-            date: "Data não disponível",
-            location: event.location || "Local não informado",
-            image: "https://picsum.photos/seed/fallback/800/500",
-            category: "Eventos",
-            status: "active"
-          };
-        }
-      });
+    return events.map(event => {
+      try {
+        const eventDate = new Date(event.date);
+        return {
+          id: event.id,
+          title: event.title,
+          date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
+          location: event.location,
+          image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
+          category: "Eventos",
+          status: event.status
+        };
+      } catch (error) {
+        console.error("Erro ao formatar evento:", error, event);
+        return {
+          id: event.id || 0,
+          title: event.title || "Evento sem título",
+          date: "Data não disponível",
+          location: event.location || "Local não informado",
+          image: "https://picsum.photos/seed/fallback/800/500",
+          category: "Eventos",
+          status: "active"
+        };
+      }
+    });
   }, [events]);
 
   const filteredEvents = useMemo(() => {

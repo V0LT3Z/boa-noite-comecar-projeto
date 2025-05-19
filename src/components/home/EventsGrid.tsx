@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import EventCard from '@/components/EventCard';
-import { markEventAsLocallyDeleted, isEventLocallyDeleted } from '@/services/events';
 
 interface EventItem {
   id: number;
@@ -34,18 +33,6 @@ const EventsGrid = ({
 }: EventsGridProps) => {
   const navigate = useNavigate();
   
-  // Function to handle marking an event as deleted
-  const handleMarkDeleted = (id: number) => {
-    // Call the parent callback
-    onMarkDeleted(id);
-    
-    // Atualiza usando a função centralizada
-    markEventAsLocallyDeleted(id);
-  };
-  
-  // Filtrar eventos que estão marcados como excluídos
-  const filteredEvents = events.filter(event => !isEventLocallyDeleted(event.id));
-  
   // Se estiver carregando, mostra os skeletons
   if (loading) {
     return (
@@ -64,7 +51,7 @@ const EventsGrid = ({
   }
 
   // Se não há eventos para mostrar
-  if (filteredEvents.length === 0) {
+  if (events.length === 0) {
     return (
       <div className="container px-4 mx-auto">
         <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-100">
@@ -89,7 +76,7 @@ const EventsGrid = ({
   }
 
   // Limita o número de eventos exibidos para 12 (4 linhas de 3 cards)
-  const displayEvents = filteredEvents.slice(0, 12);
+  const displayEvents = events.slice(0, 12);
 
   const handleViewAllEvents = () => {
     navigate('/eventos');
@@ -102,7 +89,7 @@ const EventsGrid = ({
           {searchQuery ? `Resultados para "${searchQuery}"` : "Eventos em Destaque"}
         </h2>
         <p className="text-muted-foreground text-sm mt-1 text-left font-gooddog">
-          {searchQuery ? `${filteredEvents.length} ${filteredEvents.length === 1 ? 'evento encontrado' : 'eventos encontrados'}` : "Os mais procurados"}
+          {searchQuery ? `${events.length} ${events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}` : "Os mais procurados"}
         </p>
       </div>
 
@@ -116,12 +103,12 @@ const EventsGrid = ({
             location={event.location}
             image={event.image}
             status={event.status}
-            onMarkDeleted={handleMarkDeleted}
+            onMarkDeleted={onMarkDeleted}
           />
         ))}
       </div>
 
-      {filteredEvents.length > 12 && (
+      {events.length > 12 && (
         <div className="mt-12 text-center">
           <Button
             onClick={handleViewAllEvents}
