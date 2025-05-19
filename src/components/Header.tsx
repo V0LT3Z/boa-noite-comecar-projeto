@@ -14,7 +14,11 @@ const HeaderWrapper: React.FC = () => {
     // If user info appears corrupted or inconsistent, force logout
     if (auth.user && (!auth.user.id || !auth.user.email)) {
       console.warn("Detected potentially corrupted user data in Header, cleaning up...");
-      auth.logout().catch(console.error);
+      try {
+        auth.logout();
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
     }
   }, [auth.user]);
   
