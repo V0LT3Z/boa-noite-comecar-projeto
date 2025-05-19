@@ -33,52 +33,50 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   });
   const autoplayTimerRef = useRef<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [preloadedImages, setPreloadedImages] = useState<string[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const slidesRef = useRef<HTMLDivElement>(null);
   
-  console.log("FeaturedCarousel received events:", events);
+  // Filtrar eventos nulos ou inválidos
+  const validEvents = events.filter(event => 
+    event && event.id && event.title && event.image
+  );
   
-  // Preload all images to prevent white flashes
+  // Verificar se temos eventos válidos
+  if (validEvents.length === 0) {
+    return (
+      <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
+        <div className="mx-auto max-w-[1400px] px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 rounded-xl">
+            <div className="lg:col-span-8">
+              <div className="h-[420px] rounded-3xl bg-gray-200 flex items-center justify-center">
+                <p className="text-gray-500">Sem eventos em destaque disponíveis</p>
+              </div>
+            </div>
+            <div className="lg:col-span-4">
+              <div className="h-[420px] rounded-3xl bg-gray-100 flex items-center justify-center">
+                <p className="text-gray-500">Detalhes do evento</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Garantir que o índice selecionado seja válido
   useEffect(() => {
-    if (!events || events.length === 0) return;
-    
-    // Preload all event images
-    const imagesToPreload = events.map(event => event.image);
-    
-    Promise.all(
-      imagesToPreload.map(
-        (src) =>
-          new Promise((resolve, reject) => {
-            const img = new Image();
-            img.src = src;
-            img.onload = () => resolve(src);
-            img.onerror = () => {
-              console.error(`Failed to preload image: ${src}`);
-              reject(new Error(`Failed to preload image: ${src}`));
-            };
-          })
-      )
-    )
-      .then((loadedImages) => {
-        console.log("All images preloaded successfully:", loadedImages);
-        setPreloadedImages(loadedImages as string[]);
-      })
-      .catch((error) => {
-        console.error("Error during image preloading:", error);
-        // Still set the preloaded images we have
-        setPreloadedImages(preloadedImages);
-      });
-  }, [events]);
+    if (selectedIndex >= validEvents.length && validEvents.length > 0) {
+      setSelectedIndex(0);
+    }
+  }, [selectedIndex, validEvents.length]);
   
   // Handle carousel slide selection
   useEffect(() => {
-    if (!emblaApi) return;
+    if (!emblaApi || validEvents.length === 0) return;
     
     const onSelect = () => {
       const index = emblaApi.selectedScrollSnap();
-      console.log("Embla selected index:", index);
-      setSelectedIndex(index);
+      setSelectedIndex(Math.min(index, validEvents.length - 1));
     };
     
     emblaApi.on('select', onSelect);
@@ -87,11 +85,11 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     return () => {
       emblaApi.off('select', onSelect);
     };
-  }, [emblaApi]);
+  }, [emblaApi, validEvents.length]);
   
   // Setup autoplay functionality
   useEffect(() => {
-    if (!emblaApi || events.length <= 1) return;
+    if (!emblaApi || validEvents.length <= 1) return;
     
     const autoplay = () => {
       if (!isTransitioning && emblaApi.canScrollNext()) {
@@ -123,26 +121,20 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
         window.clearInterval(autoplayTimerRef.current);
       }
     };
-  }, [emblaApi, events.length, isTransitioning]);
-
-  if (events.length === 0) {
-    return null;
-  }
+  }, [emblaApi, validEvents.length, isTransitioning]);
 
   // Current selected event for the info panel
-  const currentEvent = events[selectedIndex] || events[0];
+  const currentEvent = validEvents[selectedIndex] || validEvents[0];
   
   // Improved navigation functions
   const scrollNext = () => {
-    if (isTransitioning) return;
+    if (isTransitioning || validEvents.length === 0) return;
     
-    console.log("scrollNext called, current index:", selectedIndex);
     setIsTransitioning(true);
     
     // Calculate next index and update state
-    const nextIndex = (selectedIndex + 1) % events.length;
+    const nextIndex = (selectedIndex + 1) % validEvents.length;
     setSelectedIndex(nextIndex);
-    console.log("New index set to:", nextIndex);
     
     // Sync with embla carousel
     if (emblaApi) {
@@ -156,15 +148,13 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   };
   
   const scrollPrev = () => {
-    if (isTransitioning) return;
+    if (isTransitioning || validEvents.length === 0) return;
     
-    console.log("scrollPrev called, current index:", selectedIndex);
     setIsTransitioning(true);
     
     // Calculate previous index and update state
-    const prevIndex = selectedIndex === 0 ? events.length - 1 : selectedIndex - 1;
+    const prevIndex = selectedIndex === 0 ? validEvents.length - 1 : selectedIndex - 1;
     setSelectedIndex(prevIndex);
-    console.log("New index set to:", prevIndex);
     
     // Sync with embla carousel
     if (emblaApi) {
@@ -177,23 +167,6 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
     }, 500); // Match this with CSS transition duration
   };
 
-  if (preloadedImages.length < events.length) {
-    return (
-      <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
-        <div className="mx-auto max-w-[1400px] px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 rounded-xl">
-            <div className="lg:col-span-8">
-              <div className="h-[420px] rounded-3xl bg-gray-200 animate-pulse"></div>
-            </div>
-            <div className="lg:col-span-4">
-              <div className="h-[420px] rounded-3xl bg-gray-100 animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
       <div className="mx-auto max-w-[1400px] px-4 relative">
@@ -201,7 +174,7 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
         <CarouselControls 
           onPrev={scrollPrev}
           onNext={scrollNext}
-          eventsLength={events.length}
+          eventsLength={validEvents.length}
         />
 
         {/* Main content grid - banner and details */}
@@ -211,9 +184,9 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
             <div>
               <div className="relative overflow-hidden rounded-3xl shadow-xl h-[420px]">
                 <div className="relative h-full w-full" ref={slidesRef}>
-                  {events.map((event, index) => (
+                  {validEvents.map((event, index) => (
                     <EventSlide 
-                      key={`event-slide-${event.id}`}
+                      key={`event-slide-${event.id}-${index}`}
                       {...event} 
                       isActive={index === selectedIndex}
                     />

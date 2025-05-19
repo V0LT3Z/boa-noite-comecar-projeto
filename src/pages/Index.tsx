@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -12,6 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import EventsGrid from "@/components/home/EventsGrid";
 import FeaturedCarousel from "@/components/home/FeaturedCarousel";
 
+// Set para rastrear IDs de eventos excluídos
+const deletedEventIdsCache = new Set<number>();
+
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
@@ -21,17 +25,21 @@ const Index = () => {
   const [eventsLoaded, setEventsLoaded] = useState(false);
   const { toast } = useToast();
   
-  const loadEvents = useCallback(async () => {
-    if (eventsLoaded) return; // Evita múltiplas chamadas se os eventos já foram carregados
+  // Limpar o cache de eventos apagados
+  const clearDeletedEventsCache = () => {
+    deletedEventIdsCache.clear();
+    loadEvents(true);
+  };
+  
+  const loadEvents = useCallback(async (forceReload: boolean = false) => {
+    if (eventsLoaded && !forceReload) return; // Evita múltiplas chamadas se os eventos já foram carregados
     
     try {
       setLoading(true);
       const eventData = await fetchEvents();
-      console.log("Eventos carregados:", eventData);
       
       if (!eventData || eventData.length === 0) {
         setEvents([]);
-        console.log("Nenhum evento encontrado no banco de dados");
         
         // Exibir toast informativo apenas na primeira carga
         if (!eventsLoaded) {
@@ -42,9 +50,11 @@ const Index = () => {
           });
         }
       } else {
-        // Filter out cancelled events
-        const activeEvents = eventData.filter(event => event.status !== "cancelled");
-        console.log("Eventos ativos:", activeEvents.length);
+        // Filtrar eventos excluídos e cancelados
+        const activeEvents = eventData.filter(event => 
+          event.status !== "cancelled" && !deletedEventIdsCache.has(event.id)
+        );
+        
         setEvents(activeEvents);
       }
       
@@ -72,6 +82,12 @@ const Index = () => {
     setSearchParams(query ? { q: query } : {});
   };
 
+  // Marcar evento como excluído para não aparecer mais na interface
+  const markEventAsDeleted = (eventId: number) => {
+    deletedEventIdsCache.add(eventId);
+    setEvents(currentEvents => currentEvents.filter(event => event.id !== eventId));
+  };
+
   const formattedEvents = useMemo(() => {
     return events.map(event => {
       try {
@@ -80,10 +96,10 @@ const Index = () => {
           id: event.id,
           title: event.title,
           date: format(eventDate, "dd 'de' MMMM yyyy", { locale: ptBR }),
-          location: event.location,
-          image: event.image_url || "https://picsum.photos/seed/" + event.id + "/800/500",
+          location: event.location || "Local não informado",
+          image: event.image_url || `https://picsum.photos/seed/${event.id}/800/500`,
           category: "Eventos",
-          status: event.status
+          status: event.status || "active"
         };
       } catch (error) {
         console.error("Erro ao formatar evento:", error, event);
@@ -115,9 +131,7 @@ const Index = () => {
   // Eventos em destaque para o carrossel
   const featuredEvents = useMemo(() => {
     const activeEvents = formattedEvents.filter(event => event.status === "active");
-    console.log("Eventos para o carrossel:", activeEvents.length);
-    
-    return activeEvents.slice(0, 5);
+    return activeEvents.slice(0, 3);
   }, [formattedEvents]);
 
   return (
@@ -135,12 +149,21 @@ const Index = () => {
         {/* Lista de eventos - constrained width */}
         {!loading && (
           <section className="mt-16 container mx-auto px-4 max-w-7xl">
+            <div className="mb-2 flex justify-end">
+              <button
+                onClick={() => clearDeletedEventsCache()}
+                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                Recarregar eventos
+              </button>
+            </div>
             <EventsGrid 
               events={filteredEvents} 
               loading={loading} 
               showAllEvents={false}
               setShowAllEvents={() => {}}
               searchQuery={searchQuery}
+              onMarkDeleted={markEventAsDeleted}
             />
           </section>
         )}
@@ -149,6 +172,6 @@ const Index = () => {
       <Footer />
     </div>
   );
-}
+};
 
 export default Index;

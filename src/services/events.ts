@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse, EventDetails } from "@/types/event";
 import { AdminEventForm, AdminTicketType } from "@/types/admin";

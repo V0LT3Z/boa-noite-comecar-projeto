@@ -1,26 +1,38 @@
-import { Calendar, MapPin } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Link } from "react-router-dom"
-import FavoriteButton from "./FavoriteButton"
-import { useEffect, useState } from "react"
-import { fetchEventById } from "@/services/events"
-import { toast } from "@/hooks/use-toast"
+
+import { useEffect, useState } from "react";
+import { Calendar, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import FavoriteButton from "./FavoriteButton";
+import { fetchEventById } from "@/services/events";
+import { toast } from "@/hooks/use-toast";
 
 interface EventCardProps {
-  id: number
-  title: string
-  date: string
-  location: string
-  image: string
-  category?: string
-  status?: string
+  id: number;
+  title: string;
+  date: string;
+  location: string;
+  image: string;
+  category?: string;
+  status?: string;
+  onMarkDeleted?: (id: number) => void;
 }
 
-const EventCard = ({ id, title, date, location, image, category, status }: EventCardProps) => {
+const EventCard = ({ 
+  id, 
+  title, 
+  date, 
+  location, 
+  image, 
+  category, 
+  status,
+  onMarkDeleted = () => {}
+}: EventCardProps) => {
   const [eventExists, setEventExists] = useState<boolean | null>(null);
   const [eventStatus, setEventStatus] = useState<string | undefined>(status);
   const [isChecking, setIsChecking] = useState(false);
+  const [imageError, setImageError] = useState(false);
   
   useEffect(() => {
     // Verificar se o evento existe apenas uma vez
@@ -30,6 +42,16 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
       setIsChecking(true);
       try {
         const event = await fetchEventById(id);
+        
+        if (!event) {
+          setEventExists(false);
+          // Notificar que o evento foi removido
+          if (onMarkDeleted) {
+            onMarkDeleted(id);
+          }
+          return;
+        }
+        
         setEventExists(!!event);
         if (event) {
           setEventStatus(event.status);
@@ -37,13 +59,23 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
       } catch (error) {
         console.error("Erro ao verificar evento:", error);
         setEventExists(false);
+        
+        // Se o evento não existe no banco de dados, marcá-lo como excluído
+        if (onMarkDeleted) {
+          onMarkDeleted(id);
+        }
       } finally {
         setIsChecking(false);
       }
     };
     
     checkEvent();
-  }, [id, eventExists, isChecking]);
+  }, [id, eventExists, isChecking, onMarkDeleted]);
+  
+  // Se o evento não existe, não renderizar o card
+  if (eventExists === false) {
+    return null;
+  }
   
   const handleVerIngressos = () => {
     if (eventStatus === "cancelled") {
@@ -64,15 +96,25 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
     return true;
   };
   
+  const handleImageError = () => {
+    setImageError(true);
+  };
+  
+  // Usar uma imagem de fallback se a original falhar
+  const imageUrl = imageError 
+    ? `https://picsum.photos/seed/${id}/800/500` 
+    : image;
+  
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">
       <div className="relative">
         {/* Image container with overlay */}
         <div className="relative h-40 overflow-hidden">
           <img
-            src={image}
+            src={imageUrl}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={handleImageError}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80 mix-blend-multiply" />
           
@@ -138,4 +180,4 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
   )
 }
 
-export default EventCard
+export default EventCard;

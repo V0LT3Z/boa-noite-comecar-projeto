@@ -20,6 +20,7 @@ interface EventsGridProps {
   showAllEvents: boolean;
   setShowAllEvents: (value: boolean) => void;
   searchQuery: string;
+  onMarkDeleted?: (id: number) => void;
 }
 
 const EventsGrid = ({
@@ -27,7 +28,8 @@ const EventsGrid = ({
   loading,
   showAllEvents,
   setShowAllEvents,
-  searchQuery
+  searchQuery,
+  onMarkDeleted = () => {}
 }: EventsGridProps) => {
   const navigate = useNavigate();
   
@@ -101,6 +103,7 @@ const EventsGrid = ({
             location={event.location}
             image={event.image}
             status={event.status}
+            onMarkDeleted={onMarkDeleted}
           />
         ))}
       </div>

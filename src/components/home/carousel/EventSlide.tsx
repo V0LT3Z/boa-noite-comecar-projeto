@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
+import { fetchEventById } from '@/services/events';
 
 interface EventSlideProps {
   id: number;
@@ -12,6 +13,33 @@ interface EventSlideProps {
 }
 
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
+  const [isValidEvent, setIsValidEvent] = useState(true);
+  
+  // Verificar se o evento existe no banco de dados
+  useEffect(() => {
+    const checkEventValidity = async () => {
+      try {
+        const eventDetails = await fetchEventById(id);
+        setIsValidEvent(!!eventDetails);
+      } catch (error) {
+        console.error(`Erro ao verificar evento ${id}:`, error);
+        setIsValidEvent(false);
+      }
+    };
+    
+    checkEventValidity();
+  }, [id]);
+  
+  // Se o evento não for válido, não renderiza nada
+  if (!isValidEvent) {
+    return null;
+  }
+  
+  // Usar uma imagem padrão se a URL for inválida
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = "https://picsum.photos/seed/fallback/800/500";
+  };
+  
   return (
     <div 
       className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
@@ -29,6 +57,7 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
             transition: 'transform 500ms ease-in-out',
             transform: isActive ? 'scale(1)' : 'scale(1.05)'
           }}
+          onError={handleImageError}
         />
         {/* Subtle overlay to enhance image visibility */}
         <div 
