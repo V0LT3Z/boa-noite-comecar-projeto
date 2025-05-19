@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -20,23 +21,25 @@ const Index = () => {
   const { toast } = useToast();
   
   // Usar React Query para gerenciar o fetch e cache de eventos
-  const { data: events = [], isLoading } = useQuery({
+  const { data: events = [], isLoading, error } = useQuery({
     queryKey: ['events'],
     queryFn: () => fetchEvents(false),
     staleTime: 1000 * 60 * 5, // 5 minutos antes de considerar os dados desatualizados
     gcTime: 1000 * 60 * 10, // 10 minutos antes de remover os dados do cache
-    retry: 1,
-    onSettled: (_data, error) => {
-      if (error) {
-        console.error("Erro ao carregar eventos:", error);
-        toast({
-          title: "Falha ao carregar eventos",
-          description: "Ocorreu um erro ao carregar os eventos. Por favor, tente novamente mais tarde.",
-          variant: "destructive",
-        });
-      }
-    }
+    retry: 1
   });
+  
+  // Handle error separately with useEffect
+  useEffect(() => {
+    if (error) {
+      console.error("Erro ao carregar eventos:", error);
+      toast({
+        title: "Falha ao carregar eventos",
+        description: "Ocorreu um erro ao carregar os eventos. Por favor, tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
   
   const handleSearch = (query: string) => {
     // Update URL with search query
