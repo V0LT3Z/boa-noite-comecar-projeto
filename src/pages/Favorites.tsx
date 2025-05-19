@@ -159,7 +159,7 @@ const Favorites = () => {
             {favoriteEvents.map((event) => (
               <Card key={event.id} className="overflow-hidden hover:shadow-event-card transition-shadow">
                 <div className="flex flex-col sm:flex-row h-auto">
-                  {/* Imagem maior e com melhor qualidade */}
+                  {/* Imagem maior e com melhor qualidade - Preservando URL original */}
                   <div className="w-full sm:w-64 h-64 relative">
                     <img 
                       src={event.image}

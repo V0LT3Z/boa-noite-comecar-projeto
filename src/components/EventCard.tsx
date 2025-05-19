@@ -96,11 +96,12 @@ const EventCard = ({
     return true;
   };
   
+  // Usar a imagem original e só usar fallback se ela falhar
   const handleImageError = () => {
     setImageError(true);
   };
   
-  // Usar uma imagem de fallback se a original falhar
+  // Usar uma imagem de fallback SOMENTE se a original falhar
   const imageUrl = imageError 
     ? `https://picsum.photos/seed/${id}/800/500` 
     : image;

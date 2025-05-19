@@ -108,7 +108,7 @@ export const isEventFavorited = async (eventId: number): Promise<boolean> => {
   return !!data;
 };
 
-// Função para obter todos os eventos favoritos do usuário - ALTERADA PARA BUSCAR EVENTOS REAIS
+// Função para obter todos os eventos favoritos do usuário - COM PRESERVAÇÃO DE IMAGENS
 export const getFavorites = async (): Promise<EventDetails[]> => {
   // Verificar se o usuário está logado
   const { data: { session } } = await supabase.auth.getSession();
@@ -136,7 +136,8 @@ export const getFavorites = async (): Promise<EventDetails[]> => {
     for (const fav of favorites) {
       const event = await fetchEventById(fav.event_id);
       if (event) {
-        // Garantir que a imagem do evento seja preservada
+        // Preservar a URL de imagem original do evento
+        // Garantindo que não seja substituída por uma imagem aleatória
         favoriteEvents.push(event);
       } else {
         console.log(`Evento favoritado com ID ${fav.event_id} não encontrado`);
