@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse } from "@/types/event";
 import { mapEventResponse } from "./utils/eventMappers";
 import { processImageUrl } from "./utils/imageUtils";
+import { format } from "date-fns";
 
 /**
  * Fetch all events from the database
