@@ -18,6 +18,7 @@ const DELETED_EVENTS_KEY = 'deletedEventIds';
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
   const [isValidEvent, setIsValidEvent] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [persistentImageUrl, setPersistentImageUrl] = useState(image);
   
   // Verificar se o evento existe no banco de dados e não está na lista de excluídos
   useEffect(() => {
@@ -34,6 +35,11 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
         // Se não estiver excluído, verificar se existe no banco de dados
         const eventDetails = await fetchEventById(id);
         setIsValidEvent(!!eventDetails);
+        
+        // Se o evento existe, atualizar a URL da imagem a partir do banco de dados
+        if (eventDetails && eventDetails.image) {
+          setPersistentImageUrl(eventDetails.image);
+        }
       } catch (error) {
         console.error(`Erro ao verificar evento ${id}:`, error);
         setIsValidEvent(false);
@@ -41,7 +47,7 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
     };
     
     checkEventValidity();
-  }, [id]);
+  }, [id, image]);
   
   // Função para obter eventos excluídos do localStorage
   const getDeletedEventIds = (): number[] => {
@@ -64,10 +70,13 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
     setImageError(true);
   };
   
-  // Usar a imagem original e só cair para o fallback se houver erro
-  const imageUrl = imageError 
+  // Verificar se a URL é um blob e usar fallback nesse caso
+  const isTemporaryBlobUrl = persistentImageUrl?.startsWith('blob:');
+  
+  // Usar a imagem original e só cair para o fallback se houver erro ou for blob temporária
+  const imageUrl = imageError || isTemporaryBlobUrl
     ? `https://picsum.photos/seed/${id}/800/500`
-    : image;
+    : persistentImageUrl;
   
   return (
     <div 

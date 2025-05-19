@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,6 +32,7 @@ const EventCard = ({
   const [eventStatus, setEventStatus] = useState<string | undefined>(status);
   const [isChecking, setIsChecking] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [persistentImageUrl, setPersistentImageUrl] = useState(image);
   
   useEffect(() => {
     // Verificar se o evento existe apenas uma vez
@@ -55,6 +55,11 @@ const EventCard = ({
         setEventExists(true);
         if (event) {
           setEventStatus(event.status);
+          
+          // Atualizar a URL da imagem a partir do banco de dados
+          if (event.image) {
+            setPersistentImageUrl(event.image);
+          }
         }
       } catch (error) {
         console.error("Erro ao verificar evento:", error);
@@ -96,15 +101,18 @@ const EventCard = ({
     return true;
   };
   
-  // Usar a imagem original e só usar fallback se ela falhar
+  // Verificar se a URL é um blob e usar fallback nesse caso
+  const isTemporaryBlobUrl = persistentImageUrl?.startsWith('blob:');
+  
+  // Usar uma imagem de fallback SOMENTE se a original falhar ou for blob URL
   const handleImageError = () => {
     setImageError(true);
   };
   
-  // Usar uma imagem de fallback SOMENTE se a original falhar
-  const imageUrl = imageError 
+  // Usar uma imagem de fallback SOMENTE se a original falhar ou for blob URL
+  const imageUrl = imageError || isTemporaryBlobUrl
     ? `https://picsum.photos/seed/${id}/800/500` 
-    : image;
+    : persistentImageUrl;
   
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">

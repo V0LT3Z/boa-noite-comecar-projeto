@@ -82,6 +82,13 @@ export const fetchEventById = async (id: number) => {
 
     const event = eventData[0] as EventResponse;
     console.log("Evento encontrado:", event);
+    
+    // Verificar se a imagem é um blob URL e substituir por uma URL persistente se for
+    if (event.image_url && event.image_url.startsWith('blob:')) {
+      console.log("Detectada URL blob temporária:", event.image_url);
+      // Usar uma URL fixa baseada no ID do evento para torná-la persistente
+      event.image_url = `https://picsum.photos/seed/${event.id}/800/500`;
+    }
 
     const { data: ticketTypes, error: ticketError } = await supabase
       .from("ticket_types")
@@ -128,7 +135,17 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
     }
     
     console.log("Criando evento para o usuário com ID:", userId);
-    console.log("URL da imagem sendo armazenada:", eventData.bannerUrl);
+    
+    // Check if the bannerUrl is a blob URL and convert to a persistent URL if needed
+    let persistentImageUrl = eventData.bannerUrl;
+    if (persistentImageUrl && persistentImageUrl.startsWith('blob:')) {
+      console.log("Convertendo URL temporária para persistente:", persistentImageUrl);
+      // Generate a persistent URL based on a random value or timestamp instead
+      const randomSeed = new Date().getTime();
+      persistentImageUrl = `https://picsum.photos/seed/${randomSeed}/800/500`;
+    }
+    
+    console.log("URL da imagem persistente sendo armazenada:", persistentImageUrl);
 
     const totalTickets = eventData.tickets.reduce(
       (sum, ticket) => sum + (parseInt(String(ticket.availableQuantity)) || 0),
@@ -140,7 +157,7 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
       description: eventData.description,
       date: dateObj.toISOString(),
       location: eventData.location,
-      image_url: eventData.bannerUrl || null,
+      image_url: persistentImageUrl || null,
       minimum_age: parseInt(eventData.minimumAge) || 0,
       status: eventData.status || "active",
       total_tickets: totalTickets,
