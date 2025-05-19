@@ -113,8 +113,16 @@ export default function EventForm({ event, onSuccess }: EventFormProps) {
       console.log("EventForm: Nova imagem selecionada, URL blob criada:", imageUrl);
       setPreviewImage(imageUrl);
       
-      // Update form value with the image URL
-      form.setValue("bannerUrl", imageUrl);
+      // Convert blob URL to data URL for persistence
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        console.log("EventForm: Imagem convertida para data URL para persistência");
+        
+        // Update form value with the data URL
+        form.setValue("bannerUrl", dataUrl);
+      };
+      reader.readAsDataURL(file);
     }
   };
 

@@ -23,10 +23,12 @@ export const fetchEvents = async () => {
     
     console.log(`Eventos encontrados: ${events?.length || 0}`);
     
-    // Process all image URLs to ensure they're persistent
+    // Process all image URLs to ensure they're valid and persistent
     if (events) {
       events.forEach(event => {
+        console.log(`Processando imagem para evento ${event.id}, URL original:`, event.image_url);
         event.image_url = processImageUrl(event.image_url, event.id);
+        console.log(`URL processada:`, event.image_url);
       });
     }
     

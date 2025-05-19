@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { AdminEventForm } from "@/types/admin";
 import { parse } from "date-fns";
@@ -29,12 +28,13 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
       0
     );
 
+    // Store a placeholder for now, we'll update the image after getting the ID
     const eventInsertData = {
       title: eventData.title,
       description: eventData.description,
       date: dateObj.toISOString(),
       location: eventData.location,
-      image_url: null, // We'll update this after getting an ID
+      image_url: eventData.bannerUrl || null, // Store the original URL
       minimum_age: parseInt(eventData.minimumAge) || 0,
       status: eventData.status || "active",
       total_tickets: totalTickets,
@@ -56,15 +56,13 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
 
     console.log("Evento criado com sucesso:", eventInsert);
     
-    // Now update with the persistent image URL based on the event ID
-    let persistentImageUrl = processImageUrl(eventData.bannerUrl, eventInsert.id);
+    // No need to convert the image URL if it's already valid
+    console.log("Imagem original:", eventData.bannerUrl);
     
-    console.log("URL da imagem persistente sendo armazenada:", persistentImageUrl);
-    
-    // Update the event with the permanent image URL
+    // Update the event with the stored image URL
     const { error: updateError } = await supabase
       .from("events")
-      .update({ image_url: persistentImageUrl })
+      .update({ image_url: eventData.bannerUrl })
       .eq("id", eventInsert.id);
       
     if (updateError) {
@@ -96,7 +94,7 @@ export const createEvent = async (eventData: AdminEventForm, userId?: string) =>
       console.log("Tipos de ingresso criados com sucesso");
     }
     
-    return { ...eventInsert, image_url: persistentImageUrl };
+    return { ...eventInsert, image_url: eventData.bannerUrl };
   } catch (error) {
     console.error("Erro ao criar evento:", error);
     throw error;
@@ -112,15 +110,15 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
     const dateTime = `${eventData.date}T${eventData.time || "19:00"}`;
     const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
-    // Always use consistent image URL based on event ID
-    const processedImageUrl = processImageUrl(eventData.bannerUrl, id);
-    console.log("URL de imagem processada para atualização:", processedImageUrl);
+    // Log the image URL that will be stored
+    console.log("URL da imagem a ser salva na atualização:", eventData.bannerUrl);
 
     const totalTickets = eventData.tickets.reduce(
       (sum, ticket) => sum + (parseInt(String(ticket.availableQuantity)) || 0),
       0
     );
 
+    // Store original image URL directly
     const { error: eventError } = await supabase
       .from("events")
       .update({
@@ -128,7 +126,7 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
         description: eventData.description,
         date: dateObj.toISOString(),
         location: eventData.location,
-        image_url: processedImageUrl,
+        image_url: eventData.bannerUrl, // Use the original banner URL
         minimum_age: parseInt(eventData.minimumAge) || 0,
         status: eventData.status,
         total_tickets: totalTickets,
@@ -215,7 +213,7 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
       }
     }
 
-    return { id, image_url: processedImageUrl };
+    return { id, image_url: eventData.bannerUrl };
   } catch (error) {
     console.error("Erro geral ao atualizar evento:", error);
     throw error;
