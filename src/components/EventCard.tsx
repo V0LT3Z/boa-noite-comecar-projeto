@@ -98,12 +98,6 @@ const EventCard = ({
   // Log da imagem que será renderizada
   console.log("EventCard: Renderizando com URL da imagem:", image, "para evento:", id);
   
-  // Função para lidar com erros de carregamento de imagem
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    console.error("Erro ao carregar imagem para o evento:", id);
-    // O próprio navegador tentará novamente ou usará o cache
-  };
-  
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">
       <div className="relative">
@@ -113,7 +107,6 @@ const EventCard = ({
             src={image}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={handleImageError}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80 mix-blend-multiply" />
           

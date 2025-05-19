@@ -10,16 +10,8 @@ const generatePersistentImageUrl = (eventId: number) => {
 
 // Helper function to process image URLs - ensures blob URLs are converted to persistent ones
 const processImageUrl = (imageUrl: string | null | undefined, eventId: number) => {
-  if (!imageUrl) {
-    return generatePersistentImageUrl(eventId);
-  }
-  
-  if (imageUrl.startsWith('blob:')) {
-    console.log(`Convertendo URL blob para persistente para evento ${eventId}`);
-    return generatePersistentImageUrl(eventId);
-  }
-  
-  return imageUrl;
+  // Always use a persistent URL based on event ID for consistency
+  return generatePersistentImageUrl(eventId);
 };
 
 const mapEventResponse = (event: EventResponse, ticketTypes: TicketTypeResponse[] = []): EventDetails => {
@@ -27,7 +19,7 @@ const mapEventResponse = (event: EventResponse, ticketTypes: TicketTypeResponse[
   const formattedDate = format(eventDate, "yyyy-MM-dd");
   const formattedTime = format(eventDate, "HH:mm");
 
-  // Process image URL to ensure it's always persistent
+  // Always use deterministic image URL
   const processedImageUrl = processImageUrl(event.image_url, event.id);
 
   return {
@@ -113,7 +105,7 @@ export const fetchEventById = async (id: number) => {
     const event = eventData[0] as EventResponse;
     console.log("Evento encontrado:", event);
     
-    // Process image URL to ensure it's always persistent
+    // Always use consistent image URL
     event.image_url = processImageUrl(event.image_url, event.id);
 
     const { data: ticketTypes, error: ticketError } = await supabase
@@ -248,30 +240,9 @@ export const updateEvent = async (id: number, eventData: AdminEventForm) => {
     const dateTime = `${eventData.date}T${eventData.time || "19:00"}`;
     const dateObj = parse(dateTime, "yyyy-MM-dd'T'HH:mm", new Date());
 
-    // Process image URL - handle blob URLs and empty URLs
-    let processedImageUrl;
-    
-    if (eventData.bannerUrl) {
-      // If a new image URL is provided, process it
-      processedImageUrl = processImageUrl(eventData.bannerUrl, id);
-      console.log("Nova URL de imagem processada:", processedImageUrl);
-    } else {
-      // If no new image URL, keep the existing one
-      const { data: currentEvent } = await supabase
-        .from("events")
-        .select("image_url")
-        .eq("id", id)
-        .single();
-        
-      if (currentEvent && currentEvent.image_url) {
-        processedImageUrl = currentEvent.image_url;
-        console.log("Mantendo URL de imagem existente:", processedImageUrl);
-      } else {
-        // Fallback if somehow we don't have an image URL
-        processedImageUrl = generatePersistentImageUrl(id);
-        console.log("Usando URL de fallback:", processedImageUrl);
-      }
-    }
+    // Always use consistent image URL based on event ID
+    const processedImageUrl = processImageUrl(eventData.bannerUrl, id);
+    console.log("URL de imagem processada para atualização:", processedImageUrl);
 
     const totalTickets = eventData.tickets.reduce(
       (sum, ticket) => sum + (parseInt(String(ticket.availableQuantity)) || 0),

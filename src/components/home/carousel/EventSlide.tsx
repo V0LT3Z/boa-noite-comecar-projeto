@@ -33,13 +33,8 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
     return null;
   }
   
-  // Usar a imagem fornecida pelo serviço de eventos, que já foi processada para ser persistente
+  // Usar a imagem conforme fornecida
   console.log(`EventSlide: Renderizando slide para evento ${id} com URL:`, image);
-  
-  const handleImageError = () => {
-    console.log(`EventSlide: Erro ao carregar imagem para evento ${id}`);
-    // O elemento img automaticamente tenta o src fornecido no onError
-  };
   
   return (
     <div 
@@ -58,7 +53,6 @@ const EventSlide = ({ id, title, date, location, image, isActive = false }: Even
             transition: 'transform 500ms ease-in-out',
             transform: isActive ? 'scale(1)' : 'scale(1.05)'
           }}
-          onError={handleImageError}
         />
         {/* Subtle overlay to enhance image visibility */}
         <div 
