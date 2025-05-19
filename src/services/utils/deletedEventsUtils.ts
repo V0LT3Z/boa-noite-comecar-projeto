@@ -13,7 +13,8 @@ export const getDeletedEventIds = (): Set<number> => {
     if (savedDeletedIds) {
       const parsedIds = JSON.parse(savedDeletedIds);
       if (Array.isArray(parsedIds)) {
-        return new Set(parsedIds);
+        // Ensure all IDs are treated as numbers
+        return new Set(parsedIds.map(id => Number(id)));
       }
     }
     return new Set();
@@ -29,8 +30,9 @@ export const getDeletedEventIds = (): Set<number> => {
 export const addDeletedEventId = (eventId: number): void => {
   try {
     const deletedIds = getDeletedEventIds();
-    deletedIds.add(eventId);
+    deletedIds.add(Number(eventId));
     localStorage.setItem('deleted_event_ids', JSON.stringify([...deletedIds]));
+    console.log(`ID ${eventId} adicionado à lista de eventos excluídos`);
   } catch (error) {
     console.error("Erro ao salvar ID excluído no localStorage:", error);
   }
@@ -40,5 +42,23 @@ export const addDeletedEventId = (eventId: number): void => {
  * Check if an event ID is in the deleted set
  */
 export const isEventDeleted = (eventId: number): boolean => {
-  return getDeletedEventIds().has(eventId);
+  const deletedIds = getDeletedEventIds();
+  const result = deletedIds.has(Number(eventId));
+  
+  // Debug log to help troubleshoot
+  console.log(`Verificando se evento ${eventId} está excluído: ${result} (total excluídos: ${deletedIds.size})`);
+  
+  return result;
+};
+
+/**
+ * Clear all deleted event IDs
+ */
+export const clearDeletedEventIds = (): void => {
+  try {
+    localStorage.removeItem('deleted_event_ids');
+    console.log("Lista de eventos excluídos foi limpa");
+  } catch (error) {
+    console.error("Erro ao limpar IDs excluídos do localStorage:", error);
+  }
 };

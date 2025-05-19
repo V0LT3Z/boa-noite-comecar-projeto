@@ -25,11 +25,8 @@ export const EventListContent = () => {
     // Initial load with force refresh to ensure we have latest data
     loadEvents(true);
     
-    // Removido o intervalo de recarga automática a cada 30 segundos
-    
-    return () => {
-      // Clean up function kept for future use if needed
-    };
+    // Clean up function kept for future use if needed
+    return () => {};
   }, [loadEvents, deletedEventIds]); // Re-run when deletedEventIds changes
 
   // Filter events to exclude any deleted ones

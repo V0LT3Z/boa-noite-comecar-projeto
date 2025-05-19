@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,44 +34,42 @@ const EventCard = ({
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // Check if the event exists and if it's not a deleted event
+    // Simplified check for event existence
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
       
-      // First check if this event is in the deleted set
-      if (isEventDeleted(id)) {
-        setEventExists(false);
-        if (onMarkDeleted) {
-          onMarkDeleted(id);
-        }
-        return;
-      }
-      
-      setIsChecking(true);
       try {
-        const event = await fetchEventById(id);
+        setIsChecking(true);
         
-        if (!event) {
+        // First check if this event is in the deleted set
+        if (isEventDeleted(id)) {
+          console.log(`Evento ${id} está na lista de excluídos, não será exibido`);
           setEventExists(false);
-          // Notify that the event was removed from the database
           if (onMarkDeleted) {
             onMarkDeleted(id);
           }
           return;
         }
         
-        setEventExists(true);
-        if (event) {
-          setEventStatus(event.status);
-        }
-      } catch (error) {
-        console.error("Erro ao verificar evento:", error);
-        setEventExists(false);
+        // Event is not deleted, check if it exists in the database
+        const event = await fetchEventById(id);
         
-        // If the event doesn't exist in the database, notify the parent component
-        if (onMarkDeleted) {
-          onMarkDeleted(id);
+        if (!event) {
+          console.log(`Evento ${id} não existe no banco de dados`);
+          setEventExists(false);
+          if (onMarkDeleted) {
+            onMarkDeleted(id);
+          }
+          return;
         }
+        
+        console.log(`Evento ${id} encontrado com status: ${event.status}`);
+        setEventExists(true);
+        setEventStatus(event.status);
+      } catch (error) {
+        console.error(`Erro ao verificar evento ${id}:`, error);
+        // Don't mark as deleted on error, keep showing it
+        setEventExists(true);
       } finally {
         setIsChecking(false);
       }
@@ -82,7 +79,8 @@ const EventCard = ({
   }, [id, eventExists, isChecking, onMarkDeleted]);
   
   // If the event doesn't exist or is deleted, don't render the card
-  if (eventExists === false || isEventDeleted(id)) {
+  if (eventExists === false) {
+    console.log(`Não renderizando card para evento ${id} (não existe ou foi excluído)`);
     return null;
   }
   
@@ -105,9 +103,6 @@ const EventCard = ({
     return true;
   };
   
-  // Log da imagem que será renderizada
-  console.log("EventCard: Renderizando com URL da imagem:", image, "para evento:", id);
-  
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">
       <div className="relative">
@@ -117,6 +112,10 @@ const EventCard = ({
             src={image}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={(e) => {
+              // Fallback para imagem padrão em caso de erro
+              (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${id || 'fallback'}/800/500`;
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80 mix-blend-multiply" />
           

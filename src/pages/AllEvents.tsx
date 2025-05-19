@@ -13,9 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-
-// Key for storing deleted event IDs in localStorage
-const DELETED_EVENTS_KEY = 'deletedEventIds';
+import { getDeletedEventIds, clearDeletedEventIds } from "@/services/utils/deletedEventsUtils";
 
 const AllEvents = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,12 +30,9 @@ const AllEvents = () => {
   // Get deleted events from localStorage
   useEffect(() => {
     try {
-      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-      if (savedIds) {
-        const deletedIds = JSON.parse(savedIds);
-        console.log("Eventos previamente deletados:", deletedIds);
-        setLocallyDeletedEvents(deletedIds);
-      }
+      const deletedIds = Array.from(getDeletedEventIds());
+      console.log("Eventos previamente deletados:", deletedIds);
+      setLocallyDeletedEvents(deletedIds);
     } catch (error) {
       console.error("Erro ao carregar eventos deletados:", error);
     }
@@ -48,7 +43,7 @@ const AllEvents = () => {
     
     try {
       setLoading(true);
-      const eventData = await fetchEvents();
+      const eventData = await fetchEvents(true); // Force refresh para garantir dados atualizados
       console.log("Eventos carregados:", eventData);
       
       if (!eventData || eventData.length === 0) {
@@ -61,12 +56,20 @@ const AllEvents = () => {
           variant: "default",
         });
       } else {
+        // Obtenha a lista atual de IDs excluídos
+        const deletedIds = Array.from(getDeletedEventIds());
+        
         // Filter out cancelled events and already deleted events
         const activeEvents = eventData.filter(event => {
-          const isDeleted = locallyDeletedEvents.includes(event.id);
-          return event.status !== "cancelled" && !isDeleted;
+          const isDeleted = deletedIds.includes(Number(event.id));
+          const isCancelled = event.status === "cancelled";
+          
+          return !isDeleted && !isCancelled;
         });
+        
         console.log("Eventos ativos após filtro:", activeEvents.length);
+        console.log("Total de eventos:", eventData.length, "Ativos:", activeEvents.length, "Excluídos:", deletedIds.length);
+        
         setEvents(activeEvents);
       }
       
@@ -83,7 +86,7 @@ const AllEvents = () => {
     } finally {
       setLoading(false);
     }
-  }, [eventsLoaded, toast, locallyDeletedEvents]);
+  }, [eventsLoaded, toast]);
 
   useEffect(() => {
     loadEvents();
@@ -101,12 +104,6 @@ const AllEvents = () => {
     // Update local state
     setLocallyDeletedEvents(prev => {
       const updated = [...prev, id];
-      // Also update localStorage for persistence
-      try {
-        localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(updated));
-      } catch (error) {
-        console.error("Erro ao salvar eventos excluídos:", error);
-      }
       return updated;
     });
     
@@ -115,9 +112,7 @@ const AllEvents = () => {
   };
 
   const formattedEvents = useMemo(() => {
-    return events
-      .filter(event => !locallyDeletedEvents.includes(event.id))
-      .map(event => {
+    return events.map(event => {
       try {
         const eventDate = new Date(event.date);
         return {
@@ -142,7 +137,7 @@ const AllEvents = () => {
         };
       }
     });
-  }, [events, locallyDeletedEvents]);
+  }, [events]);
 
   const filteredEvents = useMemo(() => {
     return formattedEvents.filter(event => {
@@ -166,7 +161,7 @@ const AllEvents = () => {
             <Skeleton className="h-8 w-48" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-            {[...Array(12)].map((_, index) => (
+            {[...Array(6)].map((_, index) => (
               <Skeleton key={index} className="h-80 w-full rounded-lg" />
             ))}
           </div>
@@ -190,6 +185,23 @@ const AllEvents = () => {
             <p className="text-muted-foreground">
               {searchQuery ? `Não encontramos eventos relacionados a "${searchQuery}"` : "No momento não há eventos disponíveis."}
             </p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => {
+                clearDeletedEventIds();
+                setLocallyDeletedEvents([]);
+                setEventsLoaded(false);
+                loadEvents();
+                toast({
+                  title: "Lista de eventos atualizada",
+                  description: "A lista de eventos foi recarregada com sucesso.",
+                  variant: "default",
+                });
+              }}
+            >
+              Atualizar lista de eventos
+            </Button>
           </div>
         </div>
       </div>
@@ -213,6 +225,24 @@ const AllEvents = () => {
           <p className="text-muted-foreground mt-2">
             {filteredEvents.length} {filteredEvents.length === 1 ? 'evento encontrado' : 'eventos encontrados'}
           </p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="mt-2"
+            onClick={() => {
+              clearDeletedEventIds();
+              setLocallyDeletedEvents([]);
+              setEventsLoaded(false);
+              loadEvents();
+              toast({
+                title: "Lista de eventos atualizada",
+                description: "A lista de eventos foi recarregada com sucesso.",
+                variant: "default",
+              });
+            }}
+          >
+            Recarregar eventos
+          </Button>
         </div>
         
         <Separator className="mb-8" />

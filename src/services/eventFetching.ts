@@ -22,9 +22,6 @@ export const fetchEvents = async (forceRefresh = false) => {
       },
     } : undefined;
     
-    // Add a timestamp parameter to prevent caching
-    const cacheParam = forceRefresh ? `?cacheBuster=${new Date().getTime()}` : '';
-    
     const { data: events, error } = await supabase
       .from("events")
       .select("*")
@@ -45,13 +42,8 @@ export const fetchEvents = async (forceRefresh = false) => {
       });
     }
     
-    // Filter out deleted events
-    const deletedEventIds = getDeletedEventIds();
-    if (deletedEventIds.size > 0) {
-      console.log(`Filtrando ${deletedEventIds.size} eventos excluídos`);
-      return events?.filter(event => !deletedEventIds.has(event.id)) as EventResponse[];
-    }
-    
+    // We're no longer filtering deleted events here, to ensure all events are returned
+    // This allows components to handle filtering based on their specific needs
     return events as EventResponse[];
   } catch (error) {
     console.error("Erro ao buscar eventos:", error);
