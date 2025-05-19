@@ -8,11 +8,13 @@ import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 
 // Imported refactored components
 import EventsGrid from "@/components/home/EventsGrid";
 import FeaturedCarousel from "@/components/home/FeaturedCarousel";
+
+// Chave para armazenar IDs de eventos excluídos no localStorage
+const DELETED_EVENTS_KEY = 'deletedEventIds';
 
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,7 +25,36 @@ const Index = () => {
   const [eventsLoaded, setEventsLoaded] = useState(false);
   const { toast } = useToast();
   
-  // Carregar eventos
+  // Carregar eventos excluídos do localStorage
+  const getDeletedEventIds = (): number[] => {
+    try {
+      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
+      return savedIds ? JSON.parse(savedIds) : [];
+    } catch (error) {
+      console.error('Erro ao carregar eventos excluídos:', error);
+      return [];
+    }
+  };
+  
+  // Salvar eventos excluídos no localStorage
+  const saveDeletedEventIds = (ids: number[]) => {
+    try {
+      localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(ids));
+    } catch (error) {
+      console.error('Erro ao salvar eventos excluídos:', error);
+    }
+  };
+  
+  // Limpar o cache de eventos apagados
+  const clearDeletedEventsCache = () => {
+    localStorage.removeItem(DELETED_EVENTS_KEY);
+    toast({
+      title: "Cache limpo",
+      description: "Recarregando eventos...",
+    });
+    loadEvents(true);
+  };
+  
   const loadEvents = useCallback(async (forceReload: boolean = false) => {
     if (eventsLoaded && !forceReload) return; // Evita múltiplas chamadas se os eventos já foram carregados
     
@@ -43,8 +74,15 @@ const Index = () => {
           });
         }
       } else {
-        // Filtrar eventos cancelados
-        const activeEvents = eventData.filter(event => event.status !== "cancelled");
+        // Obter eventos excluídos do localStorage
+        const deletedEventIds = getDeletedEventIds();
+        console.log("Eventos excluídos encontrados no localStorage:", deletedEventIds);
+        
+        // Filtrar eventos excluídos e cancelados
+        const activeEvents = eventData.filter(event => 
+          event.status !== "cancelled" && !deletedEventIds.includes(event.id)
+        );
+        
         console.log(`Total de eventos: ${eventData.length}, Ativos após filtro: ${activeEvents.length}`);
         setEvents(activeEvents);
       }
@@ -75,8 +113,22 @@ const Index = () => {
 
   // Marcar evento como excluído para não aparecer mais na interface
   const markEventAsDeleted = (eventId: number) => {
-    // Atualizar o estado local removendo o evento
+    // Atualizar o estado local
     setEvents(currentEvents => currentEvents.filter(event => event.id !== eventId));
+    
+    // Atualizar o localStorage
+    const deletedIds = getDeletedEventIds();
+    if (!deletedIds.includes(eventId)) {
+      const updatedIds = [...deletedIds, eventId];
+      saveDeletedEventIds(updatedIds);
+      console.log(`Evento ${eventId} adicionado à lista de excluídos:`, updatedIds);
+      
+      toast({
+        title: "Evento removido",
+        description: "Este evento foi removido da sua visualização.",
+        variant: "default",
+      });
+    }
   };
 
   const formattedEvents = useMemo(() => {
