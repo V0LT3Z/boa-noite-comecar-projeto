@@ -8,11 +8,21 @@ import { format } from "date-fns";
 /**
  * Fetch all events from the database
  */
-export const fetchEvents = async () => {
+export const fetchEvents = async (forceRefresh = false) => {
   try {
-    console.log("Buscando todos os eventos");
+    console.log("Buscando todos os eventos", forceRefresh ? "(forçar atualização)" : "");
     
-    // Atualizado para incluir um valor de cache: false para forçar nova consulta
+    // Adicionar parâmetro para configurar o cache
+    const fetchOptions = {} as any;
+    
+    // Se forceRefresh for true, adiciona parâmetro para ignorar o cache
+    if (forceRefresh) {
+      fetchOptions.headers = {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      };
+    }
+    
     const { data: events, error } = await supabase
       .from("events")
       .select("*")

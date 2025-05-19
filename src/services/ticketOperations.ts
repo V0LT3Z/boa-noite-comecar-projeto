@@ -105,6 +105,28 @@ export const deleteEvent = async (id: number) => {
       // Continue with deletion anyway
     }
     
+    // Delete any orders directly linked to the event (without ticket type)
+    const { error: eventOrdersError } = await supabase
+      .from("orders")
+      .delete()
+      .eq("event_id", id);
+      
+    if (eventOrdersError) {
+      console.error("Erro ao excluir pedidos diretamente ligados ao evento:", eventOrdersError);
+      // Continue with deletion anyway
+    }
+    
+    // Delete any tickets directly linked to the event (without ticket type)
+    const { error: eventTicketsError } = await supabase
+      .from("tickets")
+      .delete()
+      .eq("event_id", id);
+      
+    if (eventTicketsError) {
+      console.error("Erro ao excluir ingressos diretamente ligados ao evento:", eventTicketsError);
+      // Continue with deletion anyway
+    }
+    
     // Finally, delete the event itself
     const { error } = await supabase
       .from("events")

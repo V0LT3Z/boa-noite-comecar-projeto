@@ -64,6 +64,15 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
     return event.title.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
+  // Garante que o componente está montado antes de atualizar o estado
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   // Load events with useCallback to prevent unnecessary re-renders
   const loadEvents = useCallback(async () => {
     // Skip if we're already loading or unmounted
@@ -74,8 +83,8 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       apiCallInProgressRef.current = true;
       setLoadingEvents(true);
       
-      // Fetch events from the API - updated to include both active, paused, and cancelled events
-      const fetchedEvents = await fetchEvents();
+      // Fetch events from the API - force cache refresh
+      const fetchedEvents = await fetchEvents(true);
       
       // Skip state update if component unmounted during fetch
       if (!isMountedRef.current) return;
@@ -209,6 +218,13 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
         description: "O evento foi permanentemente removido do sistema.",
         variant: "success"
       });
+
+      // Recarrega a lista de eventos para garantir que os dados estão atualizados
+      setTimeout(() => {
+        if (isMountedRef.current) {
+          loadEvents();
+        }
+      }, 500);
     } catch (error) {
       // Skip error handling if component unmounted
       if (!isMountedRef.current) return;
