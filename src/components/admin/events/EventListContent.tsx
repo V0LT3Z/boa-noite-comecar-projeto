@@ -25,14 +25,10 @@ export const EventListContent = () => {
     // Initial load with force refresh to ensure we have latest data
     loadEvents(true);
     
-    // Add an interval to reload events periodically
-    const refreshInterval = setInterval(() => {
-      console.log("Recarregando eventos para garantir dados atualizados");
-      loadEvents(true); // Force cache refresh
-    }, 30000);
-
+    // Removido o intervalo de recarga automática a cada 30 segundos
+    
     return () => {
-      clearInterval(refreshInterval);
+      // Clean up function kept for future use if needed
     };
   }, [loadEvents, deletedEventIds]); // Re-run when deletedEventIds changes
 
