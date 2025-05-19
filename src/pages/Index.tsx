@@ -23,7 +23,7 @@ const Index = () => {
   const [eventsLoaded, setEventsLoaded] = useState(false);
   const { toast } = useToast();
   
-  // Carregar eventos com cachê
+  // Carregar eventos
   const loadEvents = useCallback(async (forceReload: boolean = false) => {
     if (eventsLoaded && !forceReload) return; // Evita múltiplas chamadas se os eventos já foram carregados
     

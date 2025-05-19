@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import EventCard from '@/components/EventCard';
-import { markEventAsLocallyDeleted } from '@/services/events';
+import { markEventAsLocallyDeleted, isEventLocallyDeleted } from '@/services/events';
 
 interface EventItem {
   id: number;
@@ -39,9 +39,12 @@ const EventsGrid = ({
     // Call the parent callback
     onMarkDeleted(id);
     
-    // Também atualiza o localStorage através da função centralizada
+    // Atualiza usando a função centralizada
     markEventAsLocallyDeleted(id);
   };
+  
+  // Filtrar eventos que estão marcados como excluídos
+  const filteredEvents = events.filter(event => !isEventLocallyDeleted(event.id));
   
   // Se estiver carregando, mostra os skeletons
   if (loading) {
@@ -61,7 +64,7 @@ const EventsGrid = ({
   }
 
   // Se não há eventos para mostrar
-  if (events.length === 0) {
+  if (filteredEvents.length === 0) {
     return (
       <div className="container px-4 mx-auto">
         <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-100">
@@ -86,7 +89,7 @@ const EventsGrid = ({
   }
 
   // Limita o número de eventos exibidos para 12 (4 linhas de 3 cards)
-  const displayEvents = events.slice(0, 12);
+  const displayEvents = filteredEvents.slice(0, 12);
 
   const handleViewAllEvents = () => {
     navigate('/eventos');
@@ -99,7 +102,7 @@ const EventsGrid = ({
           {searchQuery ? `Resultados para "${searchQuery}"` : "Eventos em Destaque"}
         </h2>
         <p className="text-muted-foreground text-sm mt-1 text-left font-gooddog">
-          {searchQuery ? `${events.length} ${events.length === 1 ? 'evento encontrado' : 'eventos encontrados'}` : "Os mais procurados"}
+          {searchQuery ? `${filteredEvents.length} ${filteredEvents.length === 1 ? 'evento encontrado' : 'eventos encontrados'}` : "Os mais procurados"}
         </p>
       </div>
 
@@ -118,7 +121,7 @@ const EventsGrid = ({
         ))}
       </div>
 
-      {events.length > 12 && (
+      {filteredEvents.length > 12 && (
         <div className="mt-12 text-center">
           <Button
             onClick={handleViewAllEvents}

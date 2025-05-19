@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import FavoriteButton from "./FavoriteButton";
-import { fetchEventById, isEventLocallyDeleted, markEventAsLocallyDeleted } from "@/services/events";
+import { fetchEventById, isEventLocallyDeleted } from "@/services/events";
 import { toast } from "@/hooks/use-toast";
 
 interface EventCardProps {
@@ -34,10 +34,11 @@ const EventCard = ({
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // Verificar primeiro no localStorage se o evento já foi excluído
+    // Verificar primeiro usando a função centralizada se o evento está marcado como excluído
     if (isEventLocallyDeleted(id)) {
-      console.log(`Evento ${id} já está marcado como excluído localmente`);
+      console.log(`Evento ${id} está marcado como excluído localmente`);
       setEventExists(false);
+      // Não precisamos chamar onMarkDeleted porque o evento já está marcado como excluído
       return;
     }
     
@@ -53,9 +54,7 @@ const EventCard = ({
           console.log(`Evento ${id} não existe no banco de dados`);
           setEventExists(false);
           // Notificar que o evento foi removido
-          if (onMarkDeleted) {
-            onMarkDeleted(id);
-          }
+          onMarkDeleted(id);
           return;
         }
         
@@ -68,9 +67,7 @@ const EventCard = ({
         setEventExists(false);
         
         // Se o evento não existe no banco de dados, marcá-lo como excluído
-        if (onMarkDeleted) {
-          onMarkDeleted(id);
-        }
+        onMarkDeleted(id);
       } finally {
         setIsChecking(false);
       }
@@ -79,7 +76,7 @@ const EventCard = ({
     checkEvent();
   }, [id, eventExists, isChecking, onMarkDeleted]);
   
-  // Se o evento não existe, não renderizar o card
+  // Se o evento não existe ou está marcado como excluído, não renderizar o card
   if (eventExists === false) {
     return null;
   }

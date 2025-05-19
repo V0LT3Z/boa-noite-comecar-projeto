@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Calendar } from 'lucide-react';
-import { isEventLocallyDeleted } from '@/services/events';
 
 interface EventSlideProps {
   id: number;
@@ -13,12 +12,6 @@ interface EventSlideProps {
 }
 
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
-  // Verificar se o evento está na lista de excluídos
-  if (isEventLocallyDeleted(id)) {
-    console.log(`Evento ${id} está na lista de excluídos, não será exibido`);
-    return null;
-  }
-  
   // Usar a imagem conforme fornecida
   console.log(`EventSlide: Renderizando slide para evento ${id} com URL:`, image);
   

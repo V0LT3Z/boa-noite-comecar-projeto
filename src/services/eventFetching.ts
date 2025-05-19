@@ -15,18 +15,6 @@ export const fetchEvents = async () => {
   try {
     console.log("Buscando todos os eventos");
     
-    // Get deleted events from localStorage to filter them out
-    let deletedEventIds: number[] = [];
-    try {
-      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-      deletedEventIds = savedIds ? JSON.parse(savedIds) : [];
-      console.log("Eventos deletados no cache:", deletedEventIds);
-    } catch (error) {
-      console.error('Erro ao carregar eventos excluídos do localStorage:', error);
-      // Se houver erro ao ler do localStorage, reseta para evitar filtragem incorreta
-      localStorage.removeItem(DELETED_EVENTS_KEY);
-    }
-    
     const { data: events, error } = await supabase
       .from("events")
       .select("*")
@@ -39,26 +27,16 @@ export const fetchEvents = async () => {
     
     console.log(`Eventos encontrados (total): ${events?.length || 0}`);
     
-    // Filter out deleted events - apenas se houver IDs válidos no localStorage
-    let filteredEvents = events;
-    if (events && deletedEventIds.length > 0) {
-      filteredEvents = events.filter(event => !deletedEventIds.includes(event.id));
-      console.log(`Eventos após filtrar deletados: ${filteredEvents.length}`);
-      console.log(`Eventos filtrados: ${deletedEventIds.length}`);
-    } else {
-      console.log("Não há eventos excluídos no cache para filtrar");
-    }
-    
     // Process all image URLs to ensure they're valid and persistent
-    if (filteredEvents) {
-      filteredEvents.forEach(event => {
+    if (events) {
+      events.forEach(event => {
         console.log(`Processando imagem para evento ${event.id}, URL original:`, event.image_url);
         event.image_url = processImageUrl(event.image_url, event.id);
         console.log(`URL processada:`, event.image_url);
       });
     }
     
-    return filteredEvents as EventResponse[];
+    return events as EventResponse[];
   } catch (error) {
     console.error("Erro ao buscar eventos:", error);
     throw error;
@@ -131,8 +109,10 @@ export const fetchEventById = async (id: number) => {
 export const isEventLocallyDeleted = (eventId: number): boolean => {
   try {
     const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-    const deletedEventIds = savedIds ? JSON.parse(savedIds) : [];
-    return deletedEventIds.includes(eventId);
+    if (!savedIds) return false;
+    
+    const deletedEventIds = JSON.parse(savedIds);
+    return Array.isArray(deletedEventIds) && deletedEventIds.includes(eventId);
   } catch (error) {
     console.error('Erro ao verificar se evento está excluído:', error);
     return false;
@@ -148,10 +128,17 @@ export const markEventAsLocallyDeleted = (eventId: number): void => {
     const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
     const deletedEventIds = savedIds ? JSON.parse(savedIds) : [];
     
+    if (!Array.isArray(deletedEventIds)) {
+      // Se não for um array, inicializa um novo
+      localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify([eventId]));
+      console.log(`Evento ${eventId} marcado como excluído localmente (nova lista criada)`);
+      return;
+    }
+    
     if (!deletedEventIds.includes(eventId)) {
       deletedEventIds.push(eventId);
       localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(deletedEventIds));
-      console.log(`Evento ${eventId} marcado como excluído localmente`);
+      console.log(`Evento ${eventId} marcado como excluído localmente. Lista atual:`, deletedEventIds);
     }
   } catch (error) {
     console.error('Erro ao marcar evento como excluído:', error);
@@ -168,11 +155,27 @@ export const restoreLocallyDeletedEvent = (eventId: number): boolean => {
     const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
     if (!savedIds) return false;
     
-    const deletedEventIds = JSON.parse(savedIds);
-    const updatedIds = deletedEventIds.filter((id: number) => id !== eventId);
+    let deletedEventIds: number[];
+    try {
+      deletedEventIds = JSON.parse(savedIds);
+      if (!Array.isArray(deletedEventIds)) {
+        localStorage.removeItem(DELETED_EVENTS_KEY);
+        return false;
+      }
+    } catch (e) {
+      localStorage.removeItem(DELETED_EVENTS_KEY);
+      return false;
+    }
+    
+    const updatedIds = deletedEventIds.filter(id => id !== eventId);
+    
+    if (updatedIds.length === deletedEventIds.length) {
+      // Evento não estava na lista
+      return false;
+    }
     
     localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(updatedIds));
-    console.log(`Evento ${eventId} restaurado (removido da lista de excluídos localmente)`);
+    console.log(`Evento ${eventId} restaurado (removido da lista de excluídos localmente). Lista atual:`, updatedIds);
     return true;
   } catch (error) {
     console.error('Erro ao restaurar evento:', error);
@@ -199,9 +202,13 @@ export const clearLocallyDeletedEvents = (): void => {
 export const getLocallyDeletedEvents = (): number[] => {
   try {
     const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-    return savedIds ? JSON.parse(savedIds) : [];
+    if (!savedIds) return [];
+    
+    const ids = JSON.parse(savedIds);
+    return Array.isArray(ids) ? ids : [];
   } catch (error) {
     console.error('Erro ao obter lista de eventos excluídos:', error);
+    localStorage.removeItem(DELETED_EVENTS_KEY); // Remove invalid data
     return [];
   }
 }

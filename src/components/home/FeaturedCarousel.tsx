@@ -11,8 +11,8 @@ import CarouselControls from './carousel/CarouselControls';
 import EventSlide from './carousel/EventSlide';
 import EventInfoPanel from './carousel/EventInfoPanel';
 
-// Chave para armazenar IDs de eventos excluídos no localStorage
-const DELETED_EVENTS_KEY = 'deletedEventIds';
+// Importar funções de gerenciamento de eventos excluídos
+import { getLocallyDeletedEvents } from '@/services/events';
 
 interface EventItem {
   id: number;
@@ -38,15 +38,9 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const slidesRef = useRef<HTMLDivElement>(null);
   
-  // Função para obter eventos excluídos do localStorage
+  // Função para obter eventos excluídos do localStorage usando a função centralizada
   const getDeletedEventIds = (): number[] => {
-    try {
-      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-      return savedIds ? JSON.parse(savedIds) : [];
-    } catch (error) {
-      console.error('Erro ao carregar eventos excluídos:', error);
-      return [];
-    }
+    return getLocallyDeletedEvents();
   };
   
   // Filtrar eventos excluídos antes de processar
