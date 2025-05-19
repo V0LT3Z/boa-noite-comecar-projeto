@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse } from "@/types/event";
 import { mapEventResponse } from "./utils/eventMappers";
@@ -8,7 +9,7 @@ import { getDeletedEventIds } from "./utils/deletedEventsUtils";
 // Cache em memória para reduzir requisições à API
 let eventsCache: EventResponse[] | null = null;
 let lastFetchTime = 0;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutos em milissegundos
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutos em milissegundos
 
 /**
  * Fetch all events from the database

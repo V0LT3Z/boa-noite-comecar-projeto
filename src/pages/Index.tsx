@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -24,9 +23,7 @@ const Index = () => {
   const { data: events = [], isLoading, error } = useQuery({
     queryKey: ['events'],
     queryFn: () => fetchEvents(false),
-    staleTime: 1000 * 60 * 5, // 5 minutos antes de considerar os dados desatualizados
-    gcTime: 1000 * 60 * 10, // 10 minutos antes de remover os dados do cache
-    retry: 1
+    // Usa as configurações padrão definidas no queryClient
   });
   
   // Handle error separately with useEffect
