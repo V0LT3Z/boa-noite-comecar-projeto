@@ -189,14 +189,6 @@ const Index = () => {
         {/* Lista de eventos - constrained width */}
         {!loading && (
           <section className="mt-16 container mx-auto px-4 max-w-7xl">
-            <div className="mb-2 flex justify-end">
-              <button
-                onClick={() => clearDeletedEventsCache()}
-                className="text-xs text-muted-foreground hover:text-primary transition-colors"
-              >
-                Recarregar todos os eventos
-              </button>
-            </div>
             <EventsGrid 
               events={filteredEvents} 
               loading={loading} 
