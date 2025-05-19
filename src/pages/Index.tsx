@@ -13,8 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import EventsGrid from "@/components/home/EventsGrid";
 import FeaturedCarousel from "@/components/home/FeaturedCarousel";
 
-// Set para rastrear IDs de eventos excluídos
-const deletedEventIdsCache = new Set<number>();
+// Chave para armazenar IDs de eventos excluídos no localStorage
+const DELETED_EVENTS_KEY = 'deletedEventIds';
 
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,9 +25,33 @@ const Index = () => {
   const [eventsLoaded, setEventsLoaded] = useState(false);
   const { toast } = useToast();
   
+  // Carregar eventos excluídos do localStorage
+  const getDeletedEventIds = (): number[] => {
+    try {
+      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
+      return savedIds ? JSON.parse(savedIds) : [];
+    } catch (error) {
+      console.error('Erro ao carregar eventos excluídos:', error);
+      return [];
+    }
+  };
+  
+  // Salvar eventos excluídos no localStorage
+  const saveDeletedEventIds = (ids: number[]) => {
+    try {
+      localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(ids));
+    } catch (error) {
+      console.error('Erro ao salvar eventos excluídos:', error);
+    }
+  };
+  
   // Limpar o cache de eventos apagados
   const clearDeletedEventsCache = () => {
-    deletedEventIdsCache.clear();
+    localStorage.removeItem(DELETED_EVENTS_KEY);
+    toast({
+      title: "Cache limpo",
+      description: "Recarregando eventos...",
+    });
     loadEvents(true);
   };
   
@@ -50,9 +74,12 @@ const Index = () => {
           });
         }
       } else {
+        // Obter eventos excluídos do localStorage
+        const deletedEventIds = getDeletedEventIds();
+        
         // Filtrar eventos excluídos e cancelados
         const activeEvents = eventData.filter(event => 
-          event.status !== "cancelled" && !deletedEventIdsCache.has(event.id)
+          event.status !== "cancelled" && !deletedEventIds.includes(event.id)
         );
         
         setEvents(activeEvents);
@@ -84,8 +111,21 @@ const Index = () => {
 
   // Marcar evento como excluído para não aparecer mais na interface
   const markEventAsDeleted = (eventId: number) => {
-    deletedEventIdsCache.add(eventId);
+    // Atualizar o estado local
     setEvents(currentEvents => currentEvents.filter(event => event.id !== eventId));
+    
+    // Atualizar o localStorage
+    const deletedIds = getDeletedEventIds();
+    if (!deletedIds.includes(eventId)) {
+      const updatedIds = [...deletedIds, eventId];
+      saveDeletedEventIds(updatedIds);
+      
+      toast({
+        title: "Evento removido",
+        description: "Este evento foi removido da sua visualização.",
+        variant: "default",
+      });
+    }
   };
 
   const formattedEvents = useMemo(() => {
@@ -154,7 +194,7 @@ const Index = () => {
                 onClick={() => clearDeletedEventsCache()}
                 className="text-xs text-muted-foreground hover:text-primary transition-colors"
               >
-                Recarregar eventos
+                Recarregar todos os eventos
               </button>
             </div>
             <EventsGrid 
