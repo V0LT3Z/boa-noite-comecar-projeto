@@ -85,7 +85,7 @@ const EventCard = ({
         variant: "destructive",
       });
       return false;
-    } else if (eventExists === false) {
+    } else if (eventExists === null || eventExists === false) {
       toast({
         title: "Evento em Desenvolvimento",
         description: "Este evento será disponibilizado em breve. Fique atento às atualizações!",
