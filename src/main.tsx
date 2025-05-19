@@ -4,18 +4,11 @@ import App from './App.tsx';
 import './index.css';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
 import { AlertTriangle } from 'lucide-react';
-import { detectCorruptedAuthState, cleanupAuthState } from './contexts/auth/utils';
+import { cleanupAuthState } from './contexts/auth/utils';
 
 // Make sure the root rendering happens without any issues
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Failed to find the root element");
-
-// Check for corrupted auth state before rendering
-const hasCorruptedAuth = detectCorruptedAuthState();
-if (hasCorruptedAuth) {
-  console.warn("Detected corrupted auth state on startup, cleaning up...");
-  cleanupAuthState();
-}
 
 // Add error boundaries to help catch and display errors
 try {
