@@ -4,6 +4,8 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from '@supabase/supabase-js';
 import { AuthContextType, User, RegisterData } from './types';
+import { AlertTriangle } from 'lucide-react'; // Add this import
+import { Button } from '@/components/ui/button'; // Add this import
 import { 
   checkCPFExists, 
   checkEmailExists, 
