@@ -1,7 +1,6 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import Header from "@/components/Header";
+import HeaderWrapper from "@/components/HeaderWrapper";
 import Footer from "@/components/Footer";
 import { fetchEvents } from "@/services/events";
 import { EventResponse } from "@/types/event";
@@ -153,7 +152,7 @@ const Index = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20 flex flex-col font-gooddog">
-        <Header />
+        <HeaderWrapper />
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -168,7 +167,7 @@ const Index = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20 flex flex-col font-gooddog">
-        <Header />
+        <HeaderWrapper />
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-center max-w-lg mx-auto p-6">
             <p className="text-lg text-red-500">{error}</p>
@@ -189,7 +188,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20 flex flex-col font-gooddog">
-      <Header />
+      <HeaderWrapper />
       
       <main className="flex-1 pb-12">
         {/* Hero section com banner principal e informações - full width */}
