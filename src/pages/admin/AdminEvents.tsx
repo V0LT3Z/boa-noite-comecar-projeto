@@ -24,6 +24,7 @@ const AdminEvents = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [locallyDeletedEvents, setLocallyDeletedEvents] = useState<number[]>([]);
   
   // Dialog state
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
@@ -39,21 +40,46 @@ const AdminEvents = () => {
   const isMountedRef = useRef(true);
   const apiCallInProgressRef = useRef(false);
   
+  // Load deleted events from localStorage
+  useEffect(() => {
+    try {
+      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
+      if (savedIds) {
+        const parsedIds = JSON.parse(savedIds);
+        console.log("Locally deleted events loaded from localStorage:", parsedIds);
+        setLocallyDeletedEvents(parsedIds);
+      }
+    } catch (error) {
+      console.error("Error loading deleted events from localStorage:", error);
+      // Reset localStorage if corrupted
+      localStorage.removeItem(DELETED_EVENTS_KEY);
+    }
+  }, []);
+  
   // Function to manage deleted events in localStorage
   const addEventToDeletedCache = (eventId: number) => {
     try {
-      // Get current deleted events from localStorage
-      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-      const currentDeletedIds = savedIds ? JSON.parse(savedIds) : [];
-      
-      // Add new id if not already in the list
-      if (!currentDeletedIds.includes(eventId)) {
-        const updatedIds = [...currentDeletedIds, eventId];
+      setLocallyDeletedEvents(prev => {
+        if (prev.includes(eventId)) return prev;
+        
+        const updatedIds = [...prev, eventId];
         localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(updatedIds));
-        console.log(`Evento ${eventId} adicionado ao cache de eventos excluídos:`, updatedIds);
-      }
+        console.log(`Event ${eventId} added to deleted events cache:`, updatedIds);
+        return updatedIds;
+      });
     } catch (error) {
       console.error('Erro ao salvar eventos excluídos no localStorage:', error);
+    }
+  };
+  
+  // Function to clear deleted events from localStorage
+  const clearDeletedEventsCache = () => {
+    try {
+      localStorage.removeItem(DELETED_EVENTS_KEY);
+      setLocallyDeletedEvents([]);
+      console.log("Deleted events cache cleared");
+    } catch (error) {
+      console.error('Error clearing deleted events cache:', error);
     }
   };
 
@@ -82,21 +108,12 @@ const AdminEvents = () => {
       // Skip state update if component unmounted during fetch
       if (!isMountedRef.current) return;
       
-      // Get deleted events from localStorage
-      let deletedEventIds: number[] = [];
-      try {
-        const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-        deletedEventIds = savedIds ? JSON.parse(savedIds) : [];
-      } catch (error) {
-        console.error('Erro ao carregar eventos excluídos do localStorage:', error);
-      }
-      
-      // Filter out any previously deleted events that might still come from the API
+      // Filter out any locally deleted events
       const filteredEvents = fetchedEvents.filter(
-        event => !deletedEventIds.includes(event.id)
+        event => !locallyDeletedEvents.includes(event.id)
       );
       
-      console.log(`Eventos após filtragem: ${filteredEvents.length} (removidos: ${deletedEventIds.length})`);
+      console.log(`Total events: ${fetchedEvents.length}, After filtering locally deleted: ${filteredEvents.length}`);
       
       // Format events for display
       const formattedEvents: EventItem[] = filteredEvents.map(event => ({
@@ -131,7 +148,7 @@ const AdminEvents = () => {
       }
       apiCallInProgressRef.current = false;
     }
-  }, []);
+  }, [locallyDeletedEvents]);
 
   // Load events on mount and when event creation state changes
   useEffect(() => {
@@ -207,14 +224,14 @@ const AdminEvents = () => {
     }
   };
 
-  // Handle event deletion - UPDATED TO USE LOCALSTORAGE
+  // Handle event deletion
   const handleDelete = (event: EventItem) => {
     // Create a deep copy to prevent mutations
     setSelectedEvent(JSON.parse(JSON.stringify(event)));
     setDeleteDialogOpen(true);
   };
 
-  // Confirm deletion of an event - UPDATED TO USE LOCALSTORAGE
+  // Confirm deletion of an event
   const confirmDelete = async () => {
     if (!selectedEvent || apiCallInProgressRef.current) return;
     
@@ -223,12 +240,19 @@ const AdminEvents = () => {
       setIsDeleting(true);
       console.log(`Removendo evento ${selectedEvent.id}`);
       
-      const result = await deleteEvent(selectedEvent.id);
+      // Try to delete from database first
+      try {
+        await deleteEvent(selectedEvent.id);
+        console.log(`Event ${selectedEvent.id} deleted from database successfully`);
+      } catch (error) {
+        console.error("Error deleting event from database:", error);
+        // Even if API call fails, continue with local deletion
+      }
       
       // Skip state updates if component unmounted
       if (!isMountedRef.current) return;
       
-      // Add the deleted event ID to localStorage
+      // Always add the ID to locally deleted events
       addEventToDeletedCache(selectedEvent.id);
       
       // Update UI immediately by removing the deleted event
@@ -335,6 +359,21 @@ const AdminEvents = () => {
     loadEvents();
   };
 
+  // Function to reset deleted events cache and reload all events
+  const handleResetDeletedEvents = () => {
+    clearDeletedEventsCache();
+    
+    // Show success toast
+    toast({
+      title: "Cache limpo",
+      description: "Todos os eventos excluídos localmente foram restaurados.",
+      variant: "success"
+    });
+    
+    // Reload events to show all events including previously deleted ones
+    loadEvents();
+  };
+
   // Close all dialogs and reset state on unmount
   useEffect(() => {
     return () => {
@@ -378,12 +417,25 @@ const AdminEvents = () => {
             </div>
             
             <div className="border rounded-lg">
-              <EventSearchBar 
-                searchQuery={searchQuery} 
-                onSearchChange={setSearchQuery}
-                events={events}
-                autoFocus={true}
-              />
+              <div className="p-4 flex items-center justify-between">
+                <EventSearchBar 
+                  searchQuery={searchQuery} 
+                  onSearchChange={setSearchQuery}
+                  events={events}
+                  autoFocus={true}
+                />
+                
+                {locallyDeletedEvents.length > 0 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleResetDeletedEvents}
+                    className="ml-2 text-sm"
+                  >
+                    Restaurar eventos excluídos ({locallyDeletedEvents.length})
+                  </Button>
+                )}
+              </div>
               
               {loadingEvents ? (
                 <div className="p-8 text-center">

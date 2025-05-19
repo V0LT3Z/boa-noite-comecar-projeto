@@ -12,16 +12,6 @@ export const fetchEvents = async () => {
   try {
     console.log("Buscando todos os eventos");
     
-    // Get deleted events from localStorage to filter them out
-    let deletedEventIds: number[] = [];
-    try {
-      const savedIds = localStorage.getItem('deletedEventIds');
-      deletedEventIds = savedIds ? JSON.parse(savedIds) : [];
-      console.log("Eventos deletados no cache:", deletedEventIds);
-    } catch (error) {
-      console.error('Erro ao carregar eventos excluídos do localStorage:', error);
-    }
-    
     const { data: events, error } = await supabase
       .from("events")
       .select("*")
@@ -32,25 +22,18 @@ export const fetchEvents = async () => {
       throw error;
     }
     
-    console.log(`Eventos encontrados (antes de filtrar): ${events?.length || 0}`);
-    
-    // Filter out deleted events
-    let filteredEvents = events;
-    if (events && deletedEventIds.length > 0) {
-      filteredEvents = events.filter(event => !deletedEventIds.includes(event.id));
-      console.log(`Eventos após filtrar deletados: ${filteredEvents.length}`);
-    }
+    console.log(`Eventos encontrados: ${events?.length || 0}`);
     
     // Process all image URLs to ensure they're valid and persistent
-    if (filteredEvents) {
-      filteredEvents.forEach(event => {
+    if (events) {
+      events.forEach(event => {
         console.log(`Processando imagem para evento ${event.id}, URL original:`, event.image_url);
         event.image_url = processImageUrl(event.image_url, event.id);
         console.log(`URL processada:`, event.image_url);
       });
     }
     
-    return filteredEvents as EventResponse[];
+    return events as EventResponse[];
   } catch (error) {
     console.error("Erro ao buscar eventos:", error);
     throw error;
