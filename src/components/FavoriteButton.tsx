@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,10 +17,11 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
+  const isMounted = useRef(true);
   
   // Move the check to a memoized callback to prevent recreating on every render
   const checkFavoriteStatus = useCallback(async () => {
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated || !user || !isMounted.current) {
       setIsFavorite(false);
       setIsLoading(false);
       return;
@@ -31,13 +32,25 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
       console.log("Checking favorite status for event:", eventId);
       const favorited = await isEventFavorited(eventId);
       console.log("Is event favorited?", favorited);
-      setIsFavorite(favorited);
+      
+      if (isMounted.current) {
+        setIsFavorite(favorited);
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error("Error checking favorite status:", error);
-    } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   }, [eventId, isAuthenticated, user]);
+  
+  useEffect(() => {
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
   
   useEffect(() => {
     // Only run the effect when the dependencies actually change
@@ -91,7 +104,7 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
         success = await addToFavorites(eventId);
       }
       
-      if (success) {
+      if (success && isMounted.current) {
         setIsFavorite(!isFavorite);
         toast({
           title: isFavorite ? "Removido dos favoritos" : "Adicionado aos favoritos",
@@ -101,13 +114,17 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
-      toast({
-        title: "Erro ao atualizar favorito",
-        description: "Tente novamente mais tarde",
-        variant: "destructive"
-      });
+      if (isMounted.current) {
+        toast({
+          title: "Erro ao atualizar favorito",
+          description: "Tente novamente mais tarde",
+          variant: "destructive"
+        });
+      }
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   };
   

@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import FavoriteButton from '@/components/FavoriteButton';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface EventInfoPanelProps {
   id: number;
@@ -16,22 +17,41 @@ interface EventInfoPanelProps {
 
 const EventInfoPanel = ({ id, title, date, location, image, status }: EventInfoPanelProps) => {
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
   // Generate a consistent fallback image
   const fallbackImage = `https://picsum.photos/seed/event${id}/600/400`;
   
+  // Reset image error state when image prop changes
+  useEffect(() => {
+    setImageError(false);
+    setImageLoaded(false);
+  }, [image]);
+  
   const handleImageError = () => {
+    console.log(`Info panel image error for event ${id}, using fallback`);
     setImageError(true);
+  };
+  
+  const handleImageLoad = () => {
+    setImageLoaded(true);
   };
   
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-md h-[420px] flex flex-col">
       {/* Header image with smaller size */}
       <div className="relative h-[180px] overflow-hidden">
+        {/* Loading state */}
+        {!imageLoaded && !imageError && (
+          <div className="h-full w-full bg-gray-200 animate-pulse"></div>
+        )}
+        
         <img 
           src={imageError ? fallbackImage : image} 
           alt={title}
           className="w-full h-full object-cover"
           onError={handleImageError}
+          onLoad={handleImageLoad}
         />
         
         {/* Status badge if cancelled */}
@@ -41,9 +61,11 @@ const EventInfoPanel = ({ id, title, date, location, image, status }: EventInfoP
           </div>
         )}
         
-        {/* Favorite button */}
+        {/* Favorite button wrapped in ErrorBoundary */}
         <div className="absolute top-2 right-2">
-          <FavoriteButton eventId={id} variant="icon" />
+          <ErrorBoundary>
+            <FavoriteButton eventId={id} variant="icon" />
+          </ErrorBoundary>
         </div>
       </div>
       

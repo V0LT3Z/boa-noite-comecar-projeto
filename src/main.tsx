@@ -1,7 +1,8 @@
 
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+import ErrorBoundary from './components/ErrorBoundary.tsx';
 
 // Make sure the root rendering happens without any issues
 const rootElement = document.getElementById("root");
@@ -9,7 +10,11 @@ if (!rootElement) throw new Error("Failed to find the root element");
 
 // Add error boundaries to help catch and display errors
 try {
-  createRoot(rootElement).render(<App />);
+  createRoot(rootElement).render(
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
 } catch (error) {
   console.error("Failed to render the application:", error);
   
