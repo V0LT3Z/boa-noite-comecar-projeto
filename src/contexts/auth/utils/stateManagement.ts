@@ -20,6 +20,13 @@ export const cleanupAuthState = () => {
       sessionStorage.removeItem(key);
     }
   });
+  
+  // Remove redirectAfterLogin if it exists
+  localStorage.removeItem('redirectAfterLogin');
+  
+  // Remove any application-specific auth data
+  localStorage.removeItem('authUser');
+  localStorage.removeItem('userRole');
 };
 
 /**
@@ -52,10 +59,13 @@ export const forceClearAuthCache = async () => {
       }
     }
     
+    // Registra a limpeza para debugging
+    console.log("Auth cache cleared completely at:", new Date().toISOString());
+    
     // Informa ao usuário que deve limpar os cookies e cache do navegador
     toast({
       title: "Cache de autenticação limpo",
-      description: "Recomendamos limpar os cookies do navegador e recarregar a página para garantir uma experiência sem problemas.",
+      description: "Autenticação reiniciada com sucesso. Se continuar tendo problemas, limpe também os cookies do navegador.",
       variant: "default",
     });
     
@@ -63,5 +73,48 @@ export const forceClearAuthCache = async () => {
   } catch (error) {
     console.error("Erro ao limpar cache de autenticação:", error);
     return false;
+  }
+};
+
+/**
+ * Detecta se há tokens de autenticação corrompidos
+ * @returns boolean indicando se foram encontrados tokens potencialmente corrompidos
+ */
+export const detectCorruptedAuthState = () => {
+  try {
+    // Verifica se existe token de autenticação mas sem informações válidas
+    const hasAuthToken = Object.keys(localStorage).some(key => 
+      key.startsWith('supabase.auth.token') || 
+      (key.includes('sb-') && key.includes('-auth-token'))
+    );
+    
+    if (!hasAuthToken) {
+      return false; // Sem token, sem corrupção
+    }
+    
+    // Tenta ler o token para ver se está válido
+    try {
+      const tokenKey = Object.keys(localStorage).find(key => 
+        key.startsWith('supabase.auth.token') || 
+        (key.includes('sb-') && key.includes('-auth-token'))
+      );
+      
+      if (tokenKey) {
+        const tokenData = JSON.parse(localStorage.getItem(tokenKey) || '{}');
+        // Se não tiver expiresAt ou user, pode estar corrompido
+        if (!tokenData.expiresAt || !tokenData.user || !tokenData.user.id) {
+          console.warn("Detected potentially corrupted auth token");
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error("Error parsing auth token:", e);
+      return true; // Se não conseguir ler o token, está corrompido
+    }
+    
+    return false;
+  } catch (error) {
+    console.error("Error checking auth state:", error);
+    return false; // Em caso de erro, assume não corrompido
   }
 };

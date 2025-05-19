@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
+import { AlertTriangle } from 'lucide-react';
 
 // Make sure the root rendering happens without any issues
 const rootElement = document.getElementById("root");
@@ -11,7 +12,34 @@ if (!rootElement) throw new Error("Failed to find the root element");
 // Add error boundaries to help catch and display errors
 try {
   createRoot(rootElement).render(
-    <ErrorBoundary>
+    <ErrorBoundary
+      authFallback={
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
+          <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8 text-center">
+            <AlertTriangle className="h-16 w-16 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-3">Problema de autenticação</h2>
+            <p className="text-gray-600 mb-6">
+              Foi detectado um problema com a sua sessão. Isso pode ocorrer quando seu cadastro foi modificado.
+            </p>
+            <button 
+              onClick={() => {
+                // Clear auth state
+                Object.keys(localStorage).forEach(key => {
+                  if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+                    localStorage.removeItem(key);
+                  }
+                });
+                // Reload page
+                window.location.href = '/';
+              }}
+              className="w-full py-3 px-4 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Limpar cache e reconectar
+            </button>
+          </div>
+        </div>
+      }
+    >
       <App />
     </ErrorBoundary>
   );
