@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -159,18 +160,16 @@ const Index = () => {
         </div>
         
         {/* Lista de eventos - constrained width */}
-        {!loading && (
-          <section className="mt-16 container mx-auto px-4 max-w-7xl">
-            <EventsGrid 
-              events={filteredEvents} 
-              loading={loading} 
-              showAllEvents={false}
-              setShowAllEvents={() => {}}
-              searchQuery={searchQuery}
-              onMarkDeleted={removeNonexistentEvent}
-            />
-          </section>
-        )}
+        <section className="mt-16 container mx-auto px-4 max-w-7xl">
+          <EventsGrid 
+            events={filteredEvents} 
+            loading={loading} 
+            showAllEvents={false}
+            setShowAllEvents={() => {}}
+            searchQuery={searchQuery}
+            onMarkDeleted={removeNonexistentEvent}
+          />
+        </section>
       </main>
       
       <Footer />

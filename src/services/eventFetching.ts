@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventResponse, TicketTypeResponse } from "@/types/event";
 import { mapEventResponse } from "./utils/eventMappers";
@@ -24,8 +25,7 @@ export const fetchEvents = async (forceRefresh = false) => {
     const { data: events, error } = await supabase
       .from("events")
       .select("*")
-      .order("date", { ascending: true })
-      .throwOnError();
+      .order("date", { ascending: true });
 
     if (error) {
       console.error("Error fetching events:", error);
@@ -41,17 +41,7 @@ export const fetchEvents = async (forceRefresh = false) => {
       });
     }
     
-    // Get the current set of deleted event IDs directly from localStorage
-    const deletedEventIds = getDeletedEventIds();
-    
-    // If there are deleted events, filter them out immediately
-    if (deletedEventIds.size > 0) {
-      console.log(`Filtering ${deletedEventIds.size} deleted events during fetchEvents`);
-      const filteredEvents = events?.filter(event => !deletedEventIds.has(event.id));
-      console.log(`Events after filtering: ${filteredEvents?.length || 0}`);
-      return filteredEvents as EventResponse[];
-    }
-    
+    // Return all events without filtering - we'll handle filtering in the UI components
     return events as EventResponse[];
   } catch (error) {
     console.error("Error fetching events:", error);

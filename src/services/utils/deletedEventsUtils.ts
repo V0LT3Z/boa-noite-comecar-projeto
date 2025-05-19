@@ -17,7 +17,7 @@ export const getDeletedEventIds = (): Set<number> => {
       const parsedIds = JSON.parse(savedDeletedIds);
       if (Array.isArray(parsedIds)) {
         console.log(`Loaded ${parsedIds.length} deleted event IDs: ${parsedIds.join(', ')}`);
-        return new Set(parsedIds);
+        return new Set(parsedIds.map(id => Number(id)));
       }
     }
     console.log('No deleted event IDs found in localStorage');

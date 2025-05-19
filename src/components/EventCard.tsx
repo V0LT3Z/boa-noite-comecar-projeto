@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ const EventCard = ({
         const event = await fetchEventById(id);
         
         if (!event) {
+          console.log(`EventCard: Event ${id} not found in database`);
           setEventExists(false);
           if (onMarkDeleted) {
             onMarkDeleted(id);
@@ -60,17 +62,15 @@ const EventCard = ({
           return;
         }
         
+        console.log(`EventCard: Event ${id} exists, status: ${event.status}`);
         setEventExists(true);
         if (event) {
           setEventStatus(event.status);
         }
       } catch (error) {
         console.error("Error checking event:", error);
-        setEventExists(false);
-        
-        if (onMarkDeleted) {
-          onMarkDeleted(id);
-        }
+        // Don't mark as non-existent if there's an error - might be a temporary connection issue
+        setEventExists(true);
       } finally {
         setIsChecking(false);
       }
