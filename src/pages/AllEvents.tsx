@@ -14,6 +14,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
+// Key for storing deleted event IDs in localStorage
+const DELETED_EVENTS_KEY = 'deletedEventIds';
+
 const AllEvents = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
@@ -21,7 +24,24 @@ const AllEvents = () => {
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventsLoaded, setEventsLoaded] = useState(false);
+  // Track locally deleted events
+  const [locallyDeletedEvents, setLocallyDeletedEvents] = useState<number[]>([]);
+  
   const { toast } = useToast();
+  
+  // Get deleted events from localStorage
+  useEffect(() => {
+    try {
+      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
+      if (savedIds) {
+        const deletedIds = JSON.parse(savedIds);
+        console.log("Eventos previamente deletados:", deletedIds);
+        setLocallyDeletedEvents(deletedIds);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar eventos deletados:", error);
+    }
+  }, []);
   
   const loadEvents = useCallback(async () => {
     if (eventsLoaded) return; // Evita múltiplas chamadas se os eventos já foram carregados
@@ -41,9 +61,12 @@ const AllEvents = () => {
           variant: "default",
         });
       } else {
-        // Filter out cancelled events
-        const activeEvents = eventData.filter(event => event.status !== "cancelled");
-        console.log("Eventos ativos:", activeEvents.length);
+        // Filter out cancelled events and already deleted events
+        const activeEvents = eventData.filter(event => {
+          const isDeleted = locallyDeletedEvents.includes(event.id);
+          return event.status !== "cancelled" && !isDeleted;
+        });
+        console.log("Eventos ativos após filtro:", activeEvents.length);
         setEvents(activeEvents);
       }
       
@@ -60,7 +83,7 @@ const AllEvents = () => {
     } finally {
       setLoading(false);
     }
-  }, [eventsLoaded, toast]);
+  }, [eventsLoaded, toast, locallyDeletedEvents]);
 
   useEffect(() => {
     loadEvents();
@@ -70,9 +93,31 @@ const AllEvents = () => {
     // Update URL with search query
     setSearchParams(query ? { q: query } : {});
   };
+  
+  // Function to mark an event as deleted locally
+  const handleMarkDeleted = (id: number) => {
+    console.log(`Marcando evento ${id} como excluído localmente`);
+    
+    // Update local state
+    setLocallyDeletedEvents(prev => {
+      const updated = [...prev, id];
+      // Also update localStorage for persistence
+      try {
+        localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(updated));
+      } catch (error) {
+        console.error("Erro ao salvar eventos excluídos:", error);
+      }
+      return updated;
+    });
+    
+    // Remove from current events list
+    setEvents(prev => prev.filter(event => event.id !== id));
+  };
 
   const formattedEvents = useMemo(() => {
-    return events.map(event => {
+    return events
+      .filter(event => !locallyDeletedEvents.includes(event.id))
+      .map(event => {
       try {
         const eventDate = new Date(event.date);
         return {
@@ -97,7 +142,7 @@ const AllEvents = () => {
         };
       }
     });
-  }, [events]);
+  }, [events, locallyDeletedEvents]);
 
   const filteredEvents = useMemo(() => {
     return formattedEvents.filter(event => {
@@ -182,6 +227,7 @@ const AllEvents = () => {
                 location={event.location}
                 image={event.image}
                 status={event.status}
+                onMarkDeleted={handleMarkDeleted}
               />
             </Link>
           ))}
