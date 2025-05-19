@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,19 +34,19 @@ const EventCard = ({
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // Check if the event exists and if it's not a deleted event
+    // First check if this event is already marked as deleted
+    if (isEventDeleted(id)) {
+      console.log(`EventCard: Event ${id} is in deleted list, not rendering`);
+      setEventExists(false);
+      if (onMarkDeleted) {
+        onMarkDeleted(id);
+      }
+      return;
+    }
+    
+    // Otherwise check if it exists in the database
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
-      
-      // IMPORTANTE: Primeiro verificar se este evento está no conjunto de excluídos
-      if (isEventDeleted(id)) {
-        console.log(`EventCard: Evento ${id} encontrado na lista de excluídos, não será renderizado`);
-        setEventExists(false);
-        if (onMarkDeleted) {
-          onMarkDeleted(id);
-        }
-        return;
-      }
       
       setIsChecking(true);
       try {
@@ -55,7 +54,6 @@ const EventCard = ({
         
         if (!event) {
           setEventExists(false);
-          // Notify that the event was removed from the database
           if (onMarkDeleted) {
             onMarkDeleted(id);
           }
@@ -67,10 +65,9 @@ const EventCard = ({
           setEventStatus(event.status);
         }
       } catch (error) {
-        console.error("Erro ao verificar evento:", error);
+        console.error("Error checking event:", error);
         setEventExists(false);
         
-        // If the event doesn't exist in the database, notify the parent component
         if (onMarkDeleted) {
           onMarkDeleted(id);
         }

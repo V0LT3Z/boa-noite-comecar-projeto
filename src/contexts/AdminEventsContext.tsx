@@ -59,15 +59,16 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
   // Refs to prevent state updates during unmount
   const isMountedRef = useRef(true);
   const apiCallInProgressRef = useRef(false);
-  const deletedEventIdsRef = useRef<Set<number>>(new Set());
-
-  // Use state to track deleted events for child components to access
-  const [deletedEventIds, setDeletedEventIds] = useState<Set<number>>(new Set());
+  
+  // Initialize deletedEventIds from localStorage
+  const initialDeletedIds = getDeletedEventIds();
+  const deletedEventIdsRef = useRef<Set<number>>(initialDeletedIds);
+  const [deletedEventIds, setDeletedEventIds] = useState<Set<number>>(initialDeletedIds);
 
   // Filter events based on search query and deleted status
   const filteredEvents = events.filter(event => {
     // Don't show events that were deleted
-    if (deletedEventIdsRef.current.has(event.id)) {
+    if (deletedEventIds.has(event.id)) {
       return false;
     }
     return event.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -77,16 +78,12 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     isMountedRef.current = true;
     
-    // Load any previously deleted event IDs from localStorage
-    try {
-      const loadedDeletedIds = getDeletedEventIds();
-      if (loadedDeletedIds.size > 0) {
-        console.log(`Carregados ${loadedDeletedIds.size} IDs de eventos excluídos do localStorage no AdminEventsContext`);
-        deletedEventIdsRef.current = loadedDeletedIds;
-        setDeletedEventIds(loadedDeletedIds);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar IDs excluídos do localStorage:", error);
+    // Refresh deleted event IDs from localStorage when the component mounts
+    const loadedDeletedIds = getDeletedEventIds();
+    if (loadedDeletedIds.size > 0) {
+      console.log(`Loaded ${loadedDeletedIds.size} deleted event IDs from localStorage in AdminEventsContext`);
+      deletedEventIdsRef.current = loadedDeletedIds;
+      setDeletedEventIds(loadedDeletedIds);
     }
     
     return () => {
@@ -100,7 +97,7 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
     if (apiCallInProgressRef.current || !isMountedRef.current) return;
     
     try {
-      console.log(`Iniciando carregamento de eventos ${forceRefresh ? "(com atualização forçada de cache)" : ""}`);
+      console.log(`Starting to load events ${forceRefresh ? "(with forced cache refresh)" : ""}`);
       apiCallInProgressRef.current = true;
       setLoadingEvents(true);
       
@@ -110,7 +107,7 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       // Skip state update if component unmounted during fetch
       if (!isMountedRef.current) return;
       
-      console.log(`${fetchedEvents?.length || 0} eventos carregados do banco de dados`);
+      console.log(`${fetchedEvents?.length || 0} events loaded from the database`);
       
       // Filter out any events that were marked as deleted
       const filteredEvents = fetchedEvents.filter(
@@ -128,19 +125,19 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
         description: event.description || "",
         location: event.location || "",
         venue: event.location || "",
-        minimumAge: event.minimum_age?.toString() || "0"
+        minimumAge: event.minimumAge?.toString() || "0"
       }));
       
       setEvents(formattedEvents);
-      console.log(`${formattedEvents.length} eventos carregados com sucesso`);
+      console.log(`${formattedEvents.length} events loaded successfully`);
     } catch (error) {
       // Skip error handling if component unmounted
       if (!isMountedRef.current) return;
       
-      console.error("Erro ao carregar eventos:", error);
+      console.error("Error loading events:", error);
       toast({
-        title: "Erro ao carregar eventos",
-        description: "Não foi possível carregar a lista de eventos. Tente novamente.",
+        title: "Error loading events",
+        description: "Failed to load the list of events. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -155,14 +152,14 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
   // Handle event status changes with improved error handling
   const handleStatusChange = async (eventId: number, newStatus: EventStatus) => {
     if (apiCallInProgressRef.current) {
-      console.log("Uma operação já está em andamento, ignorando...");
+      console.log("An operation is already in progress, ignoring...");
       return;
     }
     
     try {
       apiCallInProgressRef.current = true;
       setIsProcessingAction(true);
-      console.log(`Alterando status do evento ${eventId} para ${newStatus}`);
+      console.log(`Changing status of event ${eventId} to ${newStatus}`);
       
       // Update status in the API
       await updateEventStatus(eventId, newStatus);
@@ -178,12 +175,12 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       );
       
       const action = 
-        newStatus === "active" ? "ativado" : 
-        newStatus === "paused" ? "pausado" : "cancelado";
+        newStatus === "active" ? "activated" : 
+        newStatus === "paused" ? "paused" : "cancelled";
       
       toast({
-        title: `Evento ${action}`,
-        description: `O evento foi ${action} com sucesso.`,
+        title: `Event ${action}`,
+        description: `The event was ${action} successfully.`,
         variant: "success"
       });
       
@@ -191,10 +188,10 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       // Skip error handling if component unmounted
       if (!isMountedRef.current) return;
       
-      console.error(`Erro ao ${newStatus} evento:`, error);
+      console.error(`Error ${newStatus} event:`, error);
       toast({
-        title: "Erro ao alterar status",
-        description: "Não foi possível alterar o status do evento. Tente novamente.",
+        title: "Error changing status",
+        description: "Failed to change the event status. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -228,7 +225,7 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
     try {
       apiCallInProgressRef.current = true;
       setIsDeleting(true);
-      console.log(`Removendo evento ${selectedEvent.id} permanentemente`);
+      console.log(`Removing event ${selectedEvent.id} permanently`);
       
       // Permanently deleting the event from the database
       const result = await deleteEvent(selectedEvent.id);
@@ -236,38 +233,40 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       // Skip state updates if component unmounted
       if (!isMountedRef.current) return;
       
-      // Add to deleted events set for immediate UI filtering
-      deletedEventIdsRef.current.add(selectedEvent.id);
+      // Add to local deleted events immediately for UI
+      const newDeletedIds = new Set(deletedEventIds);
+      newDeletedIds.add(selectedEvent.id);
+      deletedEventIdsRef.current = newDeletedIds;
+      setDeletedEventIds(newDeletedIds);
       
-      // Update state for child components
-      setDeletedEventIds(new Set(deletedEventIdsRef.current));
-      
-      // IMPORTANTE: Adicionar ao localStorage usando a função utilitária
+      // IMPORTANT: Add to localStorage using the utility function
       addDeletedEventId(selectedEvent.id);
+      
+      console.log(`Event ${selectedEvent.id} deleted and added to localStorage`);
       
       // Update UI immediately by removing the deleted event
       setEvents(prevEvents => prevEvents.filter(event => event.id !== selectedEvent.id));
       
       toast({
-        title: "Evento removido",
-        description: "O evento foi permanentemente removido do sistema.",
+        title: "Event removed",
+        description: "The event was permanently removed from the system.",
         variant: "success"
       });
 
       // Force reload events after a short delay to ensure database is synced
       setTimeout(() => {
         if (isMountedRef.current) {
-          loadEvents(true); // Force refresh to ensure deleted events don't reappear
+          loadEvents(true); // Force refresh for consistency
         }
       }, 1000);
     } catch (error) {
       // Skip error handling if component unmounted
       if (!isMountedRef.current) return;
       
-      console.error("Erro ao remover evento:", error);
+      console.error("Error removing event:", error);
       toast({
-        title: "Erro ao remover evento",
-        description: "Não foi possível remover o evento. Tente novamente.",
+        title: "Error removing event",
+        description: "Failed to remove the event. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -301,7 +300,7 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
     
     try {
       apiCallInProgressRef.current = true;
-      console.log(`Carregando detalhes do evento ${event.id} para edição`);
+      console.log(`Loading details of event ${event.id} for editing`);
       
       const eventDetails = await fetchEventById(event.id);
       
@@ -319,8 +318,8 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
         setIsCreatingEvent(true);
       } else {
         toast({
-          title: "Erro ao editar evento",
-          description: "Não foi possível carregar os detalhes do evento.",
+          title: "Error editing event",
+          description: "Failed to load the event details.",
           variant: "destructive"
         });
       }
@@ -328,10 +327,10 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       // Skip error handling if component unmounted
       if (!isMountedRef.current) return;
       
-      console.error("Erro ao buscar dados para edição:", error);
+      console.error("Error fetching data for editing:", error);
       toast({
-        title: "Erro ao editar evento",
-        description: "Não foi possível carregar os detalhes do evento.",
+        title: "Error editing event",
+        description: "Failed to load the event details.",
         variant: "destructive"
       });
     } finally {

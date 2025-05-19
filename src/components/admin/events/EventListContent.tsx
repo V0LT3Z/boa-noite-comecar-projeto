@@ -20,17 +20,14 @@ export const EventListContent = () => {
     deletedEventIds
   } = useAdminEvents();
 
-  // Load events when component mounts and refresh after deletion
+  // Load events when component mounts with force refresh to ensure we have latest data
   useEffect(() => {
-    // Initial load with force refresh to ensure we have latest data
     loadEvents(true);
-    
-    // Removido o intervalo de recarga automática a cada 30 segundos
     
     return () => {
       // Clean up function kept for future use if needed
     };
-  }, [loadEvents, deletedEventIds]); // Re-run when deletedEventIds changes
+  }, [loadEvents, deletedEventIds]); 
 
   // Filter events to exclude any deleted ones
   const displayEvents = filteredEvents.filter(event => {
@@ -48,7 +45,7 @@ export const EventListContent = () => {
       
       {loadingEvents ? (
         <div className="p-8 text-center">
-          <p className="text-muted-foreground">Carregando eventos...</p>
+          <p className="text-muted-foreground">Loading events...</p>
         </div>
       ) : displayEvents.length > 0 ? (
         <EventsTable 
