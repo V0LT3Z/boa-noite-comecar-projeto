@@ -14,7 +14,7 @@ export const useToast = () => {
       const toastOptions: Partial<ToastT> = {
         position: "bottom-right",
         className: "my-2", // Aumentando o espaçamento vertical para evitar sobreposição
-        duration: 5000, // Aumentando a duração para 5 segundos para dar mais tempo para leitura
+        duration: 3000, // Reduzindo a duração para 3 segundos (antes era 5000)
       }
 
       if (variant === "destructive") {
@@ -39,7 +39,7 @@ export const toast = ({ title, description, variant = "default" }: ToastProps) =
   const toastOptions: Partial<ToastT> = {
     position: "bottom-right",
     className: "my-2", // Aumentando o espaçamento vertical para evitar sobreposição
-    duration: 5000, // Aumentando a duração para 5 segundos para dar mais tempo para leitura
+    duration: 3000, // Reduzindo a duração para 3 segundos (antes era 5000)
   }
 
   if (variant === "destructive") {
