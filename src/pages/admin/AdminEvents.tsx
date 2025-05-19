@@ -7,8 +7,8 @@ import { EventListHeader } from "@/components/admin/events/EventListHeader";
 import { EventListContent } from "@/components/admin/events/EventListContent";
 import { EventFormWrapper } from "@/components/admin/events/EventFormWrapper";
 import { AdminEventsProvider, useAdminEvents } from "@/contexts/AdminEventsContext";
-import { fetchEventById } from "@/services/events";
 
+// This component must be used inside the AdminEventsProvider
 const AdminEventsContent = () => {
   const { isCreatingEvent, confirmDialogOpen, handleStatusChange } = useAdminEvents();
 
@@ -42,6 +42,7 @@ const AdminEventsContent = () => {
   );
 };
 
+// Wrap the entire component with AdminEventsProvider
 const AdminEvents = () => {
   return (
     <AdminLayout>
