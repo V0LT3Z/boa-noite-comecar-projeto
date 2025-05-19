@@ -1,6 +1,7 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bookmark, AlertCircle, Bell } from "lucide-react";
+import { Bookmark, AlertCircle, Bell, Loader2 } from "lucide-react";
 import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,9 +41,21 @@ const Favorites = () => {
   
   const fetchFavorites = async () => {
     setIsLoadingFavorites(true);
-    const events = await getUserFavorites();
-    setFavoriteEvents(events);
-    setIsLoadingFavorites(false);
+    try {
+      console.log("Buscando eventos favoritos...");
+      const events = await getUserFavorites();
+      console.log("Eventos favoritos recebidos:", events);
+      setFavoriteEvents(events);
+    } catch (error) {
+      console.error("Erro ao buscar favoritos:", error);
+      toast({
+        title: "Erro ao carregar favoritos",
+        description: "Ocorreu um problema ao buscar seus eventos favoritos",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingFavorites(false);
+    }
   };
   
   const fetchNotifications = async () => {
@@ -52,41 +65,32 @@ const Favorites = () => {
   };
   
   const handleRemoveFromFavorites = async (eventId: number) => {
-    const success = await removeFromFavorites(eventId);
-    if (success) {
-      setFavoriteEvents(prev => prev.filter(event => event.id !== eventId));
+    try {
+      const success = await removeFromFavorites(eventId);
+      if (success) {
+        setFavoriteEvents(prev => prev.filter(event => event.id !== eventId));
+        toast({
+          title: "Removido dos favoritos",
+          description: "O evento foi removido da sua lista de favoritos",
+          variant: "success"
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao remover favorito:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover este evento dos favoritos",
+        variant: "destructive"
+      });
     }
   };
   
-  useEffect(() => {
-    if (favoriteEvents.length > 0 && !isLoading) {
-      const timeout = setTimeout(() => {
-        const mockNotification: Notification = {
-          id: `notif-${Date.now()}`,
-          user_id: "demo-user-id",
-          event_id: favoriteEvents[0].id,
-          message: `Últimos ingressos para ${favoriteEvents[0].title}! Não perca essa oportunidade!`,
-          type: "ticket_running_out",
-          is_read: false,
-          created_at: new Date().toISOString()
-        };
-        
-        setNotifications(prev => [mockNotification, ...prev]);
-        setHasUnreadNotifications(true);
-        
-        toast({
-          title: "Nova notificação",
-          description: mockNotification.message,
-          variant: "success"
-        });
-      }, 10000); // Show after 10 seconds
-      
-      return () => clearTimeout(timeout);
-    }
-  }, [favoriteEvents, isLoading]);
-
   if (isLoading) {
-    return <div>Carregando...</div>;
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-primary animate-spin" />
+      </div>
+    );
   }
 
   return (
@@ -131,7 +135,10 @@ const Favorites = () => {
         )}
         
         {isLoadingFavorites ? (
-          <div className="text-center py-12">Carregando seus favoritos...</div>
+          <div className="text-center py-12">
+            <Loader2 className="h-8 w-8 mx-auto text-primary animate-spin mb-4" />
+            <p>Carregando seus favoritos...</p>
+          </div>
         ) : favoriteEvents.length === 0 ? (
           <div className="text-center py-12 space-y-4">
             <div className="w-20 h-20 mx-auto flex items-center justify-center rounded-full bg-soft-purple">
@@ -157,6 +164,10 @@ const Favorites = () => {
                       src={event.image} 
                       alt={event.title}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://picsum.photos/seed/${event.id}/800/500`;
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-primary opacity-30 mix-blend-multiply" />
                   </div>
