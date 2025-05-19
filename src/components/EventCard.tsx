@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,7 +33,7 @@ const EventCard = ({
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // Verificar se o evento existe apenas uma vez
+    // Verify if the event actually exists in the database
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
       
@@ -43,11 +42,10 @@ const EventCard = ({
         const event = await fetchEventById(id);
         
         if (!event) {
+          console.log(`Evento ${id} não existe no banco de dados`);
           setEventExists(false);
-          // Notificar que o evento foi removido
-          if (onMarkDeleted) {
-            onMarkDeleted(id);
-          }
+          // Notify that the event was removed
+          onMarkDeleted(id);
           return;
         }
         
@@ -59,10 +57,8 @@ const EventCard = ({
         console.error("Erro ao verificar evento:", error);
         setEventExists(false);
         
-        // Se o evento não existe no banco de dados, marcá-lo como excluído
-        if (onMarkDeleted) {
-          onMarkDeleted(id);
-        }
+        // If the event doesn't exist in the database, mark it as deleted
+        onMarkDeleted(id);
       } finally {
         setIsChecking(false);
       }
@@ -71,7 +67,7 @@ const EventCard = ({
     checkEvent();
   }, [id, eventExists, isChecking, onMarkDeleted]);
   
-  // Se o evento não existe, não renderizar o card
+  // If the event doesn't exist, don't render the card
   if (eventExists === false) {
     return null;
   }
@@ -94,9 +90,6 @@ const EventCard = ({
     }
     return true;
   };
-  
-  // Log da imagem que será renderizada
-  console.log("EventCard: Renderizando com URL da imagem:", image, "para evento:", id);
   
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">

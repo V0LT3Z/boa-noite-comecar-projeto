@@ -11,9 +11,6 @@ import CarouselControls from './carousel/CarouselControls';
 import EventSlide from './carousel/EventSlide';
 import EventInfoPanel from './carousel/EventInfoPanel';
 
-// Chave para armazenar IDs de eventos excluídos no localStorage
-const DELETED_EVENTS_KEY = 'deletedEventIds';
-
 interface EventItem {
   id: number;
   title: string;
@@ -38,27 +35,16 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const slidesRef = useRef<HTMLDivElement>(null);
   
-  // Função para obter eventos excluídos do localStorage
-  const getDeletedEventIds = (): number[] => {
-    try {
-      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-      return savedIds ? JSON.parse(savedIds) : [];
-    } catch (error) {
-      console.error('Erro ao carregar eventos excluídos:', error);
-      return [];
-    }
-  };
+  // Filter events before processing - we don't need to check for deleted events anymore
+  // since we're doing permanent deletions
+  const filteredEvents = events;
   
-  // Filtrar eventos excluídos antes de processar
-  const deletedEventIds = getDeletedEventIds();
-  const filteredEvents = events.filter(event => !deletedEventIds.includes(event.id));
-  
-  // Filtrar eventos nulos ou inválidos
+  // Filter null or invalid events
   const validEvents = filteredEvents.filter(event => 
     event && event.id && event.title && event.image
   );
   
-  // Verificar se temos eventos válidos
+  // Check if we have valid events
   if (validEvents.length === 0) {
     return (
       <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
