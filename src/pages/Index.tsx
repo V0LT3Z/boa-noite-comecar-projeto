@@ -43,6 +43,7 @@ const Index = () => {
       } else {
         // Get deleted event IDs
         const deletedEventIds = getDeletedEventIds();
+        console.log(`Index: Verificando ${deletedEventIds.size} eventos excluídos`);
         
         // Filter out cancelled events AND deleted events
         const filteredEvents = eventData.filter(event => 
@@ -79,6 +80,7 @@ const Index = () => {
 
   // Remover um evento da UI se ele não existir mais no banco de dados
   const removeNonexistentEvent = (eventId: number) => {
+    console.log(`Index: Removendo evento ID ${eventId} da UI pois não existe mais`);
     setEvents(currentEvents => currentEvents.filter(event => event.id !== eventId));
   };
 
@@ -113,6 +115,7 @@ const Index = () => {
   const filteredEvents = useMemo(() => {
     // Get the current set of deleted event IDs
     const deletedEventIds = getDeletedEventIds();
+    console.log(`Index: Filtrando eventos com ${deletedEventIds.size} IDs excluídos`);
     
     return formattedEvents.filter(event => {
       // Filter by search query if provided and ensure event is not deleted
@@ -121,7 +124,12 @@ const Index = () => {
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
-      return matchesSearch && !deletedEventIds.has(event.id);
+      const isDeleted = deletedEventIds.has(event.id);
+      if (isDeleted) {
+        console.log(`Index: Evento ${event.id} está na lista de excluídos e não será exibido`);
+      }
+      
+      return matchesSearch && !isDeleted;
     });
   }, [formattedEvents, searchQuery]);
     

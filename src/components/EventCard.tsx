@@ -39,8 +39,9 @@ const EventCard = ({
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
       
-      // First check if this event is in the deleted set
+      // IMPORTANTE: Primeiro verificar se este evento está no conjunto de excluídos
       if (isEventDeleted(id)) {
+        console.log(`EventCard: Evento ${id} encontrado na lista de excluídos, não será renderizado`);
         setEventExists(false);
         if (onMarkDeleted) {
           onMarkDeleted(id);
@@ -179,7 +180,7 @@ const EventCard = ({
         </div>
       </div>
     </Card>
-  )
+  );
 }
 
 export default EventCard;

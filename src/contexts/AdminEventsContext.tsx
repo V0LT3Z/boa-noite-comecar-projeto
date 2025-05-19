@@ -3,6 +3,7 @@ import { EventItem, EventStatus } from "@/types/admin";
 import { fetchEvents, fetchEventById, updateEventStatus, deleteEvent } from "@/services/events";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { getDeletedEventIds, addDeletedEventId } from "@/services/utils/deletedEventsUtils";
 
 type AdminEventsContextType = {
   events: EventItem[];
@@ -76,16 +77,13 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     isMountedRef.current = true;
     
-    // Try to load any previously deleted IDs from localStorage
+    // Load any previously deleted event IDs from localStorage
     try {
-      const savedDeletedIds = localStorage.getItem('deleted_event_ids');
-      if (savedDeletedIds) {
-        const parsedIds = JSON.parse(savedDeletedIds);
-        if (Array.isArray(parsedIds)) {
-          const newDeletedIds = new Set(parsedIds);
-          deletedEventIdsRef.current = newDeletedIds;
-          setDeletedEventIds(newDeletedIds);
-        }
+      const loadedDeletedIds = getDeletedEventIds();
+      if (loadedDeletedIds.size > 0) {
+        console.log(`Carregados ${loadedDeletedIds.size} IDs de eventos excluídos do localStorage no AdminEventsContext`);
+        deletedEventIdsRef.current = loadedDeletedIds;
+        setDeletedEventIds(loadedDeletedIds);
       }
     } catch (error) {
       console.error("Erro ao carregar IDs excluídos do localStorage:", error);
@@ -244,14 +242,8 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       // Update state for child components
       setDeletedEventIds(new Set(deletedEventIdsRef.current));
       
-      // Save to localStorage for persistence across refreshes
-      try {
-        localStorage.setItem('deleted_event_ids', 
-          JSON.stringify([...deletedEventIdsRef.current])
-        );
-      } catch (error) {
-        console.error("Erro ao salvar IDs excluídos no localStorage:", error);
-      }
+      // IMPORTANTE: Adicionar ao localStorage usando a função utilitária
+      addDeletedEventId(selectedEvent.id);
       
       // Update UI immediately by removing the deleted event
       setEvents(prevEvents => prevEvents.filter(event => event.id !== selectedEvent.id));

@@ -48,8 +48,10 @@ export const fetchEvents = async (forceRefresh = false) => {
     // Filter out deleted events
     const deletedEventIds = getDeletedEventIds();
     if (deletedEventIds.size > 0) {
-      console.log(`Filtrando ${deletedEventIds.size} eventos excluídos`);
-      return events?.filter(event => !deletedEventIds.has(event.id)) as EventResponse[];
+      console.log(`Filtrando ${deletedEventIds.size} eventos excluídos durante fetchEvents`);
+      const filteredEvents = events?.filter(event => !deletedEventIds.has(event.id));
+      console.log(`Eventos após filtro: ${filteredEvents?.length || 0}`);
+      return filteredEvents as EventResponse[];
     }
     
     return events as EventResponse[];
