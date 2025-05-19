@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EventDetails } from "@/types/event";
 import { fetchEventById } from "@/services/events";
@@ -135,6 +136,7 @@ export const getFavorites = async (): Promise<EventDetails[]> => {
     for (const fav of favorites) {
       const event = await fetchEventById(fav.event_id);
       if (event) {
+        // Garantir que a imagem do evento seja preservada
         favoriteEvents.push(event);
       } else {
         console.log(`Evento favoritado com ID ${fav.event_id} não encontrado`);
