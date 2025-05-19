@@ -10,7 +10,7 @@ import { AdminEventsProvider, useAdminEvents } from "@/contexts/AdminEventsConte
 
 // This component must be used inside the AdminEventsProvider
 const AdminEventsContent = () => {
-  const { isCreatingEvent, confirmDialogOpen, handleStatusChange, loadEvents } = useAdminEvents();
+  const { isCreatingEvent, confirmDialogOpen, deleteDialogOpen, handleStatusChange, loadEvents } = useAdminEvents();
 
   // Load events when component mounts and force a fresh load
   useEffect(() => {
