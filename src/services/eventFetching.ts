@@ -5,9 +5,6 @@ import { mapEventResponse } from "./utils/eventMappers";
 import { processImageUrl } from "./utils/imageUtils";
 import { format } from "date-fns";
 
-// Chave para armazenar IDs de eventos excluídos no localStorage
-const DELETED_EVENTS_KEY = 'deletedEventIds';
-
 /**
  * Fetch all events from the database
  */
@@ -100,118 +97,6 @@ export const fetchEventById = async (id: number) => {
     return null;
   }
 };
-
-/**
- * Verifica se um evento está excluído localmente
- * @param eventId ID do evento para verificar
- * @returns true se o evento estiver excluído localmente, false caso contrário
- */
-export const isEventLocallyDeleted = (eventId: number): boolean => {
-  try {
-    const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-    if (!savedIds) return false;
-    
-    const deletedEventIds = JSON.parse(savedIds);
-    return Array.isArray(deletedEventIds) && deletedEventIds.includes(eventId);
-  } catch (error) {
-    console.error('Erro ao verificar se evento está excluído:', error);
-    return false;
-  }
-}
-
-/**
- * Adiciona um evento à lista de excluídos localmente
- * @param eventId ID do evento para marcar como excluído
- */
-export const markEventAsLocallyDeleted = (eventId: number): void => {
-  try {
-    const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-    const deletedEventIds = savedIds ? JSON.parse(savedIds) : [];
-    
-    if (!Array.isArray(deletedEventIds)) {
-      // Se não for um array, inicializa um novo
-      localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify([eventId]));
-      console.log(`Evento ${eventId} marcado como excluído localmente (nova lista criada)`);
-      return;
-    }
-    
-    if (!deletedEventIds.includes(eventId)) {
-      deletedEventIds.push(eventId);
-      localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(deletedEventIds));
-      console.log(`Evento ${eventId} marcado como excluído localmente. Lista atual:`, deletedEventIds);
-    }
-  } catch (error) {
-    console.error('Erro ao marcar evento como excluído:', error);
-  }
-}
-
-/**
- * Remove um evento da lista de excluídos localmente
- * @param eventId ID do evento para restaurar
- * @returns true se o evento foi restaurado, false caso contrário
- */
-export const restoreLocallyDeletedEvent = (eventId: number): boolean => {
-  try {
-    const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-    if (!savedIds) return false;
-    
-    let deletedEventIds: number[];
-    try {
-      deletedEventIds = JSON.parse(savedIds);
-      if (!Array.isArray(deletedEventIds)) {
-        localStorage.removeItem(DELETED_EVENTS_KEY);
-        return false;
-      }
-    } catch (e) {
-      localStorage.removeItem(DELETED_EVENTS_KEY);
-      return false;
-    }
-    
-    const updatedIds = deletedEventIds.filter(id => id !== eventId);
-    
-    if (updatedIds.length === deletedEventIds.length) {
-      // Evento não estava na lista
-      return false;
-    }
-    
-    localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(updatedIds));
-    console.log(`Evento ${eventId} restaurado (removido da lista de excluídos localmente). Lista atual:`, updatedIds);
-    return true;
-  } catch (error) {
-    console.error('Erro ao restaurar evento:', error);
-    return false;
-  }
-}
-
-/**
- * Limpa a lista de eventos excluídos localmente
- */
-export const clearLocallyDeletedEvents = (): void => {
-  try {
-    localStorage.removeItem(DELETED_EVENTS_KEY);
-    console.log("Lista de eventos excluídos localmente foi limpa");
-  } catch (error) {
-    console.error('Erro ao limpar lista de eventos excluídos:', error);
-  }
-}
-
-/**
- * Retorna a lista de eventos excluídos localmente
- * @returns Array de IDs dos eventos excluídos
- */
-export const getLocallyDeletedEvents = (): number[] => {
-  try {
-    const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-    if (!savedIds) return [];
-    
-    const ids = JSON.parse(savedIds);
-    return Array.isArray(ids) ? ids : [];
-  } catch (error) {
-    console.error('Erro ao obter lista de eventos excluídos:', error);
-    localStorage.removeItem(DELETED_EVENTS_KEY); // Remove invalid data
-    return [];
-  }
-}
 
 /**
  * Fetch user tickets

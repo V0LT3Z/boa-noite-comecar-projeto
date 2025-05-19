@@ -1,17 +1,23 @@
 
 import { format } from "date-fns";
 
-// Re-export functions from the modules
+// Re-export event fetching functions
 export { 
   fetchEvents, 
   fetchEventById, 
-  fetchUserTickets,
+  fetchUserTickets 
+} from './eventFetching';
+
+// Re-export local event management functions
+export { 
   isEventLocallyDeleted,
   markEventAsLocallyDeleted,
   restoreLocallyDeletedEvent,
   clearLocallyDeletedEvents,
   getLocallyDeletedEvents
-} from './eventFetching';
+} from './localEventManagement';
+
+// Re-export event management functions
 export { createEvent, updateEvent, updateEventStatus } from './eventManagement';
 export { deleteTicketType, deleteEvent } from './ticketOperations';
 export { processImageUrl } from './utils/imageUtils';
