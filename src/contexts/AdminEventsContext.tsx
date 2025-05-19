@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useRef, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useRef, useCallback, ReactNode, useEffect } from "react";
 import { EventItem, EventStatus } from "@/types/admin";
 import { fetchEvents, fetchEventById, updateEventStatus, deleteEvent } from "@/services/events";
 import { toast } from "@/hooks/use-toast";
