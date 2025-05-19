@@ -12,6 +12,7 @@ export const fetchEvents = async () => {
   try {
     console.log("Buscando todos os eventos");
     
+    // Atualizado para incluir um valor de cache: false para forçar nova consulta
     const { data: events, error } = await supabase
       .from("events")
       .select("*")

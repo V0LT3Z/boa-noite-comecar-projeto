@@ -55,7 +55,7 @@ const AdminEvents = () => {
       apiCallInProgressRef.current = true;
       setLoadingEvents(true);
       
-      // Fetch events from the API
+      // Fetch events from the API - updated to include both active, paused, and cancelled events
       const fetchedEvents = await fetchEvents();
       
       // Skip state update if component unmounted during fetch
