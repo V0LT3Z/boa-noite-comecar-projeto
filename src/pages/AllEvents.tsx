@@ -1,21 +1,17 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
-import { fetchEvents } from "@/services/events";
+import { fetchEvents, markEventAsLocallyDeleted, getLocallyDeletedEvents } from "@/services/events";
 import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import EventCard from "@/components/EventCard";
-import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-
-// Key for storing deleted event IDs in localStorage
-const DELETED_EVENTS_KEY = 'deletedEventIds';
 
 const AllEvents = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -24,24 +20,8 @@ const AllEvents = () => {
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventsLoaded, setEventsLoaded] = useState(false);
-  // Track locally deleted events
-  const [locallyDeletedEvents, setLocallyDeletedEvents] = useState<number[]>([]);
   
   const { toast } = useToast();
-  
-  // Get deleted events from localStorage
-  useEffect(() => {
-    try {
-      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-      if (savedIds) {
-        const deletedIds = JSON.parse(savedIds);
-        console.log("Eventos previamente deletados:", deletedIds);
-        setLocallyDeletedEvents(deletedIds);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar eventos deletados:", error);
-    }
-  }, []);
   
   const loadEvents = useCallback(async () => {
     if (eventsLoaded) return; // Evita múltiplas chamadas se os eventos já foram carregados
@@ -49,7 +29,7 @@ const AllEvents = () => {
     try {
       setLoading(true);
       const eventData = await fetchEvents();
-      console.log("Eventos carregados:", eventData);
+      console.log("Eventos carregados:", eventData?.length);
       
       if (!eventData || eventData.length === 0) {
         setEvents([]);
@@ -61,11 +41,8 @@ const AllEvents = () => {
           variant: "default",
         });
       } else {
-        // Filter out cancelled events and already deleted events
-        const activeEvents = eventData.filter(event => {
-          const isDeleted = locallyDeletedEvents.includes(event.id);
-          return event.status !== "cancelled" && !isDeleted;
-        });
+        // Filtrar eventos cancelados
+        const activeEvents = eventData.filter(event => event.status !== "cancelled");
         console.log("Eventos ativos após filtro:", activeEvents.length);
         setEvents(activeEvents);
       }
@@ -83,7 +60,7 @@ const AllEvents = () => {
     } finally {
       setLoading(false);
     }
-  }, [eventsLoaded, toast, locallyDeletedEvents]);
+  }, [eventsLoaded, toast]);
 
   useEffect(() => {
     loadEvents();
@@ -98,26 +75,15 @@ const AllEvents = () => {
   const handleMarkDeleted = (id: number) => {
     console.log(`Marcando evento ${id} como excluído localmente`);
     
-    // Update local state
-    setLocallyDeletedEvents(prev => {
-      const updated = [...prev, id];
-      // Also update localStorage for persistence
-      try {
-        localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(updated));
-      } catch (error) {
-        console.error("Erro ao salvar eventos excluídos:", error);
-      }
-      return updated;
-    });
+    // Updatamos usando a função centralizada
+    markEventAsLocallyDeleted(id);
     
     // Remove from current events list
     setEvents(prev => prev.filter(event => event.id !== id));
   };
 
   const formattedEvents = useMemo(() => {
-    return events
-      .filter(event => !locallyDeletedEvents.includes(event.id))
-      .map(event => {
+    return events.map(event => {
       try {
         const eventDate = new Date(event.date);
         return {
@@ -142,7 +108,7 @@ const AllEvents = () => {
         };
       }
     });
-  }, [events, locallyDeletedEvents]);
+  }, [events]);
 
   const filteredEvents = useMemo(() => {
     return formattedEvents.filter(event => {

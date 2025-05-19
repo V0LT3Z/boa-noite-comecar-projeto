@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Calendar } from 'lucide-react';
+import { isEventLocallyDeleted } from '@/services/events';
 
 interface EventSlideProps {
   id: number;
@@ -11,24 +12,9 @@ interface EventSlideProps {
   isActive?: boolean;
 }
 
-// Chave para armazenar IDs de eventos excluídos no localStorage
-const DELETED_EVENTS_KEY = 'deletedEventIds';
-
 const EventSlide = ({ id, title, date, location, image, isActive = false }: EventSlideProps) => {
-  // Função para obter eventos excluídos do localStorage
-  const getDeletedEventIds = (): number[] => {
-    try {
-      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-      return savedIds ? JSON.parse(savedIds) : [];
-    } catch (error) {
-      console.error('Erro ao carregar eventos excluídos:', error);
-      return [];
-    }
-  };
-  
   // Verificar se o evento está na lista de excluídos
-  const deletedEventIds = getDeletedEventIds();
-  if (deletedEventIds.includes(id)) {
+  if (isEventLocallyDeleted(id)) {
     console.log(`Evento ${id} está na lista de excluídos, não será exibido`);
     return null;
   }

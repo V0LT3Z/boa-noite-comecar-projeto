@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import FavoriteButton from "./FavoriteButton";
-import { fetchEventById } from "@/services/events";
+import { fetchEventById, isEventLocallyDeleted, markEventAsLocallyDeleted } from "@/services/events";
 import { toast } from "@/hooks/use-toast";
 
 interface EventCardProps {
@@ -34,7 +34,14 @@ const EventCard = ({
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // Verificar se o evento existe apenas uma vez
+    // Verificar primeiro no localStorage se o evento já foi excluído
+    if (isEventLocallyDeleted(id)) {
+      console.log(`Evento ${id} já está marcado como excluído localmente`);
+      setEventExists(false);
+      return;
+    }
+    
+    // Verificar se o evento existe apenas se ainda não verificamos
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
       
@@ -43,6 +50,7 @@ const EventCard = ({
         const event = await fetchEventById(id);
         
         if (!event) {
+          console.log(`Evento ${id} não existe no banco de dados`);
           setEventExists(false);
           // Notificar que o evento foi removido
           if (onMarkDeleted) {
@@ -94,9 +102,6 @@ const EventCard = ({
     }
     return true;
   };
-  
-  // Log da imagem que será renderizada
-  console.log("EventCard: Renderizando com URL da imagem:", image, "para evento:", id);
   
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">

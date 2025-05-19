@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import EventCard from '@/components/EventCard';
+import { markEventAsLocallyDeleted } from '@/services/events';
 
 interface EventItem {
   id: number;
@@ -23,9 +24,6 @@ interface EventsGridProps {
   onMarkDeleted?: (id: number) => void;
 }
 
-// Key for storing deleted event IDs in localStorage
-const DELETED_EVENTS_KEY = 'deletedEventIds';
-
 const EventsGrid = ({
   events,
   loading,
@@ -41,19 +39,8 @@ const EventsGrid = ({
     // Call the parent callback
     onMarkDeleted(id);
     
-    // Also update localStorage
-    try {
-      const savedIds = localStorage.getItem(DELETED_EVENTS_KEY);
-      const currentDeletedIds = savedIds ? JSON.parse(savedIds) : [];
-      
-      if (!currentDeletedIds.includes(id)) {
-        const updatedIds = [...currentDeletedIds, id];
-        localStorage.setItem(DELETED_EVENTS_KEY, JSON.stringify(updatedIds));
-        console.log(`Evento ${id} adicionado ao cache de eventos excluídos:`, updatedIds);
-      }
-    } catch (error) {
-      console.error('Erro ao salvar eventos excluídos no localStorage:', error);
-    }
+    // Também atualiza o localStorage através da função centralizada
+    markEventAsLocallyDeleted(id);
   };
   
   // Se estiver carregando, mostra os skeletons
