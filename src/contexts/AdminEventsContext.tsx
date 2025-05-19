@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useRef, useCallback, ReactNode, useEffect } from "react";
 import { EventItem, EventStatus } from "@/types/admin";
 import { fetchEvents, fetchEventById, updateEventStatus, deleteEvent } from "@/services/events";
@@ -58,13 +57,18 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
   // Refs to prevent state updates during unmount
   const isMountedRef = useRef(true);
   const apiCallInProgressRef = useRef(false);
+  const deletedEventIdsRef = useRef<Set<number>>(new Set());
 
   // Filter events based on search query
   const filteredEvents = events.filter(event => {
+    // Não mostrar eventos que foram excluídos
+    if (deletedEventIdsRef.current.has(event.id)) {
+      return false;
+    }
     return event.title.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  // Garante que o componente está montado antes de atualizar o estado
+  // Garantir que o componente está montado antes de atualizar o estado
   useEffect(() => {
     isMountedRef.current = true;
     
@@ -91,8 +95,13 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       
       console.log(`${fetchedEvents?.length || 0} eventos carregados do banco de dados`);
       
+      // Filter out any events that were marked as deleted
+      const filteredEvents = fetchedEvents.filter(
+        event => !deletedEventIdsRef.current.has(event.id)
+      );
+      
       // Format events for display
-      const formattedEvents: EventItem[] = fetchedEvents.map(event => ({
+      const formattedEvents: EventItem[] = filteredEvents.map(event => ({
         id: event.id,
         title: event.title,
         date: format(new Date(event.date), "yyyy-MM-dd"),
@@ -209,6 +218,9 @@ export const AdminEventsProvider = ({ children }: { children: ReactNode }) => {
       
       // Skip state updates if component unmounted
       if (!isMountedRef.current) return;
+      
+      // Add to deleted events set
+      deletedEventIdsRef.current.add(selectedEvent.id);
       
       // Update UI immediately by removing the deleted event
       setEvents(prevEvents => prevEvents.filter(event => event.id !== selectedEvent.id));

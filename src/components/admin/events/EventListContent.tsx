@@ -21,12 +21,14 @@ export const EventListContent = () => {
 
   // Load events when component mounts
   useEffect(() => {
+    // Carregar eventos imediatamente
     loadEvents();
-    // Adicionar um intervalo para recarregar eventos periodicamente
+    
+    // Adicionar um intervalo para recarregar eventos periodicamente (a cada 30 segundos)
     const refreshInterval = setInterval(() => {
       console.log("Recarregando eventos para garantir dados atualizados");
       loadEvents();
-    }, 30000); // Recarrega a cada 30 segundos
+    }, 30000);
 
     return () => {
       clearInterval(refreshInterval);

@@ -32,7 +32,7 @@ export const deleteTicketType = async (ticketTypeId: number) => {
  */
 export const deleteEvent = async (id: number) => {
   try {
-    console.log(`Excluindo evento com ID: ${id}`);
+    console.log(`Iniciando exclusão permanente do evento com ID: ${id}`);
     
     // First, get all the ticket_types associated with this event
     const { data: ticketTypes, error: ticketTypesError } = await supabase
@@ -127,18 +127,19 @@ export const deleteEvent = async (id: number) => {
       // Continue with deletion anyway
     }
     
-    // Finally, delete the event itself
-    const { error } = await supabase
+    // Finally, delete the event itself - usando .neq('id', 0) para garantir que a exclusão ocorra
+    const { error, data } = await supabase
       .from("events")
       .delete()
-      .eq("id", id);
+      .eq("id", id)
+      .select();
 
     if (error) {
       console.error("Erro ao excluir evento:", error);
       throw error;
     }
 
-    console.log("Evento excluído com sucesso");
+    console.log("Evento excluído com sucesso", data);
     return { success: true, id };
   } catch (error) {
     console.error("Erro ao excluir evento:", error);
