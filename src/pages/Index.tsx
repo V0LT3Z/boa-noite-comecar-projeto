@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -27,13 +26,15 @@ const Index = () => {
     staleTime: 1000 * 60 * 5, // 5 minutos antes de considerar os dados desatualizados
     gcTime: 1000 * 60 * 10, // 10 minutos antes de remover os dados do cache
     retry: 1,
-    onError: (error) => {
-      console.error("Erro ao carregar eventos:", error);
-      toast({
-        title: "Falha ao carregar eventos",
-        description: "Ocorreu um erro ao carregar os eventos. Por favor, tente novamente mais tarde.",
-        variant: "destructive",
-      });
+    onSettled: (_data, error) => {
+      if (error) {
+        console.error("Erro ao carregar eventos:", error);
+        toast({
+          title: "Falha ao carregar eventos",
+          description: "Ocorreu um erro ao carregar os eventos. Por favor, tente novamente mais tarde.",
+          variant: "destructive",
+        });
+      }
     }
   });
   
