@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,53 +14,34 @@ interface FavoriteButtonProps {
 
 const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
-  const isMounted = useRef(true);
-  
-  // Move the check to a memoized callback to prevent recreating on every render
-  const checkFavoriteStatus = useCallback(async () => {
-    if (!isAuthenticated || !user || !isMounted.current) {
-      setIsFavorite(false);
-      setIsLoading(false);
-      return;
-    }
-    
-    try {
-      setIsLoading(true);
-      console.log("Checking favorite status for event:", eventId);
-      const favorited = await isEventFavorited(eventId);
-      console.log("Is event favorited?", favorited);
-      
-      if (isMounted.current) {
-        setIsFavorite(favorited);
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Error checking favorite status:", error);
-      if (isMounted.current) {
-        setIsLoading(false);
-      }
-    }
-  }, [eventId, isAuthenticated, user]);
   
   useEffect(() => {
-    // Cleanup function to prevent state updates after unmount
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-  
-  useEffect(() => {
-    // Only run the effect when the dependencies actually change
+    // Only check favorite status when user is authenticated
     if (isAuthenticated && user) {
       checkFavoriteStatus();
     } else {
       setIsLoading(false);
       setIsFavorite(false);
     }
-  }, [checkFavoriteStatus, isAuthenticated, user]);
+  }, [eventId, isAuthenticated, user]);
+  
+  // Function to check if event is favorited
+  const checkFavoriteStatus = async () => {
+    try {
+      setIsLoading(true);
+      console.log("Checking favorite status for event:", eventId);
+      const favorited = await isEventFavorited(eventId);
+      console.log("Is event favorited?", favorited);
+      setIsFavorite(favorited);
+    } catch (error) {
+      console.error("Error checking favorite status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   // Listen for custom event to open auth modal
   useEffect(() => {
@@ -79,7 +60,7 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
     e.preventDefault(); // Prevent event bubbling when used in cards
     e.stopPropagation(); // Ensure event doesn't propagate
     
-    console.log("Toggle favorite clicked, isAuthenticated:", isAuthenticated, "user:", !!user, "eventId:", eventId);
+    console.log("Toggle favorite clicked, isAuthenticated:", isAuthenticated, "user:", !!user);
     
     if (!isAuthenticated || !user) {
       console.log("User not authenticated, opening auth dialog");
@@ -89,8 +70,6 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
       setIsAuthDialogOpen(true);
       return;
     }
-    
-    if (isLoading) return; // Prevent multiple clicks
     
     setIsLoading(true);
     
@@ -104,27 +83,18 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
         success = await addToFavorites(eventId);
       }
       
-      if (success && isMounted.current) {
+      if (success) {
         setIsFavorite(!isFavorite);
-        toast({
-          title: isFavorite ? "Removido dos favoritos" : "Adicionado aos favoritos",
-          description: isFavorite ? "O evento foi removido dos seus favoritos." : "O evento foi adicionado aos seus favoritos.",
-          variant: "default"
-        });
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
-      if (isMounted.current) {
-        toast({
-          title: "Erro ao atualizar favorito",
-          description: "Tente novamente mais tarde",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Erro ao atualizar favorito",
+        description: "Tente novamente mais tarde",
+        variant: "destructive"
+      });
     } finally {
-      if (isMounted.current) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
   };
   
@@ -148,8 +118,6 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
           } font-gooddog`}
           onClick={handleToggleFavorite}
           disabled={isLoading}
-          data-event-id={eventId}
-          aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
         >
           <Heart 
             className={`h-5 w-5 ${isFavorite ? "fill-destructive" : ""}`} 
@@ -176,8 +144,6 @@ const FavoriteButton = ({ eventId, variant = "default" }: FavoriteButtonProps) =
         } font-gooddog`}
         onClick={handleToggleFavorite}
         disabled={isLoading}
-        data-event-id={eventId}
-        aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
       >
         <Heart 
           className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} 

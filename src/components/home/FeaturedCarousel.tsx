@@ -1,8 +1,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
-import ErrorBoundary from '@/components/ErrorBoundary';
-import { toast } from '@/hooks/use-toast';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+
+// Componentes refatorados
 import CarouselControls from './carousel/CarouselControls';
 import EventSlide from './carousel/EventSlide';
 import EventInfoPanel from './carousel/EventInfoPanel';
@@ -21,101 +26,158 @@ interface FeaturedCarouselProps {
 }
 
 const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
-  // Verify events before doing anything
-  if (!events || events.length === 0) return null;
-  
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true,
     skipSnaps: false,
     dragFree: false
   });
+  const autoplayTimerRef = useRef<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [imagesReady, setImagesReady] = useState(false);
+  const [preloadedImages, setPreloadedImages] = useState<string[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const slidesRef = useRef<HTMLDivElement>(null);
   
-  // Simplified states to reduce re-renders
-  const [isError, setIsError] = useState(false);
+  console.log("FeaturedCarousel received events:", events);
   
-  // Load images after component mounts
+  // Preload all images to prevent white flashes
   useEffect(() => {
-    const timer = setTimeout(() => setImagesReady(true), 300);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!events || events.length === 0) return;
+    
+    // Preload all event images
+    const imagesToPreload = events.map(event => event.image);
+    
+    Promise.all(
+      imagesToPreload.map(
+        (src) =>
+          new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => resolve(src);
+            img.onerror = () => {
+              console.error(`Failed to preload image: ${src}`);
+              reject(new Error(`Failed to preload image: ${src}`));
+            };
+          })
+      )
+    )
+      .then((loadedImages) => {
+        console.log("All images preloaded successfully:", loadedImages);
+        setPreloadedImages(loadedImages as string[]);
+      })
+      .catch((error) => {
+        console.error("Error during image preloading:", error);
+        // Still set the preloaded images we have
+        setPreloadedImages(preloadedImages);
+      });
+  }, [events]);
   
-  // Handle carousel slide selection - simplified
+  // Handle carousel slide selection
   useEffect(() => {
     if (!emblaApi) return;
     
     const onSelect = () => {
-      try {
-        const index = emblaApi.selectedScrollSnap();
-        setSelectedIndex(Math.min(index, events.length - 1));
-      } catch (error) {
-        console.error("Error in carousel selection:", error);
-        setIsError(true);
-      }
+      const index = emblaApi.selectedScrollSnap();
+      console.log("Embla selected index:", index);
+      setSelectedIndex(index);
     };
     
     emblaApi.on('select', onSelect);
-    onSelect();
+    onSelect(); // Set initial selected index
     
     return () => {
       emblaApi.off('select', onSelect);
     };
-  }, [emblaApi, events.length]);
+  }, [emblaApi]);
   
-  // Simplified autoplay functionality
+  // Setup autoplay functionality
   useEffect(() => {
-    if (!emblaApi || events.length <= 1 || isError) return;
+    if (!emblaApi || events.length <= 1) return;
     
-    const interval = setInterval(() => {
-      try {
-        if (emblaApi.canScrollNext()) {
-          emblaApi.scrollNext();
-        } else {
-          emblaApi.scrollTo(0);
-        }
-      } catch (error) {
-        console.error("Autoplay error:", error);
-        setIsError(true);
+    const autoplay = () => {
+      if (!isTransitioning && emblaApi.canScrollNext()) {
+        setIsTransitioning(true);
+        emblaApi.scrollNext();
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 500); // Match this with transition duration
+      } else if (!isTransitioning) {
+        setIsTransitioning(true);
+        emblaApi.scrollTo(0);
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 500); // Match this with transition duration
       }
-    }, 6000);
+    };
     
-    return () => clearInterval(interval);
-  }, [emblaApi, events.length, isError]);
-
-  // Safe filtering of events
-  const safeEvents = events.filter(event => 
-    event && typeof event.id === 'number' && 
-    typeof event.title === 'string'
-  );
-  
-  // If no valid events, render nothing
-  if (safeEvents.length === 0) return null;
-  
-  // Current selected event for the info panel
-  const currentEvent = safeEvents[Math.min(selectedIndex, safeEvents.length - 1) || 0];
-  
-  // Simplified navigation functions
-  const scrollNext = () => {
-    if (!emblaApi) return;
-    try {
-      emblaApi.scrollNext();
-    } catch (error) {
-      console.error("Navigation error:", error);
+    // Clear any existing interval when component updates
+    if (autoplayTimerRef.current !== null) {
+      window.clearInterval(autoplayTimerRef.current);
     }
+    
+    // Set new interval for auto-sliding
+    autoplayTimerRef.current = window.setInterval(autoplay, 6000);
+    
+    // Cleanup function
+    return () => {
+      if (autoplayTimerRef.current !== null) {
+        window.clearInterval(autoplayTimerRef.current);
+      }
+    };
+  }, [emblaApi, events.length, isTransitioning]);
+
+  if (events.length === 0) {
+    return null;
+  }
+
+  // Current selected event for the info panel
+  const currentEvent = events[selectedIndex] || events[0];
+  
+  // Improved navigation functions
+  const scrollNext = () => {
+    if (isTransitioning) return;
+    
+    console.log("scrollNext called, current index:", selectedIndex);
+    setIsTransitioning(true);
+    
+    // Calculate next index and update state
+    const nextIndex = (selectedIndex + 1) % events.length;
+    setSelectedIndex(nextIndex);
+    console.log("New index set to:", nextIndex);
+    
+    // Sync with embla carousel
+    if (emblaApi) {
+      emblaApi.scrollTo(nextIndex);
+    }
+    
+    // Reset transition flag after animation completes
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 500); // Match this with CSS transition duration
   };
   
   const scrollPrev = () => {
-    if (!emblaApi) return;
-    try {
-      emblaApi.scrollPrev();
-    } catch (error) {
-      console.error("Navigation error:", error);
+    if (isTransitioning) return;
+    
+    console.log("scrollPrev called, current index:", selectedIndex);
+    setIsTransitioning(true);
+    
+    // Calculate previous index and update state
+    const prevIndex = selectedIndex === 0 ? events.length - 1 : selectedIndex - 1;
+    setSelectedIndex(prevIndex);
+    console.log("New index set to:", prevIndex);
+    
+    // Sync with embla carousel
+    if (emblaApi) {
+      emblaApi.scrollTo(prevIndex);
     }
+    
+    // Reset transition flag after animation completes
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 500); // Match this with CSS transition duration
   };
 
-  // Loading state
-  if (!imagesReady) {
+  if (preloadedImages.length < events.length) {
     return (
       <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
         <div className="mx-auto max-w-[1400px] px-4">
@@ -133,44 +195,41 @@ const FeaturedCarousel = ({ events }: FeaturedCarouselProps) => {
   }
 
   return (
-    <ErrorBoundary>
-      <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
-        <div className="mx-auto max-w-[1400px] px-4 relative">
-          <CarouselControls 
-            onPrev={scrollPrev}
-            onNext={scrollNext}
-            eventsLength={safeEvents.length}
-          />
+    <div className="relative w-full bg-gradient-to-br from-soft-purple/5 to-soft-blue/5">
+      <div className="mx-auto max-w-[1400px] px-4 relative">
+        {/* External navigation arrows */}
+        <CarouselControls 
+          onPrev={scrollPrev}
+          onNext={scrollNext}
+          eventsLength={events.length}
+        />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 rounded-xl">
-            <div className="lg:col-span-8">
-              <div>
-                <div className="relative overflow-hidden rounded-3xl shadow-xl h-[420px]">
-                  <div className="relative h-full w-full" ref={emblaRef}>
-                    <div className="flex h-full">
-                      {safeEvents.map((event, index) => (
-                        <div className="flex-full min-w-0 relative h-full w-full" key={`event-slide-${event.id}-${index}`}>
-                          <EventSlide 
-                            {...event} 
-                            isActive={index === selectedIndex}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+        {/* Main content grid - banner and details */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 rounded-xl">
+          {/* Carousel section - larger size */}
+          <div className="lg:col-span-8">
+            <div>
+              <div className="relative overflow-hidden rounded-3xl shadow-xl h-[420px]">
+                <div className="relative h-full w-full" ref={slidesRef}>
+                  {events.map((event, index) => (
+                    <EventSlide 
+                      key={`event-slide-${event.id}`}
+                      {...event} 
+                      isActive={index === selectedIndex}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
-            
-            <div className="lg:col-span-4">
-              <ErrorBoundary>
-                {currentEvent && <EventInfoPanel {...currentEvent} />}
-              </ErrorBoundary>
-            </div>
+          </div>
+          
+          {/* Event details panel - smaller right side */}
+          <div className="lg:col-span-4">
+            <EventInfoPanel {...currentEvent} />
           </div>
         </div>
       </div>
-    </ErrorBoundary>
+    </div>
   );
 };
 

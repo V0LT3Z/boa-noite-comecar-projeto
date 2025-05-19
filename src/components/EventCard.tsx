@@ -1,47 +1,26 @@
-
 import { Calendar, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Link } from "react-router-dom"
 import FavoriteButton from "./FavoriteButton"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { fetchEventById } from "@/services/events"
 import { toast } from "@/hooks/use-toast"
-import ErrorBoundary from "./ErrorBoundary"
 
 interface EventCardProps {
-  id: number;
-  title: string;
-  date: string;
-  location: string;
-  image: string;
-  category?: string;
-  status?: string;
+  id: number
+  title: string
+  date: string
+  location: string
+  image: string
+  category?: string
+  status?: string
 }
 
 const EventCard = ({ id, title, date, location, image, category, status }: EventCardProps) => {
   const [eventExists, setEventExists] = useState<boolean | null>(null);
   const [eventStatus, setEventStatus] = useState<string | undefined>(status);
   const [isChecking, setIsChecking] = useState(false);
-  const [fallbackImageUsed, setFallbackImageUsed] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const isMounted = useRef(true);
-  
-  // Generate a consistent fallback image based on the event id
-  const fallbackImage = `https://picsum.photos/seed/event${id}/800/500`;
-  
-  useEffect(() => {
-    // Cleanup function to prevent state updates after unmount
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-  
-  // Reset image state when image prop changes
-  useEffect(() => {
-    setFallbackImageUsed(false);
-    setImageLoaded(false);
-  }, [image]);
   
   useEffect(() => {
     // Verificar se o evento existe apenas uma vez
@@ -51,20 +30,15 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
       setIsChecking(true);
       try {
         const event = await fetchEventById(id);
-        
-        if (isMounted.current) {
-          setEventExists(!!event);
-          if (event) {
-            setEventStatus(event.status);
-          }
-          setIsChecking(false);
+        setEventExists(!!event);
+        if (event) {
+          setEventStatus(event.status);
         }
       } catch (error) {
         console.error("Erro ao verificar evento:", error);
-        if (isMounted.current) {
-          setEventExists(false);
-          setIsChecking(false);
-        }
+        setEventExists(false);
+      } finally {
+        setIsChecking(false);
       }
     };
     
@@ -90,35 +64,15 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
     return true;
   };
   
-  const handleImageError = () => {
-    console.log(`Card image error for event ${id}, using fallback`);
-    if (!fallbackImageUsed && isMounted.current) {
-      setFallbackImageUsed(true);
-    }
-  };
-  
-  const handleImageLoad = () => {
-    if (isMounted.current) {
-      setImageLoaded(true);
-    }
-  };
-  
   return (
     <Card className="overflow-hidden hover:shadow-event-card transition-shadow duration-300 group relative h-full transform hover:-translate-y-1">
       <div className="relative">
         {/* Image container with overlay */}
         <div className="relative h-40 overflow-hidden">
-          {/* Loading state */}
-          {!imageLoaded && !fallbackImageUsed && (
-            <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
-          )}
-          
           <img
-            src={fallbackImageUsed ? fallbackImage : image}
+            src={image}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={handleImageError}
-            onLoad={handleImageLoad}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80 mix-blend-multiply" />
           
@@ -136,11 +90,9 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
             </div>
           )}
           
-          {/* Favorite button with error boundary */}
+          {/* Favorite button */}
           <div className="absolute top-2 right-2 z-10">
-            <ErrorBoundary>
-              <FavoriteButton eventId={id} variant="icon" />
-            </ErrorBoundary>
+            <FavoriteButton eventId={id} variant="icon" />
           </div>
           
           {/* Date block with semi-transparent background, blur effect, and discrete border */}
@@ -183,7 +135,7 @@ const EventCard = ({ id, title, date, location, image, category, status }: Event
         </div>
       </div>
     </Card>
-  );
-};
+  )
+}
 
-export default EventCard;
+export default EventCard

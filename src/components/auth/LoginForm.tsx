@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/auth" // Updated import path
 import { Link } from "react-router-dom"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons"

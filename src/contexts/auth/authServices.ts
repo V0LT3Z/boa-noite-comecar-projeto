@@ -2,19 +2,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { RegisterData } from "./types";
-import { checkCPFExists, checkEmailExists, cleanupAuthState, detectCorruptedAuthState } from "./utils";
+import { checkCPFExists, checkEmailExists, cleanupAuthState } from "./utils";
 
 /**
  * Handles user login
  */
 export const handleLogin = async (email: string, password: string): Promise<boolean> => {
   try {
-    // Check for and clean up corrupted auth state
-    if (detectCorruptedAuthState()) {
-      console.log("Detected corrupted auth state, cleaning up before login");
-      cleanupAuthState();
-    }
-    
     // Limpa o estado de autenticação antes de tentar login
     cleanupAuthState();
     
@@ -55,47 +49,6 @@ export const handleLogin = async (email: string, password: string): Promise<bool
         variant: "destructive",
       });
       return false;
-    }
-    
-    // Check if user data exists
-    if (!data.user?.id) {
-      toast({
-        title: "Erro ao fazer login",
-        description: "Não foi possível obter os dados do usuário. Tente novamente.",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    // Verify that the user exists in the profiles table
-    try {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', data.user.id)
-        .maybeSingle();
-        
-      if (profileError || !profile) {
-        console.error("User exists in auth but not in profiles:", profileError);
-        
-        // If user exists in auth but not in profiles, try to recreate the profile
-        const userMeta = data.user.user_metadata;
-        const fullName = userMeta?.full_name || userMeta?.name || 'Usuário';
-        
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            full_name: fullName,
-            email: data.user.email
-          });
-          
-        if (insertError) {
-          console.error("Failed to recreate user profile:", insertError);
-        }
-      }
-    } catch (profileCheckError) {
-      console.error("Error checking user profile:", profileCheckError);
     }
     
     // Check if email is confirmed after successful login

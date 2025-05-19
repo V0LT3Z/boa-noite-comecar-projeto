@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bookmark, AlertCircle, Bell } from "lucide-react";
@@ -7,8 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useProtectedRoute } from "@/hooks/use-protected-route";
 import { EventDetails } from "@/types/event";
-import { getUserFavorites, removeFromFavorites } from "@/services/favorites";
-import { subscribeToNotifications, Notification, getUserNotifications, markAllNotificationsAsRead } from "@/services/favorites";
+import { getUserFavorites, removeFromFavorites, subscribeToNotifications, Notification, getUserNotifications } from "@/services/favorites";
 import { toast } from "@/hooks/use-toast";
 
 const Favorites = () => {
@@ -42,64 +40,21 @@ const Favorites = () => {
   
   const fetchFavorites = async () => {
     setIsLoadingFavorites(true);
-    try {
-      const events = await getUserFavorites();
-      setFavoriteEvents(events);
-    } catch (error) {
-      console.error("Error fetching favorites:", error);
-      toast({
-        title: "Erro ao carregar favoritos",
-        description: "Não foi possível carregar seus eventos favoritos",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoadingFavorites(false);
-    }
+    const events = await getUserFavorites();
+    setFavoriteEvents(events);
+    setIsLoadingFavorites(false);
   };
   
   const fetchNotifications = async () => {
-    try {
-      const notifs = await getUserNotifications();
-      setNotifications(notifs);
-      setHasUnreadNotifications(notifs.some(notif => !notif.is_read));
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
+    const notifs = await getUserNotifications();
+    setNotifications(notifs);
+    setHasUnreadNotifications(notifs.some(notif => !notif.is_read));
   };
   
   const handleRemoveFromFavorites = async (eventId: number) => {
-    try {
-      const success = await removeFromFavorites(eventId);
-      if (success) {
-        setFavoriteEvents(prev => prev.filter(event => event.id !== eventId));
-        toast({
-          title: "Removido dos favoritos",
-          description: "O evento foi removido dos seus favoritos",
-          variant: "default"
-        });
-      }
-    } catch (error) {
-      console.error("Error removing from favorites:", error);
-      toast({
-        title: "Erro ao remover favorito",
-        description: "Tente novamente mais tarde",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const handleMarkAllAsRead = async () => {
-    try {
-      await markAllNotificationsAsRead();
-      setNotifications(prev => prev.map(notif => ({ ...notif, is_read: true })));
-      setHasUnreadNotifications(false);
-      toast({
-        title: "Notificações",
-        description: "Todas as notificações foram marcadas como lidas",
-        variant: "default"
-      });
-    } catch (error) {
-      console.error("Error marking notifications as read:", error);
+    const success = await removeFromFavorites(eventId);
+    if (success) {
+      setFavoriteEvents(prev => prev.filter(event => event.id !== eventId));
     }
   };
   
@@ -145,30 +100,19 @@ const Favorites = () => {
             Meus Favoritos
           </h1>
           
-          <div className="flex gap-2">
-            {hasUnreadNotifications && (
-              <Button 
-                variant="outline" 
-                onClick={handleMarkAllAsRead}
-                className="flex items-center gap-2"
-              >
-                Marcar todas como lidas
-              </Button>
-            )}
-            
-            <Link to="/notificacoes">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 relative"
-              >
-                <Bell />
-                Notificações
-                {hasUnreadNotifications && (
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />
-                )}
-              </Button>
-            </Link>
-          </div>
+          <Link to="/notificacoes">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 relative"
+              onClick={() => setHasUnreadNotifications(false)}
+            >
+              <Bell />
+              Notificações
+              {hasUnreadNotifications && (
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />
+              )}
+            </Button>
+          </Link>
         </div>
         
         {/* Notifications panel (simplified) */}
