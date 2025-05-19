@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { Toaster } from "@/hooks/use-toast";
-import Header from "./components/Header";
+import HeaderWrapper from "./components/HeaderWrapper";
 import Index from "./pages/Index";
 import AllEvents from "./pages/AllEvents";
 import EventDetails from "./pages/EventDetails";
