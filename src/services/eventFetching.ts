@@ -4,6 +4,7 @@ import { EventResponse, TicketTypeResponse } from "@/types/event";
 import { mapEventResponse } from "./utils/eventMappers";
 import { processImageUrl } from "./utils/imageUtils";
 import { format } from "date-fns";
+import { getDeletedEventIds } from "./utils/deletedEventsUtils";
 
 /**
  * Fetch all events from the database
@@ -42,6 +43,13 @@ export const fetchEvents = async (forceRefresh = false) => {
       events.forEach(event => {
         event.image_url = processImageUrl(event.image_url, event.id);
       });
+    }
+    
+    // Filter out deleted events
+    const deletedEventIds = getDeletedEventIds();
+    if (deletedEventIds.size > 0) {
+      console.log(`Filtrando ${deletedEventIds.size} eventos excluídos`);
+      return events?.filter(event => !deletedEventIds.has(event.id)) as EventResponse[];
     }
     
     return events as EventResponse[];

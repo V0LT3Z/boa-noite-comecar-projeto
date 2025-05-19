@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -8,6 +7,7 @@ import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { getDeletedEventIds } from "@/services/utils/deletedEventsUtils";
 
 // Imported refactored components
 import EventsGrid from "@/components/home/EventsGrid";
@@ -41,11 +41,16 @@ const Index = () => {
           });
         }
       } else {
-        // Filtrar eventos cancelados
-        const activeEvents = eventData.filter(event => event.status !== "cancelled");
+        // Get deleted event IDs
+        const deletedEventIds = getDeletedEventIds();
         
-        console.log(`Total de eventos: ${eventData.length}, Ativos: ${activeEvents.length}`);
-        setEvents(activeEvents);
+        // Filter out cancelled events AND deleted events
+        const filteredEvents = eventData.filter(event => 
+          event.status !== "cancelled" && !deletedEventIds.has(event.id)
+        );
+        
+        console.log(`Total de eventos: ${eventData.length}, Ativos: ${filteredEvents.length}, Excluídos: ${deletedEventIds.size}`);
+        setEvents(filteredEvents);
       }
       
       setEventsLoaded(true);
@@ -106,20 +111,28 @@ const Index = () => {
   }, [events]);
 
   const filteredEvents = useMemo(() => {
+    // Get the current set of deleted event IDs
+    const deletedEventIds = getDeletedEventIds();
+    
     return formattedEvents.filter(event => {
-      // Filter by search query if provided
+      // Filter by search query if provided and ensure event is not deleted
       const matchesSearch = searchQuery 
         ? event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
-      return matchesSearch;
+      return matchesSearch && !deletedEventIds.has(event.id);
     });
   }, [formattedEvents, searchQuery]);
     
   // Eventos em destaque para o carrossel
   const featuredEvents = useMemo(() => {
-    const activeEvents = formattedEvents.filter(event => event.status === "active");
+    // Get the current set of deleted event IDs
+    const deletedEventIds = getDeletedEventIds();
+    
+    const activeEvents = formattedEvents.filter(
+      event => event.status === "active" && !deletedEventIds.has(event.id)
+    );
     return activeEvents.slice(0, 3);
   }, [formattedEvents]);
 

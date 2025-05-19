@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import FavoriteButton from "./FavoriteButton";
 import { fetchEventById } from "@/services/events";
 import { toast } from "@/hooks/use-toast";
+import { isEventDeleted } from "@/services/utils/deletedEventsUtils";
 
 interface EventCardProps {
   id: number;
@@ -34,9 +35,18 @@ const EventCard = ({
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // Verificar se o evento existe apenas uma vez
+    // Check if the event exists and if it's not a deleted event
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
+      
+      // First check if this event is in the deleted set
+      if (isEventDeleted(id)) {
+        setEventExists(false);
+        if (onMarkDeleted) {
+          onMarkDeleted(id);
+        }
+        return;
+      }
       
       setIsChecking(true);
       try {
@@ -44,7 +54,7 @@ const EventCard = ({
         
         if (!event) {
           setEventExists(false);
-          // Notificar que o evento foi removido do banco de dados
+          // Notify that the event was removed from the database
           if (onMarkDeleted) {
             onMarkDeleted(id);
           }
@@ -59,7 +69,7 @@ const EventCard = ({
         console.error("Erro ao verificar evento:", error);
         setEventExists(false);
         
-        // Se o evento não existe no banco de dados, notificar o componente pai
+        // If the event doesn't exist in the database, notify the parent component
         if (onMarkDeleted) {
           onMarkDeleted(id);
         }
@@ -71,8 +81,8 @@ const EventCard = ({
     checkEvent();
   }, [id, eventExists, isChecking, onMarkDeleted]);
   
-  // Se o evento não existe, não renderizar o card
-  if (eventExists === false) {
+  // If the event doesn't exist or is deleted, don't render the card
+  if (eventExists === false || isEventDeleted(id)) {
     return null;
   }
   
