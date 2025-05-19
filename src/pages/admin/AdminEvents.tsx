@@ -8,17 +8,17 @@ import { EventListContent } from "@/components/admin/events/EventListContent";
 import { EventFormWrapper } from "@/components/admin/events/EventFormWrapper";
 import { AdminEventsProvider, useAdminEvents } from "@/contexts/AdminEventsContext";
 
-// This component must be used inside the AdminEventsProvider
+// Este componente deve ser usado dentro do AdminEventsProvider
 const AdminEventsContent = () => {
   const { isCreatingEvent, confirmDialogOpen, deleteDialogOpen, handleStatusChange, loadEvents } = useAdminEvents();
 
-  // Load events when component mounts and force a fresh load
+  // Carregar eventos quando o componente é montado e forçar uma atualização
   useEffect(() => {
-    loadEvents(true); // Force fresh data on mount
+    loadEvents(true); // Forçar dados novos ao montar
     
-    // Clean up component state on unmount
+    // Limpar o estado do componente ao desmontar
     return () => {
-      // This empty cleanup function ensures the context unmount handler works properly
+      // Esta função de limpeza vazia garante que o manipulador de desmontagem do contexto funcione corretamente
     };
   }, [loadEvents]);
 
@@ -33,19 +33,19 @@ const AdminEventsContent = () => {
         </>
       )}
 
-      {/* Status change confirmation dialog */}
+      {/* Diálogo de confirmação de alteração de status */}
       <ConfirmActionDialog
         open={confirmDialogOpen}
         onConfirm={(event, newStatus) => handleStatusChange(event.id, newStatus)}
       />
 
-      {/* Delete event confirmation dialog */}
+      {/* Diálogo de confirmação de exclusão de evento */}
       <DeleteEventDialog />
     </div>
   );
 };
 
-// Wrap the entire component with AdminEventsProvider
+// Envolva todo o componente com AdminEventsProvider
 const AdminEvents = () => {
   return (
     <AdminLayout>
