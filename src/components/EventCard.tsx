@@ -52,7 +52,7 @@ const EventCard = ({
           return;
         }
         
-        setEventExists(!!event);
+        setEventExists(true);
         if (event) {
           setEventStatus(event.status);
         }
