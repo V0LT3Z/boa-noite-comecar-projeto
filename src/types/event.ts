@@ -43,6 +43,7 @@ export interface EventResponse {
   status: string | null;
   tickets_sold: number | null;
   total_tickets: number;
+  updated_at: string | null; // Added the missing property
 }
 
 export interface TicketTypeResponse {
