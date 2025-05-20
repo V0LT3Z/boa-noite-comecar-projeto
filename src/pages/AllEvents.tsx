@@ -14,14 +14,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { getDeletedEventIds, clearDeletedEventIds } from "@/services/utils/deletedEventsUtils";
+import { useQuery } from "@tanstack/react-query";
 
 const AllEvents = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
   
-  const [events, setEvents] = useState<EventResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [eventsLoaded, setEventsLoaded] = useState(false);
   // Track locally deleted events
   const [locallyDeletedEvents, setLocallyDeletedEvents] = useState<number[]>([]);
   
@@ -38,60 +36,31 @@ const AllEvents = () => {
     }
   }, []);
   
-  const loadEvents = useCallback(async () => {
-    if (eventsLoaded) return; // Evita múltiplas chamadas se os eventos já foram carregados
-    
-    try {
-      setLoading(true);
-      const eventData = await fetchEvents(true); // Force refresh para garantir dados atualizados
-      console.log("Eventos carregados:", eventData);
-      
-      if (!eventData || eventData.length === 0) {
-        setEvents([]);
-        console.log("Nenhum evento encontrado no banco de dados");
-        
-        toast({
-          title: "Nenhum evento disponível",
-          description: "Ainda não há eventos disponíveis. Os produtores podem criar novos eventos na área administrativa.",
-          variant: "default",
-        });
-      } else {
-        // Obtenha a lista atual de IDs excluídos
-        const deletedIds = Array.from(getDeletedEventIds());
-        
-        // Filter out cancelled events and already deleted events
-        const activeEvents = eventData.filter(event => {
-          const isDeleted = deletedIds.includes(Number(event.id));
-          const isCancelled = event.status === "cancelled";
-          
-          return !isDeleted && !isCancelled;
-        });
-        
-        console.log("Eventos ativos após filtro:", activeEvents.length);
-        console.log("Total de eventos:", eventData.length, "Ativos:", activeEvents.length, "Excluídos:", deletedIds.length);
-        
-        setEvents(activeEvents);
-      }
-      
-      setEventsLoaded(true);
-    } catch (error) {
+  // Usar React Query para gerenciar o fetch de eventos
+  const { 
+    data: events = [], 
+    isLoading, 
+    error,
+    refetch 
+  } = useQuery({
+    queryKey: ['all-events'],
+    queryFn: () => fetchEvents(true), // Force refresh para garantir dados atualizados
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    refetchOnWindowFocus: false
+  });
+  
+  // Handle errors
+  useEffect(() => {
+    if (error) {
       console.error("Erro ao carregar eventos:", error);
-      setEvents([]);
-      
       toast({
         title: "Falha ao carregar eventos",
         description: "Ocorreu um erro ao carregar os eventos. Por favor, tente novamente mais tarde.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
-  }, [eventsLoaded, toast]);
+  }, [error, toast]);
 
-  useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
-  
   const handleSearch = (query: string) => {
     // Update URL with search query
     setSearchParams(query ? { q: query } : {});
@@ -106,9 +75,6 @@ const AllEvents = () => {
       const updated = [...prev, id];
       return updated;
     });
-    
-    // Remove from current events list
-    setEvents(prev => prev.filter(event => event.id !== id));
   };
 
   const formattedEvents = useMemo(() => {
@@ -140,19 +106,37 @@ const AllEvents = () => {
   }, [events]);
 
   const filteredEvents = useMemo(() => {
+    // Obtenha a lista atual de IDs excluídos
+    const deletedIds = Array.from(getDeletedEventIds());
+    
     return formattedEvents.filter(event => {
-      // Filter by search query if provided
+      // Filter by search query if provided and remove deleted events
       const matchesSearch = searchQuery 
         ? event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
-      return matchesSearch;
+      const isDeleted = deletedIds.includes(event.id);
+      const isCancelled = event.status === "cancelled";
+      
+      return matchesSearch && !isDeleted && !isCancelled;
     });
   }, [formattedEvents, searchQuery]);
 
+  // Manipulador para recarregar eventos
+  const handleReloadEvents = useCallback(() => {
+    clearDeletedEventIds();
+    setLocallyDeletedEvents([]);
+    refetch();
+    toast({
+      title: "Lista de eventos atualizada",
+      description: "A lista de eventos foi recarregada com sucesso.",
+      variant: "default",
+    });
+  }, [refetch, toast]);
+
   // Renderização do esqueleto durante o carregamento
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20">
         <Header />
@@ -188,17 +172,7 @@ const AllEvents = () => {
             <Button 
               variant="outline" 
               className="mt-4"
-              onClick={() => {
-                clearDeletedEventIds();
-                setLocallyDeletedEvents([]);
-                setEventsLoaded(false);
-                loadEvents();
-                toast({
-                  title: "Lista de eventos atualizada",
-                  description: "A lista de eventos foi recarregada com sucesso.",
-                  variant: "default",
-                });
-              }}
+              onClick={handleReloadEvents}
             >
               Atualizar lista de eventos
             </Button>
@@ -229,17 +203,7 @@ const AllEvents = () => {
             variant="outline" 
             size="sm"
             className="mt-2"
-            onClick={() => {
-              clearDeletedEventIds();
-              setLocallyDeletedEvents([]);
-              setEventsLoaded(false);
-              loadEvents();
-              toast({
-                title: "Lista de eventos atualizada",
-                description: "A lista de eventos foi recarregada com sucesso.",
-                variant: "default",
-              });
-            }}
+            onClick={handleReloadEvents}
           >
             Recarregar eventos
           </Button>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -19,11 +20,15 @@ const Index = () => {
   const searchQuery = searchParams.get('q') || '';
   const { toast } = useToast();
   
-  // Usar React Query para gerenciar o fetch e cache de eventos
+  // Usar React Query para gerenciar o fetch e cache de eventos com configurações otimizadas
   const { data: events = [], isLoading, error } = useQuery({
     queryKey: ['events'],
     queryFn: () => fetchEvents(false),
-    // Usa as configurações padrão definidas no queryClient
+    // Configuração otimizada para economia de banda
+    staleTime: 1000 * 60 * 5, // 5 minutos antes de considerar os dados desatualizados
+    gcTime: 1000 * 60 * 10, // 10 minutos antes de remover os dados do cache
+    refetchOnWindowFocus: false, // Não recarregar quando o usuário volta à janela
+    retry: 1
   });
   
   // Handle error separately with useEffect

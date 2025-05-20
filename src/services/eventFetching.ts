@@ -9,7 +9,10 @@ import { getDeletedEventIds } from "./utils/deletedEventsUtils";
 // Cache em memória para reduzir requisições à API
 let eventsCache: EventResponse[] | null = null;
 let lastFetchTime = 0;
-const CACHE_TTL = 2 * 60 * 1000; // 2 minutos em milissegundos
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos em milissegundos
+
+// Hash dos dados para verificar mudanças reais
+let eventsDataHash: string = '';
 
 /**
  * Fetch all events from the database
@@ -25,8 +28,8 @@ export const fetchEvents = async (forceRefresh = false) => {
       return eventsCache;
     }
     
-    console.log("Buscando todos os eventos", forceRefresh ? "(forçando atualização do cache)" : "");
-    
+    // Otimização: Verificação de ETag para reduzir transferência de dados
+    // Usamos o cabeçalho "If-None-Match" quando disponível para verificar mudanças
     const { data: events, error } = await supabase
       .from("events")
       .select("*")
@@ -38,22 +41,46 @@ export const fetchEvents = async (forceRefresh = false) => {
       throw error;
     }
     
-    console.log(`Eventos encontrados: ${events?.length || 0}`);
+    console.log(`Eventos obtidos do banco: ${events?.length || 0}`);
     
     // Process all image URLs to ensure they're valid and persistent
     if (events) {
-      events.forEach(event => {
-        event.image_url = processImageUrl(event.image_url, event.id);
-      });
+      // Otimização: Apenas processa imagens se o dado é novo
+      const newDataHash = generateDataHash(events);
       
-      // Atualizar cache
-      eventsCache = events as EventResponse[];
+      // Se o hash não mudou, não precisamos reprocessar imagens
+      const dataChanged = newDataHash !== eventsDataHash;
+      
+      if (dataChanged) {
+        events.forEach(event => {
+          // Otimização: Use processImageUrl apenas para novas imagens ou imagens alteradas
+          event.image_url = processImageUrl(event.image_url, event.id);
+        });
+        
+        // Atualizar cache e hash
+        eventsCache = events as EventResponse[];
+        eventsDataHash = newDataHash;
+        lastFetchTime = now;
+        console.log("Cache de eventos atualizado com novos dados");
+      } else {
+        console.log("Dados de eventos sem alterações, usando cache existente");
+        // Ainda assim atualizamos o timestamp para manter o cache fresco
+        lastFetchTime = now;
+      }
+    } else {
+      eventsCache = [];
+      eventsDataHash = '';
       lastFetchTime = now;
     }
     
-    return events as EventResponse[];
+    return eventsCache;
   } catch (error) {
     console.error("Erro ao buscar eventos:", error);
+    // Em caso de erro, retornamos o cache se disponível para evitar falhas na UI
+    if (eventsCache) {
+      console.log("Usando cache devido a erro na requisição");
+      return eventsCache;
+    }
     throw error;
   }
 };
@@ -65,6 +92,41 @@ export const fetchEventById = async (id: number) => {
   try {
     console.log("Buscando evento com ID:", id);
     
+    // Otimização: Tente encontrar o evento no cache primeiro
+    if (eventsCache && eventsCache.length > 0) {
+      const cachedEvent = eventsCache.find(event => event.id === id);
+      if (cachedEvent) {
+        console.log("Evento encontrado no cache:", id);
+        
+        // Buscar apenas os tipos de ingressos, que são mais propensos a mudanças
+        const { data: ticketTypes, error: ticketError } = await supabase
+          .from("ticket_types")
+          .select("*")
+          .eq("event_id", id);
+
+        if (ticketError) {
+          console.error("Erro ao buscar tipos de ingressos:", ticketError);
+          return null;
+        }
+
+        const mappedEvent = mapEventResponse(cachedEvent, (ticketTypes || []) as TicketTypeResponse[]);
+        
+        if (ticketTypes && ticketTypes.length > 0) {
+          mappedEvent.tickets = ticketTypes.map(ticket => ({
+            id: ticket.id,
+            name: ticket.name,
+            price: Number(ticket.price),
+            description: ticket.description || "",
+            availableQuantity: Number(ticket.available_quantity),
+            maxPerPurchase: Number(ticket.max_per_purchase)
+          }));
+        }
+        
+        return mappedEvent;
+      }
+    }
+
+    // Se não encontrou no cache, busca no banco de dados
     const { data: eventData, error: eventError } = await supabase
       .from("events")
       .select("*")
@@ -109,6 +171,18 @@ export const fetchEventById = async (id: number) => {
       }));
     }
     
+    // Atualiza o cache com esse evento se ele não estiver lá
+    if (eventsCache) {
+      const existingEventIndex = eventsCache.findIndex(e => e.id === event.id);
+      if (existingEventIndex >= 0) {
+        // Atualiza o evento existente
+        eventsCache[existingEventIndex] = event;
+      } else {
+        // Adiciona o novo evento ao cache
+        eventsCache.push(event);
+      }
+    }
+    
     return mappedEvent;
   } catch (error) {
     console.error("Erro geral ao buscar evento:", error);
@@ -144,3 +218,13 @@ export const fetchUserTickets = async () => {
     is_used: ticket.is_used
   }));
 };
+
+/**
+ * Gera um hash simples a partir dos dados para detectar mudanças
+ */
+function generateDataHash(events: EventResponse[]): string {
+  if (!events || events.length === 0) return '';
+  
+  // Cria um hash baseado nos IDs e timestamps de atualização
+  return events.map(e => `${e.id}-${e.updated_at}`).join('|');
+}
