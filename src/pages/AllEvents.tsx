@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -123,18 +122,6 @@ const AllEvents = () => {
     });
   }, [formattedEvents, searchQuery]);
 
-  // Manipulador para recarregar eventos
-  const handleReloadEvents = useCallback(() => {
-    clearDeletedEventIds();
-    setLocallyDeletedEvents([]);
-    refetch();
-    toast({
-      title: "Lista de eventos atualizada",
-      description: "A lista de eventos foi recarregada com sucesso.",
-      variant: "default",
-    });
-  }, [refetch, toast]);
-
   // Renderização do esqueleto durante o carregamento
   if (isLoading) {
     return (
@@ -169,13 +156,6 @@ const AllEvents = () => {
             <p className="text-muted-foreground">
               {searchQuery ? `Não encontramos eventos relacionados a "${searchQuery}"` : "No momento não há eventos disponíveis."}
             </p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={handleReloadEvents}
-            >
-              Atualizar lista de eventos
-            </Button>
           </div>
         </div>
       </div>
@@ -199,14 +179,6 @@ const AllEvents = () => {
           <p className="text-muted-foreground mt-2">
             {filteredEvents.length} {filteredEvents.length === 1 ? 'evento encontrado' : 'eventos encontrados'}
           </p>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="mt-2"
-            onClick={handleReloadEvents}
-          >
-            Recarregar eventos
-          </Button>
         </div>
         
         <Separator className="mb-8" />
