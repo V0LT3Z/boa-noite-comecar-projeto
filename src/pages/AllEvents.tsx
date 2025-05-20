@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import { fetchEvents } from "@/services/events";
-import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { getDeletedEventIds, clearDeletedEventIds } from "@/services/utils/deletedEventsUtils";
+import { getDeletedEventIds } from "@/services/utils/deletedEventsUtils";
 import { useQuery } from "@tanstack/react-query";
 
 const AllEvents = () => {
@@ -23,6 +23,11 @@ const AllEvents = () => {
   const [locallyDeletedEvents, setLocallyDeletedEvents] = useState<number[]>([]);
   
   const { toast } = useToast();
+  
+  // Rolar para o topo da página quando o componente é montado
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   // Get deleted events from localStorage
   useEffect(() => {
@@ -39,8 +44,7 @@ const AllEvents = () => {
   const { 
     data: events = [], 
     isLoading, 
-    error,
-    refetch 
+    error
   } = useQuery({
     queryKey: ['all-events'],
     queryFn: () => fetchEvents(true), // Force refresh para garantir dados atualizados

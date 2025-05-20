@@ -79,7 +79,10 @@ const EventsGrid = ({
   const displayEvents = events.slice(0, 12);
 
   const handleViewAllEvents = () => {
+    // Navegação para a página de eventos
     navigate('/eventos');
+    // Rolando para o topo imediatamente, como prevenção adicional
+    window.scrollTo(0, 0);
   };
 
   return (
