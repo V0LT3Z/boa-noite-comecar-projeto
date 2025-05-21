@@ -20,7 +20,7 @@ export interface EventDetails {
     capacity: number;
     map_url: string;
   };
-  status: "active" | "paused" | "cancelled";
+  status: "active" | "paused" | "cancelled" | "deleted";
 }
 
 export interface TicketType {
