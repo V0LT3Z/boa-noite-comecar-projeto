@@ -4,11 +4,10 @@ import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { fetchEvents, syncDeletedEventsFromDatabase } from "@/services/events";
-import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-import { getDeletedEventIds } from "@/services/utils/deletedEventsUtils";
+import { getDeletedEventIds, isEventDeleted } from "@/services/utils/deletedEventsUtils";
 import { useQuery } from "@tanstack/react-query";
 
 // Imported refactored components
@@ -20,20 +19,30 @@ const Index = () => {
   const searchQuery = searchParams.get('q') || '';
   const { toast } = useToast();
   
-  // Force sync deleted events on page load
+  // Lista local para rastreamento de eventos excluídos durante a sessão
+  const [locallyDeletedEvents, setLocallyDeletedEvents] = useState<Set<number>>(new Set());
+  
+  // Forçar sincronização de eventos excluídos ao carregar a página
   useEffect(() => {
     console.log("Sincronizando eventos excluídos ao carregar a página inicial");
-    syncDeletedEventsFromDatabase().catch(error => {
+    syncDeletedEventsFromDatabase().then(() => {
+      // Após a sincronização, atualizar a lista local
+      setLocallyDeletedEvents(new Set(getDeletedEventIds()));
+    }).catch(error => {
       console.error("Erro ao sincronizar eventos excluídos:", error);
     });
+    
+    // Limpar caches potencialmente problemáticos
+    const forceRefresh = Date.now().toString();
+    localStorage.setItem('force_refresh_events', forceRefresh);
   }, []);
   
   // Usar React Query para gerenciar o fetch e cache de eventos com configurações otimizadas
-  const { data: events = [], isLoading, error } = useQuery({
-    queryKey: ['events'],
+  const { data: events = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['events', localStorage.getItem('force_refresh_events')], // Incluir o timestamp para forçar nova consulta quando necessário
     queryFn: () => fetchEvents(true), // Force refresh on main page
     // Configuração otimizada para economia de banda
-    staleTime: 1000 * 60, // 1 minuto antes de considerar os dados desatualizados
+    staleTime: 1000 * 30, // 30 segundos antes de considerar os dados desatualizados (reduzido para evitar problemas)
     gcTime: 1000 * 60 * 5, // 5 minutos antes de remover os dados do cache
     refetchOnWindowFocus: true, // Recarregar quando o usuário volta à janela
     retry: 2
@@ -57,12 +66,37 @@ const Index = () => {
   };
 
   // Remover um evento da UI se ele não existir mais no banco de dados
-  const removeNonexistentEvent = (eventId: number) => {
+  const removeNonexistentEvent = useCallback((eventId: number) => {
     console.log(`Evento ${eventId} marcado como removido na UI`);
-  };
+    setLocallyDeletedEvents(prev => {
+      const newSet = new Set(prev);
+      newSet.add(eventId);
+      return newSet;
+    });
+  }, []);
 
   const formattedEvents = useMemo(() => {
-    return events.map(event => {
+    // Filtrar eventos excluídos antes mesmo de formatar
+    const currentDeletedIds = new Set([...getDeletedEventIds(), ...locallyDeletedEvents]);
+    
+    console.log("Formatando eventos. IDs excluídos:", Array.from(currentDeletedIds));
+    
+    const nonDeletedEvents = events.filter(event => {
+      const isDeleted = 
+        currentDeletedIds.has(event.id) || 
+        event.status === "deleted" || 
+        (event.title && event.title.includes("[DELETADO]"));
+        
+      if (isDeleted) {
+        console.log(`Evento ${event.id} filtrado durante formatação por estar excluído`);
+      }
+      
+      return !isDeleted;
+    });
+    
+    console.log(`Formatando ${nonDeletedEvents.length} eventos após filtragem de exclusão. Total original: ${events.length}`);
+    
+    return nonDeletedEvents.map(event => {
       try {
         const eventDate = new Date(event.date);
         return {
@@ -87,11 +121,11 @@ const Index = () => {
         };
       }
     });
-  }, [events]);
+  }, [events, locallyDeletedEvents]);
 
   const filteredEvents = useMemo(() => {
     // Get the current set of deleted event IDs
-    const deletedIds = getDeletedEventIds();
+    const deletedIds = new Set([...getDeletedEventIds(), ...locallyDeletedEvents]);
     console.log("Filtrando eventos na página inicial, IDs excluídos:", Array.from(deletedIds));
     
     return formattedEvents.filter(event => {
@@ -104,23 +138,35 @@ const Index = () => {
       // Check multiple deletion indicators
       const isDeleted = 
         deletedIds.has(event.id) || 
-        event.status === "deleted";
+        event.status === "deleted" ||
+        (typeof event.title === 'string' && event.title.includes("[DELETADO]")) ||
+        isEventDeleted(event.id);  // Função melhorada para verificar exclusão
+        
       const isCancelled = event.status === "cancelled";
+      
+      // Se está excluído, registrar para debugging
+      if (isDeleted) {
+        console.log(`Evento ${event.id} filtrado por estar excluído: título="${event.title}"`);
+      }
       
       return matchesSearch && !isDeleted && !isCancelled;
     });
-  }, [formattedEvents, searchQuery]);
+  }, [formattedEvents, searchQuery, locallyDeletedEvents]);
     
   // Eventos em destaque para o carrossel
   const featuredEvents = useMemo(() => {
     // Get the current set of deleted event IDs
-    const deletedIds = getDeletedEventIds();
+    const deletedIds = new Set([...getDeletedEventIds(), ...locallyDeletedEvents]);
     
     const activeEvents = formattedEvents.filter(
-      event => event.status === "active" && !deletedIds.has(event.id)
+      event => 
+        event.status === "active" && 
+        !deletedIds.has(event.id) && 
+        !isEventDeleted(event.id) &&
+        !(typeof event.title === 'string' && event.title.includes("[DELETADO]"))
     );
     return activeEvents.slice(0, 3);
-  }, [formattedEvents]);
+  }, [formattedEvents, locallyDeletedEvents]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-white/80 to-soft-purple/20 flex flex-col font-gooddog">

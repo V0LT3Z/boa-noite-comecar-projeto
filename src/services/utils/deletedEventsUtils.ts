@@ -41,6 +41,27 @@ export const addDeletedEventId = (eventId: number): void => {
     localStorage.setItem('deleted_event_ids', JSON.stringify(deletedIdsArray));
     
     console.log(`ID ${numericId} adicionado à lista de eventos excluídos. Total: ${deletedIds.size}`, deletedIdsArray);
+    
+    // Forçar a atualização imediata no cache do navegador para impedir a reaparição
+    try {
+      // Limpar qualquer cache que possa estar mantendo este evento
+      localStorage.setItem('force_refresh_events', Date.now().toString());
+      
+      // Também tentar limpar caches do React Query se existirem
+      const queryCache = localStorage.getItem('tanstack-query-cache');
+      if (queryCache) {
+        try {
+          const parsedCache = JSON.parse(queryCache);
+          localStorage.setItem('tanstack-query-cache-backup', queryCache);
+          localStorage.removeItem('tanstack-query-cache');
+          console.log("Cache do React Query limpo para forçar nova busca de eventos");
+        } catch (e) {
+          console.error("Erro ao manipular cache do React Query:", e);
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao forçar atualização de cache:", e);
+    }
   } catch (error) {
     console.error("Erro ao salvar ID excluído no localStorage:", error);
   }
@@ -48,15 +69,65 @@ export const addDeletedEventId = (eventId: number): void => {
 
 /**
  * Check if an event ID is in the deleted set
+ * VERSÃO MELHORADA: Mais agressiva na detecção de eventos excluídos
  */
 export const isEventDeleted = (eventId: number): boolean => {
-  const deletedIds = getDeletedEventIds();
-  const numericId = Number(eventId);
-  const result = deletedIds.has(numericId);
-  
-  console.log(`Verificando se evento ${numericId} está excluído: ${result} (total excluídos: ${deletedIds.size})`);
-  
-  return result;
+  try {
+    // Forçar conversão para número
+    const numericId = Number(eventId);
+    
+    // Verificar no localStorage
+    const deletedIds = getDeletedEventIds();
+    const isDeleted = deletedIds.has(numericId);
+    
+    if (isDeleted) {
+      console.log(`Evento ${numericId} está marcado como excluído no localStorage`);
+      return true;
+    }
+    
+    // Verificação adicional para títulos que começam com [DELETADO]
+    // Isso ajuda a identificar eventos que foram marcados como excluídos no banco de dados
+    try {
+      const eventCache = localStorage.getItem(`event_${numericId}_title`);
+      if (eventCache && eventCache.includes("[DELETADO]")) {
+        console.log(`Evento ${numericId} tem título marcado como excluído no cache: ${eventCache}`);
+        // Adiciona ao localStorage para futuras verificações
+        addDeletedEventId(numericId);
+        return true;
+      }
+    } catch (e) {
+      // Ignorar erros de cache, continuar com as verificações
+    }
+    
+    // Verificação extra em ultimas instâncias de dados
+    if (window && window.localStorage) {
+      try {
+        const allStorage = { ...localStorage };
+        const keysWithEventId = Object.keys(allStorage).filter(key => 
+          key.includes(`event_${numericId}`) || key.includes(`deleted`) || key.includes(`events`)
+        );
+        
+        for (const key of keysWithEventId) {
+          const value = allStorage[key];
+          if (value && (
+            value.includes(`"id":${numericId},"status":"deleted"`) || 
+            value.includes(`"id":${numericId},"title":"[DELETADO]`)
+          )) {
+            console.log(`Evento ${numericId} encontrado como excluído em cache alternativo: ${key}`);
+            addDeletedEventId(numericId);
+            return true;
+          }
+        }
+      } catch (e) {
+        // Ignorar erros de busca profunda em cache
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error("Erro ao verificar se evento está excluído:", error);
+    return false;
+  }
 };
 
 /**
@@ -85,8 +156,8 @@ export const syncDeletedEventsFromDatabase = async (): Promise<void> => {
     // Query the database for events marked as deleted
     const { data, error } = await supabase
       .from("events")
-      .select("id")
-      .eq("status", "deleted");
+      .select("id,title,status")
+      .or('status.eq.deleted,title.like.[DELETADO]%');
     
     if (error) {
       console.error("Erro ao sincronizar eventos excluídos:", error);
@@ -100,7 +171,13 @@ export const syncDeletedEventsFromDatabase = async (): Promise<void> => {
       
       // Add database deleted events
       data.forEach(event => {
+        // Armazenar o título para verificação futura
+        if (event.title) {
+          localStorage.setItem(`event_${event.id}_title`, event.title);
+        }
+        
         deletedIds.add(Number(event.id));
+        console.log(`Evento ${event.id} marcado como excluído da sincronização DB: status=${event.status}, title=${event.title}`);
       });
       
       // Save back to localStorage
@@ -108,6 +185,9 @@ export const syncDeletedEventsFromDatabase = async (): Promise<void> => {
       localStorage.setItem('deleted_event_ids', JSON.stringify(deletedIdsArray));
       
       console.log(`Sincronizados ${data.length} eventos excluídos do banco de dados. Total: ${deletedIds.size} (antes: ${beforeCount})`, deletedIdsArray);
+      
+      // Forçar a atualização do cache para garantir que mudanças sejam aplicadas
+      localStorage.setItem('force_refresh_events', Date.now().toString());
     } else {
       console.log("Nenhum evento com status 'deleted' encontrado no banco de dados");
     }
@@ -126,9 +206,17 @@ export const markEventAsDeletedLocally = (eventId: number): void => {
     
     // Also try to update the event status in any cached responses
     // This helps when React Query has cached the data
-    const cachedEvents = localStorage.getItem('tanstack-query-cache');
-    if (cachedEvents) {
-      console.log(`Tentando atualizar status do evento ${eventId} no cache local`);
+    try {
+      localStorage.setItem(`event_${eventId}_status`, "deleted");
+      localStorage.setItem(`event_${eventId}_title`, `[DELETADO] ${eventId} - ${new Date().toISOString()}`);
+      
+      // Tentar atualizar em caches conhecidos
+      const cachedEvents = localStorage.getItem('tanstack-query-cache');
+      if (cachedEvents) {
+        console.log(`Tentando atualizar status do evento ${eventId} no cache local`);
+      }
+    } catch (e) {
+      console.error("Erro ao atualizar cache local:", e);
     }
   } catch (error) {
     console.error("Erro ao marcar evento como excluído localmente:", error);

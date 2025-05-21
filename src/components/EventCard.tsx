@@ -34,17 +34,30 @@ const EventCard = ({
   const [eventStatus, setEventStatus] = useState<string | undefined>(status);
   const [isChecking, setIsChecking] = useState(false);
   
+  // Verificação imediata - antes mesmo de qualquer renderização
+  if (isEventDeleted(id) || status === "deleted") {
+    console.log(`[EventCard] Evento ${id} está excluído, cancelando renderização`);
+    return null;
+  }
+  
+  // Verificação de título com marcador de exclusão
+  if (title.includes("[DELETADO]")) {
+    console.log(`[EventCard] Evento ${id} tem título com marca de exclusão: ${title}, cancelando renderização`);
+    if (onMarkDeleted) onMarkDeleted(id);
+    return null;
+  }
+  
   useEffect(() => {
-    // Improved check with better error handling and immediate filtering of deleted events
+    // Verificação mais agressiva com verificação dupla
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
       
       try {
         setIsChecking(true);
         
-        // First check if this event is already known to be deleted
-        if (isEventDeleted(id) || status === "deleted") {
-          console.log(`Evento ${id} está excluído, não será exibido`);
+        // Verificação no localStorage
+        if (isEventDeleted(id)) {
+          console.log(`[EventCard effect] Evento ${id} está excluído no localStorage, não será exibido`);
           setEventExists(false);
           if (onMarkDeleted) {
             onMarkDeleted(id);
@@ -52,11 +65,31 @@ const EventCard = ({
           return;
         }
         
-        // Double-check with the server if necessary
+        // Verificação de status local
+        if (status === "deleted") {
+          console.log(`[EventCard effect] Evento ${id} tem status local 'deleted', não será exibido`);
+          setEventExists(false);
+          if (onMarkDeleted) {
+            onMarkDeleted(id);
+          }
+          return;
+        }
+        
+        // Verificação do título local
+        if (title.includes("[DELETADO]")) {
+          console.log(`[EventCard effect] Evento ${id} tem título local com marca de exclusão: ${title}`);
+          setEventExists(false);
+          if (onMarkDeleted) {
+            onMarkDeleted(id);
+          }
+          return;
+        }
+        
+        // Verificar com o servidor para ter certeza
         const event = await fetchEventById(id);
         
         if (!event) {
-          console.log(`Evento ${id} não existe no banco de dados`);
+          console.log(`[EventCard effect] Evento ${id} não existe no banco de dados`);
           setEventExists(false);
           if (onMarkDeleted) {
             onMarkDeleted(id);
@@ -64,9 +97,9 @@ const EventCard = ({
           return;
         }
         
-        // If event exists but has status deleted, mark it as non-existent
-        if (event.status === "deleted") {
-          console.log(`Evento ${id} tem status 'deleted' no banco de dados`);
+        // Se o evento existe mas foi excluído no banco de dados, marcar como inexistente
+        if (event.status === "deleted" || (event.title && event.title.includes("[DELETADO]"))) {
+          console.log(`[EventCard effect] Evento ${id} tem status 'deleted' ou título marcado como excluído no banco`);
           setEventExists(false);
           if (onMarkDeleted) {
             onMarkDeleted(id);
@@ -74,12 +107,12 @@ const EventCard = ({
           return;
         }
         
-        console.log(`Evento ${id} encontrado com status: ${event.status}`);
+        console.log(`[EventCard effect] Evento ${id} encontrado com status: ${event.status}`);
         setEventExists(true);
         setEventStatus(event.status);
       } catch (error) {
         console.error(`Erro ao verificar evento ${id}:`, error);
-        // Don't mark as deleted on error, keep showing it
+        // Não marcar como excluído em caso de erro, manter exibindo
         setEventExists(true);
       } finally {
         setIsChecking(false);
@@ -87,17 +120,17 @@ const EventCard = ({
     };
     
     checkEvent();
-  }, [id, eventExists, isChecking, onMarkDeleted, status]);
+  }, [id, eventExists, isChecking, onMarkDeleted, status, title]);
   
-  // If the event doesn't exist or is deleted, don't render the card at all
-  if (eventExists === false || status === "deleted") {
-    console.log(`Não renderizando card para evento ${id} (não existe ou foi excluído)`);
+  // Se o evento não existe ou está excluído, não renderizar o card
+  if (eventExists === false) {
+    console.log(`[EventCard render] Não renderizando card para evento ${id} (não existe ou foi excluído)`);
     return null;
   }
   
-  // Additional immediate check for deleted events, as a fallback
-  if (isEventDeleted(id)) {
-    console.log(`Evento ${id} está na lista de excluídos local, não será exibido`);
+  // Verificação adicional imediata de eventos excluídos
+  if (isEventDeleted(id) || status === "deleted" || title.includes("[DELETADO]")) {
+    console.log(`[EventCard render 2] Evento ${id} está na lista de excluídos local, não será exibido`);
     return null;
   }
   
