@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -12,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { getDeletedEventIds } from "@/services/utils/deletedEventsUtils";
+import { getDeletedEventIds, syncDeletedEventsFromDatabase } from "@/services/utils/deletedEventsUtils";
 import { useQuery } from "@tanstack/react-query";
 
 const AllEvents = () => {
@@ -29,12 +28,16 @@ const AllEvents = () => {
     window.scrollTo(0, 0);
   }, []);
   
-  // Get deleted events from localStorage
+  // Get deleted events from localStorage and sync with database
   useEffect(() => {
     try {
-      const deletedIds = Array.from(getDeletedEventIds());
-      console.log("Eventos previamente deletados:", deletedIds);
-      setLocallyDeletedEvents(deletedIds);
+      // Sync with database first
+      syncDeletedEventsFromDatabase().then(() => {
+        // Then load from localStorage (which now includes DB deletions)
+        const deletedIds = Array.from(getDeletedEventIds());
+        console.log("Eventos previamente deletados:", deletedIds);
+        setLocallyDeletedEvents(deletedIds);
+      });
     } catch (error) {
       console.error("Erro ao carregar eventos deletados:", error);
     }
@@ -110,7 +113,8 @@ const AllEvents = () => {
 
   const filteredEvents = useMemo(() => {
     // Obtenha a lista atual de IDs excluídos
-    const deletedIds = Array.from(getDeletedEventIds());
+    const deletedIds = getDeletedEventIds();
+    console.log("Filtrando eventos, IDs excluídos:", Array.from(deletedIds));
     
     return formattedEvents.filter(event => {
       // Filter by search query if provided and remove deleted events
@@ -119,7 +123,7 @@ const AllEvents = () => {
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
-      const isDeleted = deletedIds.includes(event.id);
+      const isDeleted = deletedIds.has(event.id) || event.status === "deleted";
       const isCancelled = event.status === "cancelled";
       
       return matchesSearch && !isDeleted && !isCancelled;

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
@@ -120,18 +119,23 @@ export const deleteEvent = async (id: number) => {
       console.error("Erro ao excluir ingressos diretamente ligados ao evento:", eventTicketsError);
     }
     
-    // Finally, delete the event itself - using a strong force delete approach
-    const { error } = await supabase
+    // For better robustness, use a two-step approach:
+    // 1. First mark the event as deleted in the database
+    const { error: updateError } = await supabase
       .from("events")
-      .delete()
+      .update({ status: "deleted" })
       .eq("id", id);
-
-    if (error) {
-      console.error("Erro ao excluir evento:", error);
-      throw error;
+      
+    if (updateError) {
+      console.error("Erro ao marcar evento como excluído:", updateError);
+      throw updateError;
     }
+    
+    // 2. Then also add it to localStorage for immediate UI updates
+    const { addDeletedEventId } = await import('./utils/deletedEventsUtils');
+    addDeletedEventId(id);
 
-    console.log("Evento excluído com sucesso. ID:", id);
+    console.log("Evento marcado como excluído com sucesso. ID:", id);
     return { success: true, id };
   } catch (error) {
     console.error("Erro ao excluir evento:", error);

@@ -9,5 +9,6 @@ export { processImageUrl } from './utils/imageUtils';
 export { 
   getDeletedEventIds, 
   addDeletedEventId, 
+  syncDeletedEventsFromDatabase,
   isEventDeleted 
 } from './utils/deletedEventsUtils';

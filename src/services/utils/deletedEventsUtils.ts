@@ -46,7 +46,7 @@ export const isEventDeleted = (eventId: number): boolean => {
   const result = deletedIds.has(Number(eventId));
   
   // Debug log to help troubleshoot
-  console.log(`Verificando se evento ${eventId} está excluído: ${result} (total excluídos: ${deletedIds.size})`);
+  console.log(`Verificando se evento ${eventId} está excluído: ${result}`);
   
   return result;
 };
@@ -60,5 +60,46 @@ export const clearDeletedEventIds = (): void => {
     console.log("Lista de eventos excluídos foi limpa");
   } catch (error) {
     console.error("Erro ao limpar IDs excluídos do localStorage:", error);
+  }
+};
+
+/**
+ * Refresh deleted event IDs from the database
+ * This function should be called when loading events to ensure
+ * synchronization between localStorage and database
+ */
+export const syncDeletedEventsFromDatabase = async (): Promise<void> => {
+  try {
+    console.log("Sincronizando eventos excluídos do banco de dados...");
+    
+    // Import needed here to avoid circular dependencies
+    const { supabase } = await import("@/integrations/supabase/client");
+    
+    // Query the database for events marked as deleted
+    const { data, error } = await supabase
+      .from("events")
+      .select("id")
+      .eq("status", "deleted");
+    
+    if (error) {
+      console.error("Erro ao sincronizar eventos excluídos:", error);
+      return;
+    }
+    
+    if (data && data.length > 0) {
+      // Get current deleted IDs
+      const deletedIds = getDeletedEventIds();
+      
+      // Add database deleted events
+      data.forEach(event => {
+        deletedIds.add(Number(event.id));
+      });
+      
+      // Save back to localStorage
+      localStorage.setItem('deleted_event_ids', JSON.stringify([...deletedIds]));
+      console.log(`Sincronizados ${data.length} eventos excluídos do banco de dados`);
+    }
+  } catch (error) {
+    console.error("Erro ao sincronizar eventos excluídos:", error);
   }
 };
