@@ -35,16 +35,16 @@ const EventCard = ({
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // Improved check for event existence with better error handling
+    // Improved check with better error handling and immediate filtering of deleted events
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
       
       try {
         setIsChecking(true);
         
-        // First check if this event is in the deleted set
-        if (isEventDeleted(id)) {
-          console.log(`Evento ${id} está na lista de excluídos, não será exibido`);
+        // First check if this event is already known to be deleted
+        if (isEventDeleted(id) || status === "deleted") {
+          console.log(`Evento ${id} está excluído, não será exibido`);
           setEventExists(false);
           if (onMarkDeleted) {
             onMarkDeleted(id);
@@ -52,7 +52,7 @@ const EventCard = ({
           return;
         }
         
-        // Event is not deleted locally, check if it exists in the database and what status it has
+        // Double-check with the server if necessary
         const event = await fetchEventById(id);
         
         if (!event) {
@@ -87,19 +87,27 @@ const EventCard = ({
     };
     
     checkEvent();
-  }, [id, eventExists, isChecking, onMarkDeleted]);
+  }, [id, eventExists, isChecking, onMarkDeleted, status]);
   
-  // If the event doesn't exist or is deleted, don't render the card
-  if (eventExists === false) {
+  // If the event doesn't exist or is deleted, don't render the card at all
+  if (eventExists === false || status === "deleted") {
     console.log(`Não renderizando card para evento ${id} (não existe ou foi excluído)`);
     return null;
   }
   
+  // Additional immediate check for deleted events, as a fallback
+  if (isEventDeleted(id)) {
+    console.log(`Evento ${id} está na lista de excluídos local, não será exibido`);
+    return null;
+  }
+  
   const handleVerIngressos = () => {
-    if (eventStatus === "cancelled") {
+    if (eventStatus === "cancelled" || eventStatus === "deleted") {
       toast({
-        title: "Evento Cancelado",
-        description: "Este evento foi cancelado e não está mais disponível para compra.",
+        title: eventStatus === "cancelled" ? "Evento Cancelado" : "Evento Indisponível",
+        description: eventStatus === "cancelled" 
+          ? "Este evento foi cancelado e não está mais disponível para compra." 
+          : "Este evento não está mais disponível.",
         variant: "destructive",
       });
       return false;

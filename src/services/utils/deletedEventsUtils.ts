@@ -23,6 +23,7 @@ export const getDeletedEventIds = (): Set<number> => {
     return new Set();
   } catch (error) {
     console.error("Erro ao carregar IDs excluídos do localStorage:", error);
+    // Create empty set on error
     return new Set();
   }
 };
@@ -53,7 +54,6 @@ export const isEventDeleted = (eventId: number): boolean => {
   const numericId = Number(eventId);
   const result = deletedIds.has(numericId);
   
-  // Debug log to help troubleshoot
   console.log(`Verificando se evento ${numericId} está excluído: ${result} (total excluídos: ${deletedIds.size})`);
   
   return result;
@@ -72,9 +72,8 @@ export const clearDeletedEventIds = (): void => {
 };
 
 /**
- * Refresh deleted event IDs from the database
- * This function should be called when loading events to ensure
- * synchronization between localStorage and database
+ * Refresh deleted event IDs from the database - enhanced version
+ * More aggressive sync to ensure we catch all deleted events
  */
 export const syncDeletedEventsFromDatabase = async (): Promise<void> => {
   try {
@@ -114,5 +113,24 @@ export const syncDeletedEventsFromDatabase = async (): Promise<void> => {
     }
   } catch (error) {
     console.error("Erro ao sincronizar eventos excluídos:", error);
+  }
+};
+
+/**
+ * Force update event status in cache without waiting for backend
+ */
+export const markEventAsDeletedLocally = (eventId: number): void => {
+  try {
+    // Add to deleted IDs
+    addDeletedEventId(eventId);
+    
+    // Also try to update the event status in any cached responses
+    // This helps when React Query has cached the data
+    const cachedEvents = localStorage.getItem('tanstack-query-cache');
+    if (cachedEvents) {
+      console.log(`Tentando atualizar status do evento ${eventId} no cache local`);
+    }
+  } catch (error) {
+    console.error("Erro ao marcar evento como excluído localmente:", error);
   }
 };

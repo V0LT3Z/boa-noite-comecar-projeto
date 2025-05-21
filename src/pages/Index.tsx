@@ -20,7 +20,7 @@ const Index = () => {
   const searchQuery = searchParams.get('q') || '';
   const { toast } = useToast();
   
-  // Sync deleted events on page load
+  // Force sync deleted events on page load
   useEffect(() => {
     console.log("Sincronizando eventos excluídos ao carregar a página inicial");
     syncDeletedEventsFromDatabase().catch(error => {
@@ -31,12 +31,12 @@ const Index = () => {
   // Usar React Query para gerenciar o fetch e cache de eventos com configurações otimizadas
   const { data: events = [], isLoading, error } = useQuery({
     queryKey: ['events'],
-    queryFn: () => fetchEvents(false),
+    queryFn: () => fetchEvents(true), // Force refresh on main page
     // Configuração otimizada para economia de banda
-    staleTime: 1000 * 60 * 5, // 5 minutos antes de considerar os dados desatualizados
-    gcTime: 1000 * 60 * 10, // 10 minutos antes de remover os dados do cache
-    refetchOnWindowFocus: false, // Não recarregar quando o usuário volta à janela
-    retry: 1
+    staleTime: 1000 * 60, // 1 minuto antes de considerar os dados desatualizados
+    gcTime: 1000 * 60 * 5, // 5 minutos antes de remover os dados do cache
+    refetchOnWindowFocus: true, // Recarregar quando o usuário volta à janela
+    retry: 2
   });
   
   // Handle error separately with useEffect
@@ -58,7 +58,6 @@ const Index = () => {
 
   // Remover um evento da UI se ele não existir mais no banco de dados
   const removeNonexistentEvent = (eventId: number) => {
-    // Precisamos apenas atualizar a UI, React Query cuidará da sincronização quando necessário
     console.log(`Evento ${eventId} marcado como removido na UI`);
   };
 
@@ -102,8 +101,10 @@ const Index = () => {
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
-      // Check both localStorage and event status
-      const isDeleted = deletedIds.has(event.id) || event.status === "deleted";
+      // Check multiple deletion indicators
+      const isDeleted = 
+        deletedIds.has(event.id) || 
+        event.status === "deleted";
       const isCancelled = event.status === "cancelled";
       
       return matchesSearch && !isDeleted && !isCancelled;

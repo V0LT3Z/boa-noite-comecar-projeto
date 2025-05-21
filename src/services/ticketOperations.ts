@@ -30,6 +30,7 @@ export const deleteTicketType = async (ticketTypeId: number) => {
 
 /**
  * Delete an event and all its related data
+ * Enhanced version with better guarantees that the event stays deleted
  */
 export const deleteEvent = async (id: number) => {
   try {
@@ -135,13 +136,13 @@ export const deleteEvent = async (id: number) => {
       console.log(`Excluídos ingressos diretamente ligados ao evento ${id}`);
     }
     
-    // For better robustness, use a two-step approach:
-    // 1. First mark the event as deleted in the database
+    // Mark the event as deleted with double confirmation
     const { error: updateError } = await supabase
       .from("events")
       .update({ 
         status: "deleted",
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        title: `[DELETADO] ${id} - ${new Date().toISOString()}` // Add deletion marker in the title as well
       })
       .eq("id", id);
       
@@ -152,13 +153,15 @@ export const deleteEvent = async (id: number) => {
     
     console.log(`Evento ${id} marcado como 'deleted' no banco de dados com sucesso`);
     
-    // 2. Then also add it to localStorage for immediate UI updates
+    // Add it to localStorage for immediate UI updates
     addDeletedEventId(id);
 
     console.log("Evento marcado como excluído com sucesso e adicionado ao localStorage. ID:", id);
     return { success: true, id };
   } catch (error) {
     console.error("Erro ao excluir evento:", error);
+    // Still add to local storage even on error
+    addDeletedEventId(id);
     throw error;
   }
 };
