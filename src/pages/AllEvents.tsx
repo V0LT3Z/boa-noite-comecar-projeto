@@ -1,7 +1,8 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
-import { fetchEvents } from "@/services/events";
+import { fetchEvents, syncDeletedEventsFromDatabase } from "@/services/events";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -11,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { getDeletedEventIds, syncDeletedEventsFromDatabase } from "@/services/utils/deletedEventsUtils";
+import { getDeletedEventIds } from "@/services/utils/deletedEventsUtils";
 import { useQuery } from "@tanstack/react-query";
 
 const AllEvents = () => {
@@ -31,12 +32,15 @@ const AllEvents = () => {
   // Get deleted events from localStorage and sync with database
   useEffect(() => {
     try {
+      console.log("Sincronizando eventos excluídos ao carregar a página de todos eventos");
       // Sync with database first
       syncDeletedEventsFromDatabase().then(() => {
         // Then load from localStorage (which now includes DB deletions)
         const deletedIds = Array.from(getDeletedEventIds());
-        console.log("Eventos previamente deletados:", deletedIds);
+        console.log("Eventos previamente deletados na página AllEvents:", deletedIds);
         setLocallyDeletedEvents(deletedIds);
+      }).catch(error => {
+        console.error("Erro ao sincronizar eventos excluídos:", error);
       });
     } catch (error) {
       console.error("Erro ao carregar eventos deletados:", error);
@@ -114,7 +118,7 @@ const AllEvents = () => {
   const filteredEvents = useMemo(() => {
     // Obtenha a lista atual de IDs excluídos
     const deletedIds = getDeletedEventIds();
-    console.log("Filtrando eventos, IDs excluídos:", Array.from(deletedIds));
+    console.log("Filtrando eventos na AllEvents, IDs excluídos:", Array.from(deletedIds));
     
     return formattedEvents.filter(event => {
       // Filter by search query if provided and remove deleted events
@@ -123,6 +127,7 @@ const AllEvents = () => {
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
+      // Check both localStorage and event status
       const isDeleted = deletedIds.has(event.id) || event.status === "deleted";
       const isCancelled = event.status === "cancelled";
       

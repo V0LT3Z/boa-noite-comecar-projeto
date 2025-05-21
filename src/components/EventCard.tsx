@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ const EventCard = ({
   const [isChecking, setIsChecking] = useState(false);
   
   useEffect(() => {
-    // Simplified check for event existence
+    // Improved check for event existence with better error handling
     const checkEvent = async () => {
       if (eventExists !== null || isChecking) return;
       
@@ -51,11 +52,21 @@ const EventCard = ({
           return;
         }
         
-        // Event is not deleted, check if it exists in the database
+        // Event is not deleted locally, check if it exists in the database and what status it has
         const event = await fetchEventById(id);
         
         if (!event) {
           console.log(`Evento ${id} não existe no banco de dados`);
+          setEventExists(false);
+          if (onMarkDeleted) {
+            onMarkDeleted(id);
+          }
+          return;
+        }
+        
+        // If event exists but has status deleted, mark it as non-existent
+        if (event.status === "deleted") {
+          console.log(`Evento ${id} tem status 'deleted' no banco de dados`);
           setEventExists(false);
           if (onMarkDeleted) {
             onMarkDeleted(id);

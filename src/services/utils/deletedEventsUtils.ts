@@ -14,9 +14,12 @@ export const getDeletedEventIds = (): Set<number> => {
       const parsedIds = JSON.parse(savedDeletedIds);
       if (Array.isArray(parsedIds)) {
         // Ensure all IDs are treated as numbers
-        return new Set(parsedIds.map(id => Number(id)));
+        const deletedIds = new Set(parsedIds.map(id => Number(id)));
+        console.log(`Carregados ${deletedIds.size} IDs de eventos excluídos do localStorage:`, Array.from(deletedIds));
+        return deletedIds;
       }
     }
+    console.log("Nenhum ID de evento excluído encontrado no localStorage");
     return new Set();
   } catch (error) {
     console.error("Erro ao carregar IDs excluídos do localStorage:", error);
@@ -30,9 +33,13 @@ export const getDeletedEventIds = (): Set<number> => {
 export const addDeletedEventId = (eventId: number): void => {
   try {
     const deletedIds = getDeletedEventIds();
-    deletedIds.add(Number(eventId));
-    localStorage.setItem('deleted_event_ids', JSON.stringify([...deletedIds]));
-    console.log(`ID ${eventId} adicionado à lista de eventos excluídos`);
+    const numericId = Number(eventId);
+    deletedIds.add(numericId);
+    
+    const deletedIdsArray = Array.from(deletedIds);
+    localStorage.setItem('deleted_event_ids', JSON.stringify(deletedIdsArray));
+    
+    console.log(`ID ${numericId} adicionado à lista de eventos excluídos. Total: ${deletedIds.size}`, deletedIdsArray);
   } catch (error) {
     console.error("Erro ao salvar ID excluído no localStorage:", error);
   }
@@ -43,10 +50,11 @@ export const addDeletedEventId = (eventId: number): void => {
  */
 export const isEventDeleted = (eventId: number): boolean => {
   const deletedIds = getDeletedEventIds();
-  const result = deletedIds.has(Number(eventId));
+  const numericId = Number(eventId);
+  const result = deletedIds.has(numericId);
   
   // Debug log to help troubleshoot
-  console.log(`Verificando se evento ${eventId} está excluído: ${result}`);
+  console.log(`Verificando se evento ${numericId} está excluído: ${result} (total excluídos: ${deletedIds.size})`);
   
   return result;
 };
@@ -89,6 +97,7 @@ export const syncDeletedEventsFromDatabase = async (): Promise<void> => {
     if (data && data.length > 0) {
       // Get current deleted IDs
       const deletedIds = getDeletedEventIds();
+      const beforeCount = deletedIds.size;
       
       // Add database deleted events
       data.forEach(event => {
@@ -96,8 +105,12 @@ export const syncDeletedEventsFromDatabase = async (): Promise<void> => {
       });
       
       // Save back to localStorage
-      localStorage.setItem('deleted_event_ids', JSON.stringify([...deletedIds]));
-      console.log(`Sincronizados ${data.length} eventos excluídos do banco de dados`);
+      const deletedIdsArray = Array.from(deletedIds);
+      localStorage.setItem('deleted_event_ids', JSON.stringify(deletedIdsArray));
+      
+      console.log(`Sincronizados ${data.length} eventos excluídos do banco de dados. Total: ${deletedIds.size} (antes: ${beforeCount})`, deletedIdsArray);
+    } else {
+      console.log("Nenhum evento com status 'deleted' encontrado no banco de dados");
     }
   } catch (error) {
     console.error("Erro ao sincronizar eventos excluídos:", error);

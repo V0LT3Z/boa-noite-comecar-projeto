@@ -1,13 +1,14 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { fetchEvents } from "@/services/events";
+import { fetchEvents, syncDeletedEventsFromDatabase } from "@/services/events";
 import { EventResponse } from "@/types/event";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-import { getDeletedEventIds, syncDeletedEventsFromDatabase } from "@/services/utils/deletedEventsUtils";
+import { getDeletedEventIds } from "@/services/utils/deletedEventsUtils";
 import { useQuery } from "@tanstack/react-query";
 
 // Imported refactored components
@@ -21,6 +22,7 @@ const Index = () => {
   
   // Sync deleted events on page load
   useEffect(() => {
+    console.log("Sincronizando eventos excluídos ao carregar a página inicial");
     syncDeletedEventsFromDatabase().catch(error => {
       console.error("Erro ao sincronizar eventos excluídos:", error);
     });
@@ -57,7 +59,7 @@ const Index = () => {
   // Remover um evento da UI se ele não existir mais no banco de dados
   const removeNonexistentEvent = (eventId: number) => {
     // Precisamos apenas atualizar a UI, React Query cuidará da sincronização quando necessário
-    console.log(`Evento ${eventId} marcado como removido`);
+    console.log(`Evento ${eventId} marcado como removido na UI`);
   };
 
   const formattedEvents = useMemo(() => {
@@ -100,6 +102,7 @@ const Index = () => {
           event.location.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
       
+      // Check both localStorage and event status
       const isDeleted = deletedIds.has(event.id) || event.status === "deleted";
       const isCancelled = event.status === "cancelled";
       

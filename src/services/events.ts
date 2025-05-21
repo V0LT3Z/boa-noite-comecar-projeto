@@ -10,5 +10,6 @@ export {
   getDeletedEventIds, 
   addDeletedEventId, 
   syncDeletedEventsFromDatabase,
-  isEventDeleted 
+  isEventDeleted,
+  clearDeletedEventIds
 } from './utils/deletedEventsUtils';

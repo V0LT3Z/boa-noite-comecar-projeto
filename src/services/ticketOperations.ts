@@ -1,5 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { addDeletedEventId } from "./utils/deletedEventsUtils";
 
 /**
  * Delete a ticket type from the database
@@ -56,6 +58,8 @@ export const deleteEvent = async (id: number) => {
         
       if (ticketsError) {
         console.error("Erro ao excluir ingressos associados:", ticketsError);
+      } else {
+        console.log(`Excluídos ingressos associados aos tipos: ${ticketTypeIds.join(', ')}`);
       }
       
       // Delete orders associated with these ticket types
@@ -66,6 +70,8 @@ export const deleteEvent = async (id: number) => {
         
       if (ordersError) {
         console.error("Erro ao excluir pedidos associados:", ordersError);
+      } else {
+        console.log(`Excluídos pedidos associados aos tipos: ${ticketTypeIds.join(', ')}`);
       }
       
       // Delete ticket types
@@ -76,6 +82,8 @@ export const deleteEvent = async (id: number) => {
         
       if (deleteTicketTypesError) {
         console.error("Erro ao excluir tipos de ingressos:", deleteTicketTypesError);
+      } else {
+        console.log(`Excluídos ${ticketTypes.length} tipos de ingressos do evento ${id}`);
       }
     }
     
@@ -87,6 +95,8 @@ export const deleteEvent = async (id: number) => {
       
     if (favoritesError) {
       console.error("Erro ao excluir favoritos associados:", favoritesError);
+    } else {
+      console.log(`Excluídos favoritos associados ao evento ${id}`);
     }
     
     // Delete notifications associated with this event
@@ -97,6 +107,8 @@ export const deleteEvent = async (id: number) => {
       
     if (notificationsError) {
       console.error("Erro ao excluir notificações associadas:", notificationsError);
+    } else {
+      console.log(`Excluídas notificações associadas ao evento ${id}`);
     }
     
     // Delete any orders directly linked to the event
@@ -107,6 +119,8 @@ export const deleteEvent = async (id: number) => {
       
     if (eventOrdersError) {
       console.error("Erro ao excluir pedidos diretamente ligados ao evento:", eventOrdersError);
+    } else {
+      console.log(`Excluídos pedidos diretamente ligados ao evento ${id}`);
     }
     
     // Delete any tickets directly linked to the event
@@ -117,13 +131,18 @@ export const deleteEvent = async (id: number) => {
       
     if (eventTicketsError) {
       console.error("Erro ao excluir ingressos diretamente ligados ao evento:", eventTicketsError);
+    } else {
+      console.log(`Excluídos ingressos diretamente ligados ao evento ${id}`);
     }
     
     // For better robustness, use a two-step approach:
     // 1. First mark the event as deleted in the database
     const { error: updateError } = await supabase
       .from("events")
-      .update({ status: "deleted" })
+      .update({ 
+        status: "deleted",
+        updated_at: new Date().toISOString()
+      })
       .eq("id", id);
       
     if (updateError) {
@@ -131,11 +150,12 @@ export const deleteEvent = async (id: number) => {
       throw updateError;
     }
     
+    console.log(`Evento ${id} marcado como 'deleted' no banco de dados com sucesso`);
+    
     // 2. Then also add it to localStorage for immediate UI updates
-    const { addDeletedEventId } = await import('./utils/deletedEventsUtils');
     addDeletedEventId(id);
 
-    console.log("Evento marcado como excluído com sucesso. ID:", id);
+    console.log("Evento marcado como excluído com sucesso e adicionado ao localStorage. ID:", id);
     return { success: true, id };
   } catch (error) {
     console.error("Erro ao excluir evento:", error);
