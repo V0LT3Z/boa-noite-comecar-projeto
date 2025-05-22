@@ -45,20 +45,13 @@ const AdminDashboard = () => {
         </div>
         
         <div>
-          <div className="flex items-center gap-4 mb-4">
-            <img 
-              src="/lovable-uploads/efc2028f-817a-4367-bfd1-0e95034651dc.png" 
-              alt="NOKTA TICKETS" 
-              className="h-12" 
-            />
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500">
-                Painel de Controle
-              </h1>
-              <p className="text-muted-foreground">
-                Bem-vindo ao painel de administração para produtores de eventos.
-              </p>
-            </div>
+          <div className="mb-4">
+            <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500">
+              Painel de Controle
+            </h1>
+            <p className="text-muted-foreground">
+              Bem-vindo ao painel de administração para produtores de eventos.
+            </p>
           </div>
         </div>
         
